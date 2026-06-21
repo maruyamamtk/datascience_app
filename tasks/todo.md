@@ -42,5 +42,20 @@
   - [ ] ③ 演習: 確認問題 + 即時フィードバック
 - [ ] スマホ/PC 両方で操作が 60fps 目標で動くか確認
 
+### Issue #4: 可視化共通部品（StepPlayer / Highlight / Callout）
+- [x] 計算層 `components/viz/frame.ts`（純関数 stepTick / isFirstFrame / isLastFrame / frameAt / isHighlighted、型 VizFrame / CalloutContent）+ Vitest
+- [x] `StepPlayer`（Control・controlled）: 自動再生 / 一時停止 / 1コマ前後送り / スライダー
+- [x] `useFramePlayer`（副作用 hook）: 自動再生タイマー（末尾で自動停止、判定は stepTick に委譲）
+- [x] `Highlight`: フレームごとに着目要素を色・枠で強調（数式項と同じ様式）
+- [x] `Callout`: 図の近傍に「いま・何が・なぜ」を短文表示（解説 / 補足）
+- [x] `VizPanel`: レイアウト規約（1画面1概念・余白多め・番号付き見出し）
+- [x] 再利用インターフェース `components/viz/index.ts`（barrel export）
+- [x] ダミーフレーム列のデモ `app/poc/viz/`（線形探索で最大値、Issue #3 の frame 状態に配線）
+- [x] 実機検証（コマ送り・再生・ハイライト・コールアウト動作、`issue4-poc-verified.png`）
+
 ## レビュー（実装後に記入）
-（ここに変更概要・検証結果を記録する）
+
+### Issue #4: 可視化共通部品（2026-06-21）
+- **変更概要**: アルゴリズム図鑑スタイルの共通部品を `components/viz/` に新設。計算層（純関数 frame.ts）/ コントロール（StepPlayer）/ 副作用（useFramePlayer）/ 描画（Highlight・Callout・VizPanel）を 3 層疎結合で分離。フレーム位置は Issue #3 の topicStore の `frame` 状態を single source of truth として再利用。
+- **検証結果**: Vitest 35 passed（うち frame.test.ts 8）。lint / typecheck / build 成功。`/poc/viz` で実機確認（前後送り・スライダー・自動再生＋末尾自動停止・2色ハイライト・解説/補足コールアウト切替）。スクショ `issue4-poc-verified.png`。
+- **再利用方針**: 新トピックは `@/components/viz` から import し様式を統一。VizFrame 配列にトピック固有 payload を載せ、highlights / callout を共通部品が解釈する。

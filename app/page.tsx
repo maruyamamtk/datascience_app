@@ -18,6 +18,7 @@ export default function Home() {
         <li>✅ Vitest（計算層の純関数テスト）</li>
         <li>✅ KaTeX 項ID連動スパイク</li>
         <li>✅ 状態管理基盤（Zustand トピックストア + 3層疎結合）</li>
+        <li>✅ 可視化共通部品（コマ送り + ハイライト + コールアウト）</li>
       </ul>
       <div className="flex flex-wrap gap-3">
         <a
@@ -31,6 +32,12 @@ export default function Home() {
           className="inline-flex w-fit items-center gap-2 rounded-lg border border-slate-300 px-5 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
         >
           PoC: 状態管理基盤（3層疎結合）→
+        </a>
+        <a
+          href="/poc/viz"
+          className="inline-flex w-fit items-center gap-2 rounded-lg border border-slate-300 px-5 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+        >
+          PoC: 可視化共通部品（コマ送り図鑑）→
         </a>
       </div>
     </main>
