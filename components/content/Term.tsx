@@ -50,37 +50,48 @@ export function Term({ id, children }: { id: string; children?: ReactNode }) {
     );
   }
 
+  // ホバー/フォーカスはラッパ単位で扱い、吹き出し内（「詳しく →」等）へ
+  // ポインタ/フォーカスが移っても閉じないようにする。
   return (
-    <span ref={wrapperRef} className="relative inline-block">
+    <span
+      ref={wrapperRef}
+      className="relative inline-block"
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+      onFocus={() => setOpen(true)}
+      onBlur={(e) => {
+        // フォーカスがラッパ外へ抜けたときだけ閉じる（吹き出し内リンクへの移動では閉じない）。
+        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setOpen(false);
+      }}
+    >
       <button
         type="button"
         aria-expanded={open}
         aria-describedby={open ? popoverId : undefined}
         onClick={() => setOpen((v) => !v)}
-        onMouseEnter={() => setOpen(true)}
-        onMouseLeave={() => setOpen(false)}
-        onFocus={() => setOpen(true)}
-        onBlur={() => setOpen(false)}
         className="cursor-help text-blue-700 underline decoration-dotted decoration-from-font underline-offset-2 hover:text-blue-800"
       >
         {children ?? node.title}
       </button>
       {open && (
+        // bottom-full で吹き出しをボタン上端に密着させる（gap を作らずホバー経路を途切れさせない）。
         <span
           id={popoverId}
           role="tooltip"
-          className="absolute bottom-full left-1/2 z-20 mb-2 block w-72 max-w-[80vw] -translate-x-1/2 rounded-lg border border-slate-200 bg-white p-3 text-left text-sm leading-relaxed text-slate-700 shadow-lg"
+          className="absolute bottom-full left-1/2 z-20 block w-72 max-w-[80vw] -translate-x-1/2 pb-2"
         >
-          <span className="mb-1 block font-semibold text-slate-900">{node.title}</span>
-          <span className="block">
-            <InlineDefinition text={node.definition} />
+          <span className="block rounded-lg border border-slate-200 bg-white p-3 text-left text-sm leading-relaxed text-slate-700 shadow-lg">
+            <span className="mb-1 block font-semibold text-slate-900">{node.title}</span>
+            <span className="block">
+              <InlineDefinition text={node.definition} />
+            </span>
+            <Link
+              href={`/terms/${node.slug}`}
+              className="mt-2 inline-block text-xs font-medium text-blue-700 hover:underline"
+            >
+              詳しく →
+            </Link>
           </span>
-          <Link
-            href={`/terms/${node.slug}`}
-            className="mt-2 inline-block text-xs font-medium text-blue-700 hover:underline"
-          >
-            詳しく →
-          </Link>
         </span>
       )}
     </span>
