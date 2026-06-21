@@ -1,0 +1,11 @@
+node_modules/
+.next/
+out/
+build/
+dist/
+coverage/
+pnpm-lock.yaml
+next-env.d.ts
+
+# Prose / 仕様ドキュメントは整形対象外（内容を尊重する）
+*.md
