@@ -16,7 +16,14 @@ export default function Home() {
         <li>✅ Tailwind CSS（余白多めのクリーンなレイアウト基盤）</li>
         <li>✅ ESLint / Prettier</li>
         <li>✅ Vitest（計算層の純関数テスト）</li>
+        <li>✅ KaTeX 項ID連動スパイク</li>
       </ul>
+      <a
+        href="/poc/math"
+        className="inline-flex w-fit items-center gap-2 rounded-lg bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-700"
+      >
+        PoC: 操作 → 数式の強連動を見る →
+      </a>
     </main>
   );
 }
