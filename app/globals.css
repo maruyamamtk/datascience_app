@@ -26,3 +26,22 @@ body {
     color 120ms ease,
     background-color 120ms ease;
 }
+
+/* 可視化共通: 着目要素のハイライト（components/viz/Highlight.tsx）。
+   数式項と同じ「色・枠・淡い背景」の様式に揃える。色は --hl-color で上書き可能。 */
+.viz-highlight {
+  --hl-color: transparent;
+  border: 2px solid transparent;
+  border-radius: 0.5rem;
+  transition:
+    color 150ms ease,
+    border-color 150ms ease,
+    background-color 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.viz-highlight--active {
+  border-color: var(--hl-color);
+  background-color: color-mix(in srgb, var(--hl-color) 12%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--hl-color) 22%, transparent);
+}

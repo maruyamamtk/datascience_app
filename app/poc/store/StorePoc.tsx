@@ -32,10 +32,10 @@ export function StorePoc() {
       <Controls />
       <Readout />
       <p className="text-sm leading-relaxed text-slate-600">
-        スライダー（Control）を動かすと <code>useCltStore</code> の操作値だけが変わり、
-        派生値 SE は計算層 <code>deriveClt</code> が再計算します。 Math・Graph・数値表示は
-        <strong>同じストアを購読</strong>しているので、1 つの操作変更が全てに一貫して反映されます。 n
-        を4倍にすると SE が半分（バーも半分）になることを確認してください。
+        スライダー（Control）を動かすと <code>useCltStore</code> の操作値だけが変わり、 派生値 SE
+        は計算層 <code>deriveClt</code> が再計算します。 Math・Graph・数値表示は
+        <strong>同じストアを購読</strong>しているので、1 つの操作変更が全てに一貫して反映されます。
+        n を4倍にすると SE が半分（バーも半分）になることを確認してください。
       </p>
     </div>
   );
