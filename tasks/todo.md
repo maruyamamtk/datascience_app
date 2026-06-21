@@ -59,3 +59,40 @@
 - **変更概要**: アルゴリズム図鑑スタイルの共通部品を `components/viz/` に新設。計算層（純関数 frame.ts）/ コントロール（StepPlayer）/ 副作用（useFramePlayer）/ 描画（Highlight・Callout・VizPanel）を 3 層疎結合で分離。フレーム位置は Issue #3 の topicStore の `frame` 状態を single source of truth として再利用。
 - **検証結果**: Vitest 35 passed（うち frame.test.ts 8）。lint / typecheck / build 成功。`/poc/viz` で実機確認（前後送り・スライダー・自動再生＋末尾自動停止・2色ハイライト・解説/補足コールアウト切替）。スクショ `issue4-poc-verified.png`。
 - **再利用方針**: 新トピックは `@/components/viz` から import し様式を統一。VizFrame 配列にトピック固有 payload を載せ、highlights / callout を共通部品が解釈する。
+
+### Issue #5: コンテンツ基盤（MDX + Level制テンプレート + 用語リンク/用語集）
+参照: docs/design/walking-skeleton.md §5 / SPEC §4.1.5, §4.3
+
+設計方針（4本柱を 3層疎結合で実装）:
+- **計算層（純関数・テスト可能）**: `lib/content/`
+  - `frontmatter.ts`: 最小 frontmatter パーサ（key: value / 引用符 / インライン配列）。依存追加せず自前。
+  - `terms.ts`: `content/terms/*.mdx` を fs で読み registry 化（slug/title/definition/seeAlso）。
+  - `links.ts`: MDX から用語参照抽出 + 未解決リンク検出（リンク切れゼロ保証）。
+  - `inline-math.ts`: 定義文中の `$...$` 分割（ポップオーバーのインライン数式用）。
+- **状態/描画層**: `components/content/`
+  - `TermsProvider`(context) + `Term`(client, ホバー/タップでポップオーバー)。未解決idは可視エラー。
+  - Level制テンプレート部品: `Topic` / `ReaderGuide`(対象読者ガイド) / `Level`(L0..L6) / `Concept`/`Interact`/`Exercise` / `Derivation`(折りたたみ導出)。
+- **MDX 設定**: `@next/mdx` 導入、`next.config.mjs` に pageExtensions、ルート `mdx-components.tsx` で部品マッピング。
+- **テンプレート保証**: `content/topics/_template.mdx`（L0..L6 枠を必ず含む）+ 生成スクリプト `scripts/new-topic.mjs`（pnpm new:topic）。テストで「テンプレに L0..L6 が揃う」を保証。
+- **動作確認**: `app/topics/[slug]/page.tsx` で MDX を描画。テンプレ由来のスキャフォールド（CLT 骨格 L0-L2 + L3-L6 枠）を1本作りブラウザ検証。
+
+TODO:
+- [x] `@next/mdx` 等の依存追加 + next.config / mdx-components 設定（remark-frontmatter / remark-math / rehype-katex）
+- [x] 計算層 frontmatter / terms / links / inline-math + Vitest
+- [x] content/terms に用語ノード（標本平均・標準誤差・期待値・母平均・分散）
+- [x] TermsProvider + Term ポップオーバー（ホバー/タップ・未解決idは可視エラー）
+- [x] Level制テンプレート部品（Topic/ReaderGuide/Level/Concept/Interact/Exercise/Derivation）
+- [x] _template.mdx + new-topic 生成スクリプト（pnpm new:topic）+ テンプレ検証テスト
+- [x] app/topics/[slug] / app/terms ルート + デモ topic（CLT骨格）でブラウザ検証
+- [x] リンク切れゼロ確認 / lint / typecheck / build / test
+
+### レビュー: Issue #5 コンテンツ基盤（2026-06-21）
+- **変更概要**: 4本柱を 3層疎結合で実装。
+  - 計算層 `lib/content/`（純関数・Vitest）: frontmatter パーサ / inline-math 分割 / 用語参照抽出・リンク切れ検出 / terms・topics ローダ。
+  - 描画・状態層 `components/content/`: `TermsProvider`(context) + `Term`(ホバー/タップでポップオーバー、定義はインライン数式 KaTeX、未解決idは赤波線で可視化) + Level制テンプレート部品（Topic/ReaderGuide/Level(L0..L6)/Concept・Interact・Exercise/Derivation）。
+  - MDX: `@next/mdx` + ルート `mdx-components.tsx`。frontmatter は remark-frontmatter で本文非表示・値は自前パース。本文数式は remark-math + rehype-katex、強連動数式は従来 `<Math>`。
+  - ルート: `app/topics/[slug]`（MDX を TermsProvider 配下で SSG）/ `app/terms`（用語集）/ `app/terms/[slug]`（用語詳細）。
+  - テンプレ保証: `content/topics/_template.mdx`（L0..L6 必須）+ `scripts/new-topic.mjs`（`pnpm new:topic`）+ テンプレ検証テスト。
+- **受け入れ条件**: ① テンプレから作ると Level 枠が必ず入る（生成スクリプト + template.test.ts で保証）。② 用語リンクをホバー/タップで定義参照でき、リンク切れなし（registry.test.ts が seeAlso・本文リンク・<Term>参照を全検証）。
+- **検証結果**: Vitest 66 passed（content 計算層 31 追加）。lint / typecheck / build 成功（全14ページ静的生成）。`/topics/central-limit-theorem`・`/terms/*` をブラウザ確認（Level表示・数式・導出折りたたみ・用語ポップオーバー[定義+インライン数式+詳しくリンク]・相対リンク遷移）。ハイドレーションエラー（`<p>`入れ子）を1件修正。スクショ: `issue5-topic.png` / `issue5-popover.png` / `issue5-term-page.png`。
+- **再利用方針**: 新トピックは `pnpm new:topic <slug> "<title>"` で雛形生成 → L0〜L2 を埋め、用語は `<Term id>` で結ぶ。用語ノードは `content/terms/*.mdx` に frontmatter（title/definition/aliases/seeAlso）で追加。

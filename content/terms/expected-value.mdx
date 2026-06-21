@@ -1,0 +1,16 @@
+---
+title: 期待値
+definition: 確率変数 $X$ の平均的な値 $E[X]=\sum_x x\,P(X=x)$（連続なら $\int x f(x)\,dx$）。分布の重心。
+aliases: [平均, 期待値演算子]
+seeAlso: [population-mean, variance, sample-mean]
+---
+
+# 期待値 $E[X]$
+
+確率変数 $X$ が「平均的に」取る値。分布の**重心**に相当する。
+
+$$
+E[X]=\sum_x x\,P(X=x)\quad\text{（離散）},\qquad E[X]=\int_{-\infty}^{\infty} x\,f(x)\,dx\quad\text{（連続）}
+$$
+
+線形性 $E[aX+bY]=aE[X]+bE[Y]$ を持ち、[標本平均](sample-mean)の不偏性の証明で使う。
