@@ -1,0 +1,60 @@
+---
+title: __TITLE__
+summary: __SUMMARY__
+status: draft
+---
+
+<Topic title="__TITLE__" summary="__SUMMARY__">
+
+<ReaderGuide>
+
+- **初学者** → まず L0〜L1（道具として使う → 古典的な導出と直感）
+- **一通り使える人** → L2〜L3（仮定体系・予測最適化）
+- **「完全に理解した」人** → L4 以降（因果・高次元・フロンティア）
+
+</ReaderGuide>
+
+<Level level={0} title="ブラックボックス（道具として使う）">
+  <Concept>
+    何の問題を解くか・どう呼び出すかを最短で。専門用語は <Term id="sample-mean">標本平均</Term>{" "}
+    のように用語ノードへ結ぶ（`content/terms/*.mdx` の slug を指定）。
+  </Concept>
+  <Interact>
+    最小の具体例で挙動を体感する操作（`@/components/viz` の StepPlayer などを埋め込む）。
+  </Interact>
+  <Exercise>使えるか確認する1問（即時フィードバック → ② 操作へ戻る）。</Exercise>
+</Level>
+
+<Level level={1} title="古典的理解（完全な導出と幾何学的直感）">
+  <Concept>
+    直感的導入 → 数式（
+    <Math tex="y = x" display={false} /> のように埋め込む）。
+  </Concept>
+  <Derivation>全ステップを折りたたみで提示（結論だけにしない）。</Derivation>
+  <Interact>幾何学的直感を与える操作。</Interact>
+  <Exercise>導出の理解を問う1問。</Exercise>
+</Level>
+
+<Level level={2} title="仮定体系（前提条件と定理の証明）">
+  <Concept>前提・定理の主張。</Concept>
+  <Derivation>証明（折りたたみ）。</Derivation>
+  <Exercise>仮定違反の影響を問う。</Exercise>
+</Level>
+
+<Level level={3} title="予測最適化" status="planned">
+  バイアス-バリアンス分解・正則化・非線形拡張。
+</Level>
+
+<Level level={4} title="因果" status="planned">
+  交絡・欠落変数バイアス、識別戦略（前提トピックへリンク）。
+</Level>
+
+<Level level={5} title="高次元 / 最先端" status="planned">
+  高次元理論・Post-Selection Inference・DML 等。
+</Level>
+
+<Level level={6} title="フロンティア" status="planned">
+  未解決・研究領域（「ここは到達途上」と正直に明示）。
+</Level>
+
+</Topic>

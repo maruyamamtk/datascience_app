@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+// rehype-katex（MDX 本文の数式）のサーバ描画出力にスタイルを当てるため全体で読み込む。
+import "katex/dist/katex.min.css";
 
 export const metadata: Metadata = {
   title: "データサイエンス学習アプリ",

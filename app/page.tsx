@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function Home() {
   return (
     <main className="mx-auto flex min-h-screen max-w-3xl flex-col justify-center gap-6 px-6 py-16">
@@ -19,6 +21,7 @@ export default function Home() {
         <li>✅ KaTeX 項ID連動スパイク</li>
         <li>✅ 状態管理基盤（Zustand トピックストア + 3層疎結合）</li>
         <li>✅ 可視化共通部品（コマ送り + ハイライト + コールアウト）</li>
+        <li>✅ コンテンツ基盤（MDX + Level制テンプレート + 用語リンク/用語集）</li>
       </ul>
       <div className="flex flex-wrap gap-3">
         <a
@@ -39,6 +42,18 @@ export default function Home() {
         >
           PoC: 可視化共通部品（コマ送り図鑑）→
         </a>
+        <Link
+          href="/topics/central-limit-theorem"
+          className="inline-flex w-fit items-center gap-2 rounded-lg border border-slate-300 px-5 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+        >
+          トピック例: 中心極限定理（Level制）→
+        </Link>
+        <Link
+          href="/terms"
+          className="inline-flex w-fit items-center gap-2 rounded-lg border border-slate-300 px-5 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+        >
+          用語集 →
+        </Link>
       </div>
     </main>
   );

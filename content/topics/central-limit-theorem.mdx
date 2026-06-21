@@ -1,0 +1,108 @@
+---
+title: 中心極限定理（CLT）
+summary: 元の分布が何であれ、標本平均の分布は n を増やすと正規分布に近づく——その肌感覚と数理。
+status: draft
+---
+
+<Topic title="中心極限定理（CLT）" summary="元の分布が何であれ、標本平均の分布は n を増やすと正規分布に近づく——その肌感覚と数理。">
+
+<ReaderGuide>
+
+- **初学者** → L0〜L1（何が嬉しいか → <Term id="sample-mean">標本平均</Term>の分布の導出）
+- **一通り使える人** → L2（収束の前提：有限分散など）
+- **「完全に理解した」人** → L3 以降（収束の速さ・多次元・フロンティアは到達途上）
+
+</ReaderGuide>
+
+<Level level={0} title="ブラックボックス（道具として使う）">
+  <Concept>
+
+「平均を取ると正規分布になる」——だから多くの統計手法（区間推定・検定）は正規分布を前提にできる。
+ここで「平均」とは <Term id="sample-mean">標本平均</Term> $\bar X$ のこと。
+
+  </Concept>
+  <Interact>
+
+元分布（一様・指数・二項）を選び、$n$ を変えて「サンプリング」を繰り返すと、
+
+<Term id="sample-mean">標本平均</Term> のヒストグラムが釣鐘型に近づく様子を観察できる （操作部品は
+`@/components/viz` の StepPlayer を用いる。本トピックの操作 UI は別 Issue で配線）。
+
+  </Interact>
+  <Exercise>
+
+確認: 「元の分布が左右非対称でも、$n$ を大きくすれば平均の分布はほぼ左右対称になる」——○か×か。
+
+  </Exercise>
+</Level>
+
+<Level level={1} title="古典的理解（標本平均の期待値と標準誤差）">
+  <Concept>
+
+<Term id="sample-mean">標本平均</Term> は確率変数で、その中心は
+<Term id="population-mean">母平均</Term> $\mu$、 ばらつきは
+<Term id="standard-error">標準誤差</Term> $\sigma/\sqrt{n}$。
+
+<Math tex="E[\bar X]=\mu,\qquad \operatorname{SD}[\bar X]=\dfrac{\sigma}{\sqrt{n}}" />
+
+  </Concept>
+  <Derivation title="E[X̄]=μ と Var[X̄]=σ²/n の導出を見る">
+
+<Term id="expected-value">期待値</Term> の線形性より
+
+$$
+E[\bar X]=E\!\left[\frac1n\sum_{i=1}^n X_i\right]=\frac1n\sum_{i=1}^n E[X_i]=\frac1n\cdot n\mu=\mu.
+$$
+
+独立性より <Term id="variance">分散</Term> は加法的で、$\operatorname{Var}[aX]=a^2\operatorname{Var}[X]$ だから
+
+$$
+\operatorname{Var}[\bar X]=\frac1{n^2}\sum_{i=1}^n \operatorname{Var}[X_i]=\frac{n\sigma^2}{n^2}=\frac{\sigma^2}{n}
+\;\Rightarrow\; \operatorname{SD}[\bar X]=\frac{\sigma}{\sqrt n}.
+$$
+
+  </Derivation>
+  <Interact>
+
+$n$ を 4 倍にすると <Term id="standard-error">標準誤差</Term> は $1/2$ になる——
+スライダーで $n$ を動かし、数式中の $\sigma/\sqrt{n}$ 項が連動する様子を確かめる。
+
+  </Interact>
+  <Exercise>
+
+$n$ を 100 から 400 にすると標準誤差は何倍になる？（答: $1/2$ 倍）
+
+  </Exercise>
+</Level>
+
+<Level level={2} title="仮定体系（収束の前提）">
+  <Concept>
+
+古典的 CLT は「独立同分布（i.i.d.）」かつ「<Term id="variance">分散</Term>が有限」を前提とする。
+分散が無限（例: コーシー分布）だと平均は正規分布に収束しない。
+
+  </Concept>
+  <Exercise>
+
+分散が存在しない分布では、$n$ を増やしても標本平均は正規分布に近づかない——○か×か。（答: ○）
+
+  </Exercise>
+</Level>
+
+<Level level={3} title="予測最適化 / 収束の速さ" status="planned">
+  ベリー–エッセーン（収束の速さ）や歪度の影響。
+</Level>
+
+<Level level={4} title="多次元・従属系列への拡張" status="planned">
+  多変量 CLT、従属データ（時系列）での CLT。
+</Level>
+
+<Level level={5} title="高次元 / 最先端" status="planned">
+  高次元での正規近似の限界と最近の結果。
+</Level>
+
+<Level level={6} title="フロンティア" status="planned">
+  非 i.i.d.・重い裾の下での極限定理は研究領域。
+</Level>
+
+</Topic>
