@@ -29,6 +29,12 @@ describe("formatNumber", () => {
     expect(formatNumber(3.14159, 3)).toBe("3.142");
   });
 
+  it("digits=0 で整数部の末尾ゼロを削らない", () => {
+    expect(formatNumber(10, 0)).toBe("10");
+    expect(formatNumber(100, 0)).toBe("100");
+    expect(formatNumber(0, 0)).toBe("0");
+  });
+
   it("有限でない値はダッシュ", () => {
     expect(formatNumber(Number.NaN)).toBe("\\text{—}");
     expect(formatNumber(Infinity)).toBe("\\text{—}");

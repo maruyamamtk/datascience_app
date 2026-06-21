@@ -29,7 +29,9 @@ export function term(key: string, tex: string): string {
 export function formatNumber(value: number, digits = 2): string {
   if (!Number.isFinite(value)) return "\\text{—}";
   const fixed = value.toFixed(digits);
-  // "2.00" -> "2", "2.50" -> "2.5" のように末尾ゼロを削る
+  // 小数部の末尾ゼロのみ削る。"2.00" -> "2", "2.50" -> "2.5"。
+  // 小数点が無い（digits=0 など）場合は整数部の末尾ゼロを削ってはいけない（"10" を "1" にしない）。
+  if (!fixed.includes(".")) return fixed;
   return fixed.replace(/\.?0+$/, "");
 }
 
