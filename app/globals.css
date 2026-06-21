@@ -13,3 +13,16 @@
 body {
   @apply bg-white text-slate-900 antialiased;
 }
+
+/* 数式項のハイライト（TermController がクラスをトグルする）。
+   色は --term-color で項ごとに上書き可能。再描画ではなく CSS のみで強調する。 */
+.katex-term--active {
+  --term-color: #2563eb;
+  color: var(--term-color);
+  background-color: color-mix(in srgb, var(--term-color) 14%, transparent);
+  border-radius: 0.2em;
+  padding: 0 0.12em;
+  transition:
+    color 120ms ease,
+    background-color 120ms ease;
+}
