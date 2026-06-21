@@ -4,6 +4,9 @@
  * DOM 操作・描画は term-controller.ts / MathFormula.tsx 側（描画層）に分離する。
  */
 
+// 統計量そのものの計算は計算層（lib/stats）に集約する。後方互換のため re-export。
+export { standardError } from "@/lib/stats/clt";
+
 /** DOM id として安全な接頭辞。操作イベントから getElementById で参照する。 */
 export const TERM_ID_PREFIX = "term-";
 
@@ -33,10 +36,4 @@ export function formatNumber(value: number, digits = 2): string {
   // 小数点が無い（digits=0 など）場合は整数部の末尾ゼロを削ってはいけない（"10" を "1" にしない）。
   if (!fixed.includes(".")) return fixed;
   return fixed.replace(/\.?0+$/, "");
-}
-
-/** 標準誤差 SE = σ/√n。n<=0 は NaN（呼び出し側で形式整形して "—" 表示）。 */
-export function standardError(sigma: number, n: number): number {
-  if (n <= 0) return Number.NaN;
-  return sigma / Math.sqrt(n);
 }

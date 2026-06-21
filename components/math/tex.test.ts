@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatNumber, standardError, term, termId } from "./tex";
+import { formatNumber, term, termId } from "./tex";
 
 describe("termId", () => {
   it("項キーに接頭辞を付ける", () => {
@@ -38,22 +38,5 @@ describe("formatNumber", () => {
   it("有限でない値はダッシュ", () => {
     expect(formatNumber(Number.NaN)).toBe("\\text{—}");
     expect(formatNumber(Infinity)).toBe("\\text{—}");
-  });
-});
-
-describe("standardError", () => {
-  it("σ/√n を返す", () => {
-    expect(standardError(2, 4)).toBe(1);
-    expect(standardError(10, 100)).toBe(1);
-  });
-
-  it("n を4倍にすると SE は半分になる", () => {
-    expect(standardError(8, 4)).toBeCloseTo(4);
-    expect(standardError(8, 16)).toBeCloseTo(2);
-  });
-
-  it("n<=0 は NaN", () => {
-    expect(Number.isNaN(standardError(1, 0))).toBe(true);
-    expect(Number.isNaN(standardError(1, -3))).toBe(true);
   });
 });

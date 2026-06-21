@@ -17,13 +17,22 @@ export default function Home() {
         <li>✅ ESLint / Prettier</li>
         <li>✅ Vitest（計算層の純関数テスト）</li>
         <li>✅ KaTeX 項ID連動スパイク</li>
+        <li>✅ 状態管理基盤（Zustand トピックストア + 3層疎結合）</li>
       </ul>
-      <a
-        href="/poc/math"
-        className="inline-flex w-fit items-center gap-2 rounded-lg bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-700"
-      >
-        PoC: 操作 → 数式の強連動を見る →
-      </a>
+      <div className="flex flex-wrap gap-3">
+        <a
+          href="/poc/math"
+          className="inline-flex w-fit items-center gap-2 rounded-lg bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-700"
+        >
+          PoC: 操作 → 数式の強連動を見る →
+        </a>
+        <a
+          href="/poc/store"
+          className="inline-flex w-fit items-center gap-2 rounded-lg border border-slate-300 px-5 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+        >
+          PoC: 状態管理基盤（3層疎結合）→
+        </a>
+      </div>
     </main>
   );
 }
