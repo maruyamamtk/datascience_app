@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { stepTick } from "./frame";
 
 type UseFramePlayerArgs = {
@@ -23,8 +23,12 @@ type UseFramePlayerArgs = {
  * 「一定間隔でフレームを進める / 末尾で止める」という副作用はここに閉じる（3層疎結合）。
  *
  * 進行可否の判定は純関数 `stepTick` に委譲し、本 hook は setInterval と
- * action 呼び出しだけを受け持つ。playing/index/count の変化で effect を貼り直すため、
- * 各フレームはほぼ intervalMs で切り替わる。
+ * action 呼び出しだけを受け持つ。
+ *
+ * interval は **再生セッション中に 1 度だけ**張る（依存は playing/intervalMs のみ）。
+ * 毎ティックの index/count/コールバックは ref から最新値を読むため、呼び出し側が
+ * 不安定な関数参照を渡しても・親が高頻度で再レンダーしても、タイマーがリセットされて
+ * フレームが進まなくなることがない（再利用部品としての堅牢性）。
  */
 export function useFramePlayer({
   playing,
@@ -34,21 +38,20 @@ export function useFramePlayer({
   onStop,
   intervalMs = 900,
 }: UseFramePlayerArgs): void {
+  // 毎レンダーで最新値を退避（interval の再生成を避けるため依存に含めない）。
+  const latest = useRef({ index, count, onAdvance, onStop });
+  latest.current = { index, count, onAdvance, onStop };
+
   useEffect(() => {
     if (!playing) return;
-    // 再生開始時にすでに末尾なら即停止（無限ループ防止）。
-    if (stepTick(index, count).reachedEnd) {
-      onStop();
-      return;
-    }
     const id = window.setInterval(() => {
-      const { reachedEnd } = stepTick(index, count);
-      if (reachedEnd) {
+      const { index, count, onAdvance, onStop } = latest.current;
+      if (stepTick(index, count).reachedEnd) {
         onStop();
         return;
       }
       onAdvance();
     }, intervalMs);
     return () => window.clearInterval(id);
-  }, [playing, index, count, intervalMs, onAdvance, onStop]);
+  }, [playing, intervalMs]);
 }
