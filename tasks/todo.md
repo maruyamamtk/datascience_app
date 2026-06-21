@@ -24,9 +24,18 @@
 - [ ] 開発環境セットアップ（リポジトリ初期化、Next.js プロジェクト作成）
 
 ## プロトタイプ（CLT）実装計画 ※合意後に着手
-- [ ] 技術検証スパイク: KaTeX の項に id 付与 → 操作で数値/ハイライト連動できるか PoC
-- [ ] state ストア設計（操作値・派生値の single source of truth）
-- [ ] 部品分離: コントロール / 計算（純関数）/ 描画（グラフ・数式）
+- [x] 技術検証スパイク: KaTeX の項に id 付与 → 操作で数値/ハイライト連動できるか PoC（Issue #2）
+- [ ] state ストア設計（操作値・派生値の single source of truth）→ Issue #3 で実装中
+- [ ] 部品分離: コントロール / 計算（純関数）/ 描画（グラフ・数式）→ Issue #3 で規約化
+
+### Issue #3: 状態管理基盤（Zustand トピックストア + 3層疎結合）
+- [x] 計算層 `lib/stats/clt.ts`（純関数 deriveClt / standardError、副作用なし）
+- [x] `standardError` を計算層へ集約（tex.ts は後方互換 re-export）
+- [x] トピック単位ストア雛形 `lib/store/topicStore.ts`（操作値+派生値+フレーム状態）
+- [x] CLT 具象ストア `lib/store/clt.ts`（useCltStore）
+- [x] Vitest: 計算層・ストアの単体テスト
+- [x] 配線パターン PoC `app/poc/store/`（Graph+Math+数値が同一ストアを購読）
+- [x] ドキュメント `docs/design/state-store.md`
 - [ ] CLT トピックページ実装
   - [ ] ① 概念: 数式 + 導出 + 用語リンク
   - [ ] ② 操作: 元分布選択・n 変更・再サンプリング → グラフ&数式が強連動
