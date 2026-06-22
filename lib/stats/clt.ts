@@ -9,6 +9,10 @@
 
 import { getDistribution, type DistKind } from "./distributions";
 import type { Rng } from "./random";
+import { mean } from "./sample";
+
+// 標本平均は計算層で一元化した `mean`（lib/stats/sample.ts）を CLT 文脈の別名で公開する。
+export { mean as sampleMean };
 
 /** CLT トピックの操作値（ユーザーが直接いじる single source of truth）。 */
 export type CltControls = {
@@ -47,12 +51,6 @@ export function deriveClt(controls: CltControls): CltDerived {
   };
 }
 
-/** 標本平均（空配列は 0）。lib/stats/sample.ts の mean と同義だが CLT 文脈で再掲。 */
-export function sampleMean(values: readonly number[]): number {
-  if (values.length === 0) return 0;
-  return values.reduce((acc, v) => acc + v, 0) / values.length;
-}
-
 /**
  * 元分布から n 個の観測を引いて 1 標本を作る純関数。
  * StepPlayer の「1 観測ずつ引く」コマ送りは、この観測列を 1 つずつ提示する。
@@ -73,7 +71,7 @@ export function drawSample(distKind: DistKind, n: number, rng: Rng): number[] {
 export function drawSampleMeans(distKind: DistKind, n: number, count: number, rng: Rng): number[] {
   const means: number[] = [];
   for (let c = 0; c < Math.max(0, Math.floor(count)); c++) {
-    means.push(sampleMean(drawSample(distKind, n, rng)));
+    means.push(mean(drawSample(distKind, n, rng)));
   }
   return means;
 }
