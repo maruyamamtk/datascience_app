@@ -134,3 +134,23 @@ TODO:
 - **変更概要**: ネイティブ manifest（standalone/ja/192・512・maskable）、素の SW（ナビ network-first→cache→/offline、静的 SWR、VERSION 破棄）、本番限定登録、オフラインページ、タッチ最適化 CSS、FPS 計測オーバーレイ、計測手順 docs。
 - **検証結果**: Vitest 105 passed（manifest 3 追加）。lint/format/build 成功（全16ページ静的生成、/manifest.webmanifest・/offline 出力）。`pnpm start` で manifest JSON 妥当・sw.js(application/javascript)・全アイコン 200・head に theme-color/manifest/apple-touch-icon を実配信確認。
 - **残（実機手動確認）**: iPhone Safari の「ホーム画面追加」standalone 起動 と オフライン再訪、操作中 55fps 維持は docs/design/pwa.md のチェックリストに従い実機で確認する。
+
+---
+
+## Epic #8 — 歩く骨格 受け入れ（CLT縦串で強連動 × コマ送り）
+
+子issue #1〜#7 はすべて CLOSED・main マージ済み。本エピックは新規実装ではなく、構築した歩く骨格が
+**完了の定義**を満たすことの統合検証と受け入れ記録。詳細は [docs/design/walking-skeleton-acceptance.md](../docs/design/walking-skeleton-acceptance.md)。
+
+TODO:
+- [x] 子issue #1〜#7 のクローズ確認
+- [x] 統合検証: `pnpm test`(105 passed) / `tsc --noEmit` / `pnpm lint` / `pnpm build`(16ページ) 全グリーン
+- [x] ランタイム・スモーク: `pnpm start` で CLT トピック・用語・manifest・offline が 200、SSR に KaTeX/Level 枠
+- [x] 強連動の結線確認（store SSOT → Histogram＋MathFormula/TermController の DOM 差分パッチ）
+- [x] 受け入れ記録 docs 作成
+- [ ] 実機目視（n スライダー/分布切替の数式実時間追従・指数→釣鐘収束・iPhone standalone/オフライン）← pwa.md チェックリスト
+
+### レビュー: Epic #8 受け入れ（2026-06-22）
+- **位置づけ**: 歩く骨格の完成検証。完了の定義 ↔ 証跡（コード/テスト箇所）を `walking-skeleton-acceptance.md` に対応付けて記録。
+- **検証結果**: 単体 105 passed・型/lint/build 全グリーン・主要ルート 200。操作→グラフ→数式の強連動は単一ストア購読＋項ノードDOMパッチで結線済み（単体テストで計算層・ストア・フレームを保証）。
+- **残**: 実時間の見た目（体感60fps）と iPhone 実機挙動はヘッドレス不可のため pwa.md の実機チェックリストに送る。
