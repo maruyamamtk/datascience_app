@@ -6,7 +6,10 @@ export default defineConfig({
   plugins: [react()],
   test: {
     globals: true,
+    // 既定は高速な node 環境。DOM レンダリングが要るテストはファイル先頭の
+    // `// @vitest-environment jsdom` で個別に切り替える（lib/** は node のまま）。
     environment: "node",
+    setupFiles: ["./vitest.setup.ts"],
     include: ["lib/**/*.test.{ts,tsx}", "components/**/*.test.{ts,tsx}", "app/**/*.test.{ts,tsx}"],
   },
   resolve: {
