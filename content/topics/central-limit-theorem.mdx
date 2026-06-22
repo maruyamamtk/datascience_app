@@ -1,8 +1,12 @@
 ---
 title: 中心極限定理（CLT）
 summary: 元の分布が何であれ、標本平均の分布は n を増やすと正規分布に近づく——その肌感覚と数理。
-status: draft
+status: published
 ---
+
+import { CltSamplingLab } from "@/components/topics/clt/CltSamplingLab";
+import { CltDrawStepper } from "@/components/topics/clt/CltDrawStepper";
+import { CltQuiz } from "@/components/topics/clt/CltQuiz";
 
 <Topic title="中心極限定理（CLT）" summary="元の分布が何であれ、標本平均の分布は n を増やすと正規分布に近づく——その肌感覚と数理。">
 
@@ -25,8 +29,8 @@ status: draft
 
 元分布（一様・指数・二項）を選び、$n$ を変えて「サンプリング」を繰り返すと、
 
-<Term id="sample-mean">標本平均</Term> のヒストグラムが釣鐘型に近づく様子を観察できる （操作部品は
-`@/components/viz` の StepPlayer を用いる。本トピックの操作 UI は別 Issue で配線）。
+<Term id="sample-mean">標本平均</Term> のヒストグラムが釣鐘型に近づく様子を観察できる。 詳しい操作は
+L1 の操作パネルで。
 
   </Interact>
   <Exercise>
@@ -66,11 +70,18 @@ $$
 
 $n$ を 4 倍にすると <Term id="standard-error">標準誤差</Term> は $1/2$ になる——
 スライダーで $n$ を動かし、数式中の $\sigma/\sqrt{n}$ 項が連動する様子を確かめる。
+元分布を変えても中心 $\mu$ は同じ（=5）に揃えてあるので、「形の違いによらず縮みながら正規へ近づく」が見える。
+
+<CltSamplingLab />
+
+標本平均 1 つがどう作られるかは、1 観測ずつ引くコマ送りで確認できる。
+
+<CltDrawStepper />
 
   </Interact>
   <Exercise>
 
-$n$ を 100 から 400 にすると標準誤差は何倍になる？（答: $1/2$ 倍）
+<CltQuiz />
 
   </Exercise>
 </Level>

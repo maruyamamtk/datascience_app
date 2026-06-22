@@ -9,6 +9,6 @@ import { createTopicStore } from "./topicStore";
  * 使い方は docs/design/state-store.md を参照。
  */
 export const useCltStore = createTopicStore<CltControls, CltDerived>({
-  initialControls: { sigma: 10, n: 4 },
+  initialControls: { distKind: "uniform", n: 5 },
   derive: deriveClt,
 });
