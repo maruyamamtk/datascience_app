@@ -36,11 +36,22 @@
 - [x] Vitest: 計算層・ストアの単体テスト
 - [x] 配線パターン PoC `app/poc/store/`（Graph+Math+数値が同一ストアを購読）
 - [x] ドキュメント `docs/design/state-store.md`
-- [ ] CLT トピックページ実装
-  - [ ] ① 概念: 数式 + 導出 + 用語リンク
-  - [ ] ② 操作: 元分布選択・n 変更・再サンプリング → グラフ&数式が強連動
-  - [ ] ③ 演習: 確認問題 + 即時フィードバック
-- [ ] スマホ/PC 両方で操作が 60fps 目標で動くか確認
+- [x] CLT トピックページ実装（→ Issue #6 で完遂）
+  - [x] ① 概念: 数式 + 導出 + 用語リンク
+  - [x] ② 操作: 元分布選択・n 変更・再サンプリング → グラフ&数式が強連動
+  - [x] ③ 演習: 確認問題 + 即時フィードバック
+- [ ] スマホ/PC 両方で操作が 60fps 目標で動くか確認（自動ブラウザ検証は未実施）
+
+### Issue #6: CLT トピック本体（概念→操作→演習の縦串・歩く骨格本体）
+- [x] 計算層 `lib/stats/random.ts`（決定的 PRNG mulberry32）+ Vitest
+- [x] 計算層 `lib/stats/distributions.ts`（一様/指数/二項、母 μ=5 に統一、理論 σ + sample）+ Vitest
+- [x] 計算層 `lib/stats/clt.ts` 改修（controls={distKind,n} / derived={mu,sigma,SE}、drawSample / drawSampleMeans / sampleMean）+ Vitest
+- [x] 計算層 `lib/stats/histogram.ts`（等幅ビニング）+ Vitest / `lib/stats/normal.ts`（収束先曲線）+ Vitest
+- [x] フレームビルダー `components/topics/clt/frames.ts`（1観測ずつコマ送り）+ Vitest
+- [x] ストア `lib/store/clt.ts` を新 controls 形に更新 + テスト更新（PoC は自前ローカルストアへ分離）
+- [x] 描画 `CltSamplingLab`（分布選択・n スライダー・サンプリング蓄積・σ/√n 項の差し込み＋ハイライト・ヒストグラム+正規曲線+μ±SE帯）
+- [x] 描画 `CltDrawStepper`（StepPlayer で1観測ずつ、暫定平均が動く）/ `CltQuiz`（確認問題→即時フィードバック→操作へ戻る）
+- [x] MDX `central-limit-theorem.mdx` の Interact/Exercise に配線（L1）
 
 ### Issue #4: 可視化共通部品（StepPlayer / Highlight / Callout）
 - [x] 計算層 `components/viz/frame.ts`（純関数 stepTick / isFirstFrame / isLastFrame / frameAt / isHighlighted、型 VizFrame / CalloutContent）+ Vitest
@@ -59,6 +70,12 @@
 - **変更概要**: アルゴリズム図鑑スタイルの共通部品を `components/viz/` に新設。計算層（純関数 frame.ts）/ コントロール（StepPlayer）/ 副作用（useFramePlayer）/ 描画（Highlight・Callout・VizPanel）を 3 層疎結合で分離。フレーム位置は Issue #3 の topicStore の `frame` 状態を single source of truth として再利用。
 - **検証結果**: Vitest 35 passed（うち frame.test.ts 8）。lint / typecheck / build 成功。`/poc/viz` で実機確認（前後送り・スライダー・自動再生＋末尾自動停止・2色ハイライト・解説/補足コールアウト切替）。スクショ `issue4-poc-verified.png`。
 - **再利用方針**: 新トピックは `@/components/viz` から import し様式を統一。VizFrame 配列にトピック固有 payload を載せ、highlights / callout を共通部品が解釈する。
+
+### Issue #6: CLT トピック本体（2026-06-22）
+- **変更概要**: CLT を 1 トピックとして縦串。計算層（`lib/stats` に random/distributions/histogram/normal を追加、`clt.ts` を元分布+n→μ/σ/SE へ改修）を全て純関数＋Vitest で固め、描画層（`components/topics/clt/`）に操作ラボ・コマ送り・演習を実装。操作値は `useCltStore`（distKind+n）が single source of truth、標本平均の蓄積のみ component local state。数式 σ/√n 項は `TermController` の DOM 差分パッチで実時間連動（全体再描画なし）。
+- **検証結果**: Vitest 102 passed（+67: random/distributions/histogram/normal/clt/frames/store）。lint / typecheck / `next build` 成功（CLT を SSG 出力）。dev サーバで SSR レンダリングを確認（`clt-operation`/`clt-histogram`/`clt-observations`/`term-se` 等のマーカー出力・エラーオーバーレイなし・ログ無エラー）。
+- **未実施/留意**: Playwright MCP が本セッションで未接続のため、ブラウザ実操作（サンプリング連動・60fps）の自動検証は未実施。クライアント連動は検証済みの StorePoc と同一パターンを踏襲。元分布は μ=5 に統一し「中心固定で σ/√n に縮みつつ正規へ」を可視化。
+- **設計判断**: 元分布が σ を決めるため、ストアの操作値を旧 `{sigma,n}` から `{distKind,n}` へ変更（SE は σ/√n のまま）。これに伴い `/poc/store` は本番ストア非依存の自前ローカルストアに切り離した。
 
 ### Issue #5: コンテンツ基盤（MDX + Level制テンプレート + 用語リンク/用語集）
 参照: docs/design/walking-skeleton.md §5 / SPEC §4.1.5, §4.3

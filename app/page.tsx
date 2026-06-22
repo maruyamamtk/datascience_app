@@ -22,6 +22,7 @@ export default function Home() {
         <li>✅ 状態管理基盤（Zustand トピックストア + 3層疎結合）</li>
         <li>✅ 可視化共通部品（コマ送り + ハイライト + コールアウト）</li>
         <li>✅ コンテンツ基盤（MDX + Level制テンプレート + 用語リンク/用語集）</li>
+        <li>✅ CLT トピック本体（元分布選択→n→サンプリング、操作→グラフ→数式の強連動）</li>
       </ul>
       <div className="flex flex-wrap gap-3">
         <a

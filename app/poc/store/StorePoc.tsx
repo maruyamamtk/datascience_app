@@ -4,7 +4,15 @@ import { useCallback, useEffect, useState } from "react";
 import { MathFormula } from "@/components/math/MathFormula";
 import type { TermController } from "@/components/math/term-controller";
 import { formatNumber, term } from "@/components/math/tex";
-import { useCltStore } from "@/lib/store/clt";
+import { standardError } from "@/lib/stats/clt";
+import { createTopicStore } from "@/lib/store/topicStore";
+
+// PoC 専用のローカルストア（σ スライダー → SE のデモ）。本番の usePocStore は元分布 + n を
+// 操作値に持つ別物なので、3 層疎結合パターンの実証はこの最小ストアで自己完結させる。
+const usePocStore = createTopicStore<{ sigma: number; n: number }, { standardError: number }>({
+  initialControls: { sigma: 10, n: 4 },
+  derive: ({ sigma, n }) => ({ standardError: standardError(sigma, n) }),
+});
 
 // 数式は static（項に id を付けるだけ）。数値はストア購読 → DOM 差分パッチで差し込む。
 const FORMULA = `\\mathrm{SE}(\\bar X) \\;=\\; \\dfrac{${term("sigma", "\\sigma")}}{\\sqrt{${term(
@@ -20,7 +28,7 @@ const COLORS = {
 
 /**
  * Issue #3 配線パターンの実証 PoC。
- * Control（スライダー）→ Store（useCltStore, single source of truth）→
+ * Control（スライダー）→ Store（usePocStore, single source of truth）→
  * Render（Math = KaTeX 項パッチ / Graph = SVG バー / 数値表示）。
  * 3 つの描画は同一ストアを購読し、1 つの操作変更が全てに一貫反映される。
  */
@@ -32,7 +40,7 @@ export function StorePoc() {
       <Controls />
       <Readout />
       <p className="text-sm leading-relaxed text-slate-600">
-        スライダー（Control）を動かすと <code>useCltStore</code> の操作値だけが変わり、 派生値 SE
+        スライダー（Control）を動かすと <code>usePocStore</code> の操作値だけが変わり、 派生値 SE
         は計算層 <code>deriveClt</code> が再計算します。 Math・Graph・数値表示は
         <strong>同じストアを購読</strong>しているので、1 つの操作変更が全てに一貫して反映されます。
         n を4倍にすると SE が半分（バーも半分）になることを確認してください。
@@ -43,9 +51,9 @@ export function StorePoc() {
 
 /** Render 層: 数式。ストアの操作値・派生値を購読し、該当項だけ DOM 差分パッチする。 */
 function MathView() {
-  const sigma = useCltStore((s) => s.controls.sigma);
-  const n = useCltStore((s) => s.controls.n);
-  const se = useCltStore((s) => s.derived.standardError);
+  const sigma = usePocStore((s) => s.controls.sigma);
+  const n = usePocStore((s) => s.controls.n);
+  const se = usePocStore((s) => s.derived.standardError);
   const [controller, setController] = useState<TermController | null>(null);
   const handleReady = useCallback((c: TermController) => setController(c), []);
 
@@ -71,7 +79,7 @@ function MathView() {
 
 /** Render 層: グラフ。ストアの派生値 SE だけを購読し、バー長で可視化する。 */
 function GraphView() {
-  const se = useCltStore((s) => s.derived.standardError);
+  const se = usePocStore((s) => s.derived.standardError);
   // σ_max=30, n_min=1 のとき SE_max=30。それを 100% に正規化してバー幅にする。
   const ratio = Number.isFinite(se) ? Math.min(se / 30, 1) : 0;
 
@@ -94,10 +102,10 @@ function GraphView() {
 
 /** Control 層: 操作 UI。ストアの action を呼ぶだけ（描画も計算も持たない）。 */
 function Controls() {
-  const sigma = useCltStore((s) => s.controls.sigma);
-  const n = useCltStore((s) => s.controls.n);
-  const setControl = useCltStore((s) => s.setControl);
-  const reset = useCltStore((s) => s.reset);
+  const sigma = usePocStore((s) => s.controls.sigma);
+  const n = usePocStore((s) => s.controls.n);
+  const setControl = usePocStore((s) => s.setControl);
+  const reset = usePocStore((s) => s.reset);
 
   return (
     <div className="space-y-6">
@@ -136,7 +144,7 @@ function Controls() {
 
 /** Render 層: 数値表示。ストアの派生値を購読する 3 つ目の購読者。 */
 function Readout() {
-  const se = useCltStore((s) => s.derived.standardError);
+  const se = usePocStore((s) => s.derived.standardError);
 
   return (
     <div className="flex flex-wrap items-center gap-4 rounded-xl bg-slate-900 px-5 py-4 text-slate-100">
