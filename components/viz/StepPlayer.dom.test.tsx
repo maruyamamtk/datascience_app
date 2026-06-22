@@ -37,13 +37,16 @@ describe("StepPlayer (DOM)", () => {
     expect(props.onNext).toHaveBeenCalledTimes(1);
   });
 
-  it("再生トグルが onTogglePlay を呼ぶ／playing でラベルが切り替わる", () => {
+  it("再生ボタンのクリックで onTogglePlay を呼ぶ", () => {
     const props = setup({ playing: false });
     fireEvent.click(screen.getByLabelText("再生"));
     expect(props.onTogglePlay).toHaveBeenCalledTimes(1);
+  });
 
+  it("playing=true では再生ボタンが『一時停止』ラベルに切り替わる", () => {
     setup({ playing: true });
     expect(screen.getByLabelText("一時停止")).toBeInTheDocument();
+    expect(screen.queryByLabelText("再生")).not.toBeInTheDocument();
   });
 
   it("先頭フレームでは『前へ』が、末尾フレームでは『後へ』が無効", () => {
