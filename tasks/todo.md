@@ -154,3 +154,28 @@ TODO:
 - **位置づけ**: 歩く骨格の完成検証。完了の定義 ↔ 証跡（コード/テスト箇所）を `walking-skeleton-acceptance.md` に対応付けて記録。
 - **検証結果**: 単体 105 passed・型/lint/build 全グリーン・主要ルート 200。操作→グラフ→数式の強連動は単一ストア購読＋項ノードDOMパッチで結線済み（単体テストで計算層・ストア・フレームを保証）。
 - **残**: 実時間の見た目（体感60fps）と iPhone 実機挙動はヘッドレス不可のため pwa.md の実機チェックリストに送る。
+
+---
+
+## Issue #10 — テスト環境: コンポーネントテスト用に jsdom 導入
+
+PR #9 レビューの将来トラップ（`environment:"node"` 固定で `components/**/*.test.tsx` の DOM 描画が `document is not defined` になる）を解消。
+
+設計方針:
+- **既定は node を維持**（計算層 lib/** は高速・DOM 不要）。DOM 描画が要るテストだけファイル先頭の
+  `// @vitest-environment jsdom` で個別に切り替える（issue 推奨方式・ファイル単位）。
+- 依存追加: `jsdom` + `@testing-library/react` / `@testing-library/dom` / `@testing-library/jest-dom`（React19 対応版）。
+- `vitest.setup.ts` で `@testing-library/jest-dom/vitest` を読み matcher 登録（マッチャ追加のみで node 安全）。
+  tsconfig の `**/*.ts` が setup を拾うため型 augmentation（toBeInTheDocument 等）も効く。
+- 実証テスト: `Callout.dom.test.tsx`（純描画・role/バッジ/条件描画）＋ `StepPlayer.dom.test.tsx`（クリック→コールバック・先頭/末尾/空での disabled・slider→onSeek）。
+
+TODO:
+- [x] devDeps 追加（jsdom + testing-library 一式）
+- [x] vitest.setup.ts（jest-dom 登録）+ vitest.config.ts に setupFiles 追加
+- [x] Callout / StepPlayer の jsdom 描画・操作テスト追加
+- [x] test / typecheck / lint / build / format 全グリーン
+
+### レビュー: Issue #10 jsdom 導入（2026-06-22）
+- **変更概要**: グローバルは node のまま、`// @vitest-environment jsdom` でファイル単位に jsdom 切替。testing-library 一式を導入し、共通部品 Callout/StepPlayer の DOM 描画・操作・disabled を実テストで実証（導入が機能することの証明込み）。
+- **検証結果**: Vitest **116 passed**（DOM 11 追加、lib/** は node 環境のまま）。typecheck / lint / build（16ページ）/ format すべて成功。
+- **再利用方針**: 今後のコンポーネントテストは `*.dom.test.tsx` でファイル先頭に `// @vitest-environment jsdom` を付け、`@testing-library/react` の render/screen/fireEvent と jest-dom マッチャを使う。計算層は従来どおり node で書く。
