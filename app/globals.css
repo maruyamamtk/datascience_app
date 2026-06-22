@@ -12,6 +12,25 @@
 
 body {
   @apply bg-white text-slate-900 antialiased;
+  /* ノッチ端末で全画面（viewportFit=cover）でも内容が隠れないよう左右の safe-area を確保。 */
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/* タッチ操作の最適化（スマホ対応, Issue #7）。
+   - ダブルタップズーム由来の操作遅延を抑える。
+   - タップ時の灰色ハイライトを消してアプリらしい操作感にする。 */
+button,
+a,
+[role="button"],
+input[type="range"] {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* スライダーはタッチでつまみやすいよう十分な当たり判定を持たせる。 */
+input[type="range"] {
+  min-height: 1.75rem;
 }
 
 /* 数式項のハイライト（TermController がクラスをトグルする）。

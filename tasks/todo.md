@@ -113,3 +113,24 @@ TODO:
 - **受け入れ条件**: ① テンプレから作ると Level 枠が必ず入る（生成スクリプト + template.test.ts で保証）。② 用語リンクをホバー/タップで定義参照でき、リンク切れなし（registry.test.ts が seeAlso・本文リンク・<Term>参照を全検証）。
 - **検証結果**: Vitest 66 passed（content 計算層 31 追加）。lint / typecheck / build 成功（全14ページ静的生成）。`/topics/central-limit-theorem`・`/terms/*` をブラウザ確認（Level表示・数式・導出折りたたみ・用語ポップオーバー[定義+インライン数式+詳しくリンク]・相対リンク遷移）。ハイドレーションエラー（`<p>`入れ子）を1件修正。スクショ: `issue5-topic.png` / `issue5-popover.png` / `issue5-term-page.png`。
 - **再利用方針**: 新トピックは `pnpm new:topic <slug> "<title>"` で雛形生成 → L0〜L2 を埋め、用語は `<Term id>` で結ぶ。用語ノードは `content/terms/*.mdx` に frontmatter（title/definition/aliases/seeAlso）で追加。
+
+---
+
+## Issue #7 — PWA対応 + スマホ/PC 動作確認（60fps・タッチ・オフライン）
+
+設計判断と計測手順は [docs/design/pwa.md](../docs/design/pwa.md) に記録。
+
+TODO:
+- [x] manifest（`app/manifest.ts` → /manifest.webmanifest）+ アイコン生成（`scripts/gen-icons.mjs`、依存なし PNG、釣鐘型ヒストグラム意匠）
+- [x] Service Worker（`public/sw.js`：ナビ=network-first→cache→/offline、静的=stale-while-revalidate、VERSION で旧キャッシュ破棄）
+- [x] SW 登録（`components/pwa/ServiceWorkerRegister.tsx`：本番のみ登録／dev は解除）+ `app/offline/page.tsx`
+- [x] レスポンシブ/タッチ（globals.css：touch-action/tap-highlight/range 当たり判定、viewportFit=cover + safe-area）
+- [x] 60fps 計測ツール（`components/pwa/FpsMeter.tsx`：`?fps` で表示、本番でも実機計測可）
+- [x] layout に themeColor / appleWebApp / アイコンメタ追加
+- [x] manifest テスト + vitest include に app/** 追加 / lint / build / test
+
+### レビュー: Issue #7 PWA対応（2026-06-22）
+- **方針**: next-pwa を使わず**手動 manifest + SW**を採用（Next15/App Router 追従と pnpm allowBuilds リスク回避、要件が「閲覧済みトピックのオフライン閲覧」に限定されキャッシュ戦略を明示できるため）。
+- **変更概要**: ネイティブ manifest（standalone/ja/192・512・maskable）、素の SW（ナビ network-first→cache→/offline、静的 SWR、VERSION 破棄）、本番限定登録、オフラインページ、タッチ最適化 CSS、FPS 計測オーバーレイ、計測手順 docs。
+- **検証結果**: Vitest 105 passed（manifest 3 追加）。lint/format/build 成功（全16ページ静的生成、/manifest.webmanifest・/offline 出力）。`pnpm start` で manifest JSON 妥当・sw.js(application/javascript)・全アイコン 200・head に theme-color/manifest/apple-touch-icon を実配信確認。
+- **残（実機手動確認）**: iPhone Safari の「ホーム画面追加」standalone 起動 と オフライン再訪、操作中 55fps 維持は docs/design/pwa.md のチェックリストに従い実機で確認する。
