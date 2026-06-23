@@ -23,6 +23,7 @@ export default function Home() {
         <li>✅ 可視化共通部品（コマ送り + ハイライト + コールアウト）</li>
         <li>✅ コンテンツ基盤（MDX + Level制テンプレート + 用語リンク/用語集）</li>
         <li>✅ CLT トピック本体（元分布選択→n→サンプリング、操作→グラフ→数式の強連動）</li>
+        <li>✅ 正規分布トピック（μ/σ→密度曲線、68-95-99.7、操作→数式の強連動）</li>
       </ul>
       <div className="flex flex-wrap gap-3">
         <a
@@ -44,10 +45,10 @@ export default function Home() {
           PoC: 可視化共通部品（コマ送り図鑑）→
         </a>
         <Link
-          href="/topics/central-limit-theorem"
-          className="inline-flex w-fit items-center gap-2 rounded-lg border border-slate-300 px-5 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+          href="/topics"
+          className="inline-flex w-fit items-center gap-2 rounded-lg bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-700"
         >
-          トピック例: 中心極限定理（Level制）→
+          トピック一覧（Level制）→
         </Link>
         <Link
           href="/terms"

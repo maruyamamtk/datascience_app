@@ -1,0 +1,18 @@
+---
+title: 標準正規分布
+definition: 平均 0・分散 1 の正規分布 $N(0,1)$。任意の正規分布は標準化 $z=(x-\mu)/\sigma$ でこれに変換できる。
+aliases: [標準正規, N(0,1), standard normal distribution]
+seeAlso: [standardization, variance, expected-value]
+---
+
+# 標準正規分布 $N(0,1)$
+
+[期待値](expected-value)が 0、[分散](variance)が 1 の正規分布。密度は
+
+$$
+\varphi(z)=\frac{1}{\sqrt{2\pi}}\exp\!\left(-\frac{z^2}{2}\right)
+$$
+
+- どんな正規分布 $N(\mu,\sigma^2)$ も[標準化](standardization) $z=(x-\mu)/\sigma$ でこの形にそろう。
+- 確率（面積）は累積分布関数 $\Phi(z)$ で与えられ、標準正規表や $\Phi(1.96)\approx0.975$ などの値が区間推定・検定に使われる。
+- $\pm1$ で約 68%、$\pm2$ で約 95%、$\pm3$ で約 99.7%（68-95-99.7 則）。

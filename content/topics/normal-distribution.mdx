@@ -1,0 +1,141 @@
+---
+title: 正規分布
+summary: 釣鐘型の連続分布。平均 μ が山の位置、標準偏差 σ が広がりを決める——区間推定・検定の前提になる「物差し」。
+status: published
+---
+
+import { NormalLab } from "@/components/topics/normal/NormalLab";
+import { NormalQuiz } from "@/components/topics/normal/NormalQuiz";
+
+<Topic title="正規分布" summary="釣鐘型の連続分布。平均 μ が山の位置、標準偏差 σ が広がりを決める——区間推定・検定の前提になる「物差し」。">
+
+<ReaderGuide>
+
+- **初学者** → L0〜L1（何に使うか → 密度関数 $f(x)$ の意味、μ と σ の役割）
+- **一通り使える人** → L2（標準化と<Term id="standard-normal-distribution">標準正規分布</Term>、68-95-99.7 則）
+- **「完全に理解した」人** → L3 以降（多変量・最大エントロピー・裾の議論は到達途上）
+
+前提: 連続分布の確率は面積で測る（<Term id="probability-density-function">確率密度関数</Term>）。中心極限定理（CLT）の「収束先」がこの正規分布。
+
+</ReaderGuide>
+
+<Level level={0} title="ブラックボックス（道具として使う）">
+  <Concept>
+
+身長・測定誤差・標本平均——自然界やデータ解析で繰り返し現れる**左右対称の釣鐘型**の分布。
+「正規分布 $N(\mu,\sigma^2)$」と書けば、$\mu$（中心）と $\sigma$（広がり）の 2 つだけで形が決まる。
+
+多くの統計手法（<Term id="standard-error">区間推定</Term>・検定）が「データや推定量は正規分布に従う」と仮定して動く。
+だから正規分布は、統計を使ううえでの**共通の物差し**になっている。
+
+  </Concept>
+  <Interact>
+
+下の操作パネルで $\mu$ と $\sigma$ を動かすと、釣鐘型の山が「位置」と「広がり」を変える様子が見える（詳細は L1）。
+
+  </Interact>
+  <Exercise>
+
+確認: 「正規分布は平均 $\mu$ を中心に左右対称である」——○か×か。（答: ○）
+
+  </Exercise>
+</Level>
+
+<Level level={1} title="古典的理解（密度関数と μ・σ の役割）">
+  <Concept>
+
+正規分布の<Term id="probability-density-function">確率密度関数</Term>は次の式。$\mu$ は山の位置（<Term id="population-mean">母平均</Term>）、$\sigma$ は広がり（標準偏差）を表す。
+
+<Math tex="f(x)=\dfrac{1}{\sigma\sqrt{2\pi}}\exp\!\left(-\dfrac{(x-\mu)^2}{2\sigma^2}\right)" />
+
+指数の中の $(x-\mu)^2$ が「中心 $\mu$ から離れるほど急に小さくなる」釣鐘型を作り、
+前の $\frac{1}{\sigma\sqrt{2\pi}}$ は**全体の面積を 1 にそろえる正規化定数**。
+
+  </Concept>
+  <Derivation title="正規化定数 1/(σ√2π) と「μ・σ² が期待値・分散」になる理由">
+
+**(1) 全積分が 1（正規化定数の根拠）.** ガウス積分 $\displaystyle\int_{-\infty}^{\infty} e^{-t^2}\,dt=\sqrt{\pi}$ を使う。
+$t=\frac{x-\mu}{\sqrt2\,\sigma}$ と置換すると $dx=\sqrt2\,\sigma\,dt$ で、
+
+$$
+\int_{-\infty}^{\infty}\frac{1}{\sigma\sqrt{2\pi}}e^{-\frac{(x-\mu)^2}{2\sigma^2}}dx
+=\frac{1}{\sigma\sqrt{2\pi}}\cdot\sqrt2\,\sigma\int_{-\infty}^{\infty}e^{-t^2}dt
+=\frac{\sqrt2\,\sigma}{\sigma\sqrt{2\pi}}\sqrt\pi=1.
+$$
+
+だから前の係数は「面積を 1 にする」ためにこの形でなければならない。
+
+**(2) 期待値 = μ.** $f$ は $\mu$ について対称なので、奇関数 $(x-\mu)f(x)$ の積分は 0。よって
+
+$$
+E[X]=\int_{-\infty}^{\infty} x\,f(x)\,dx=\mu.
+$$
+
+**(3) 分散 = σ².** $z=\frac{x-\mu}{\sigma}$ と置き部分積分すると
+
+$$
+\operatorname{Var}[X]=\int (x-\mu)^2 f(x)\,dx=\sigma^2\cdot\frac{1}{\sqrt{2\pi}}\int z^2 e^{-z^2/2}dz=\sigma^2.
+$$
+
+つまりパラメータ $\mu,\sigma$ がそのまま<Term id="expected-value">期待値</Term>と<Term id="variance">分散</Term>の平方根になっている。
+
+  </Derivation>
+  <Interact>
+
+$\mu$ を動かすと山が横にスライドし、$\sigma$ を動かすと山の高さ・広がりが変わる——
+数式中の $\mu$・$\sigma$ 項に現在値が差し込まれ、同時にハイライトされる（操作→グラフ→数式の強連動）。
+$\pm1\sigma/\pm2\sigma/\pm3\sigma$ の帯に入る確率（68-95-99.7）も確かめられる。
+
+<NormalLab />
+
+  </Interact>
+  <Exercise>
+
+<NormalQuiz />
+
+  </Exercise>
+</Level>
+
+<Level level={2} title="仮定体系（標準化・標準正規・再生性）">
+  <Concept>
+
+どの正規分布も<Term id="standardization">標準化</Term> $z=\dfrac{x-\mu}{\sigma}$ によって、
+平均 0・分散 1 の<Term id="standard-normal-distribution">標準正規分布</Term> $N(0,1)$ にそろえられる。
+
+<Math tex="X\sim N(\mu,\sigma^2)\ \Rightarrow\ Z=\dfrac{X-\mu}{\sigma}\sim N(0,1)" />
+
+これにより「平均から何 $\sigma$ 離れているか」を分布によらず比較でき、確率は 1 枚の標準正規表（$\Phi$）で読める。
+さらに正規分布には**再生性**があり、独立な正規の線形結合もまた正規になる（$aX+bY$ も正規）。
+
+  </Concept>
+  <Derivation title="標準化で N(0,1) になる理由（線形変換の平均・分散）">
+
+期待値の線形性より $E[Z]=\frac{E[X]-\mu}{\sigma}=0$。
+分散は $\operatorname{Var}[aX+b]=a^2\operatorname{Var}[X]$ なので $\operatorname{Var}[Z]=\frac{1}{\sigma^2}\sigma^2=1$。
+正規分布は線形変換で正規のまま（再生性）なので、$Z\sim N(0,1)$。
+
+  </Derivation>
+  <Exercise>
+
+確認: 「$\mu$ や $\sigma$ をどう変えても、$\mu\pm2\sigma$ に入る確率は約 95% で一定である」——○か×か。（答: ○。分布が相似なので $\pm k\sigma$ の確率は $\mu,\sigma$ に依らない）
+
+  </Exercise>
+</Level>
+
+<Level level={3} title="予測最適化 / 裾の重さ" status="planned">
+  正規性の検定（Q-Qプロット・シャピロ–ウィルク）、裾の重い分布（t分布・対数正規）との比較。
+</Level>
+
+<Level level={4} title="多変量正規・相関" status="planned">
+  多変量正規分布、共分散行列、条件付き分布（前提: 線形代数 A-1）。
+</Level>
+
+<Level level={5} title="特徴づけ（最大エントロピー）" status="planned">
+  平均・分散を固定したとき、正規分布がエントロピーを最大化する分布であること。
+</Level>
+
+<Level level={6} title="フロンティア" status="planned">
+  高次元での正規近似の限界、重い裾の下での推測は研究領域（到達途上）。
+</Level>
+
+</Topic>
