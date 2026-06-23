@@ -1,0 +1,20 @@
+---
+title: 確率密度関数
+definition: 連続型確率変数のばらつきを表す関数 $f(x)$。区間 $[a,b]$ の確率は $\int_a^b f(x)\,dx$ で、全体では $\int_{-\infty}^{\infty} f(x)\,dx=1$。
+aliases: [密度関数, PDF, probability density function]
+seeAlso: [expected-value, variance]
+---
+
+# 確率密度関数 $f(x)$
+
+連続型の確率変数では、1 点の確率は 0 なので「区間に入る確率」を**面積**で表す。その面積を与える関数が確率密度関数。
+
+$$
+P(a \le X \le b)=\int_a^b f(x)\,dx,\qquad \int_{-\infty}^{\infty} f(x)\,dx=1
+$$
+
+- $f(x)$ 自体は確率ではなく**密度**（高さ）。値が 1 を超えることもある。
+- 面積が確率なので、全範囲の積分は必ず 1。
+- [期待値](expected-value)は $E[X]=\int x f(x)\,dx$、[分散](variance)は $\int (x-\mu)^2 f(x)\,dx$ で定義される。
+
+正規分布の $f(x)=\dfrac{1}{\sigma\sqrt{2\pi}}\exp\!\left(-\dfrac{(x-\mu)^2}{2\sigma^2}\right)$ が代表例。

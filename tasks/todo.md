@@ -179,3 +179,26 @@ TODO:
 - **変更概要**: グローバルは node のまま、`// @vitest-environment jsdom` でファイル単位に jsdom 切替。testing-library 一式を導入し、共通部品 Callout/StepPlayer の DOM 描画・操作・disabled を実テストで実証（導入が機能することの証明込み）。
 - **検証結果**: Vitest **116 passed**（DOM 11 追加、lib/** は node 環境のまま）。typecheck / lint / build（16ページ）/ format すべて成功。
 - **再利用方針**: 今後のコンポーネントテストは `*.dom.test.tsx` でファイル先頭に `// @vitest-environment jsdom` を付け、`@testing-library/react` の render/screen/fireEvent と jest-dom マッチャを使う。計算層は従来どおり node で書く。
+
+---
+
+## コンテンツ拡充 #1 — 正規分布トピック（フル実装）＋ /topics 一覧ページ
+
+MVP計画（SPEC §7）の代表トピックは CLT のみ実装済みで、残り（正規分布／信頼区間／仮説検定／単回帰）が未着手。
+かつトピックを回遊する一覧が無く「最低限しか学べない」体感だった。計画準拠の最優先トピック **正規分布** を
+CLT と同等品質（Level制・操作→数式の強連動・3層疎結合・純関数＋テスト・用語ノード・演習）でフル実装し、
+回遊の起点となる `/topics` 一覧ページを追加した。設計計画: `~/.claude/plans/groovy-wiggling-pelican.md`。
+
+TODO:
+- [x] 計算層 `lib/stats/normal.ts` 拡張（standardNormalCdf[A&S 26.2.17 有理近似] / normalCdf / areaWithin / standardize / deriveNormal / normalCurve）+ Vitest（21）
+- [x] 状態層 `lib/store/normal.ts`（createTopicStore で useNormalStore、controls {mu,sigma}）
+- [x] 描画層 `components/topics/normal/`（NormalCurve=純描画 / NormalLab=μ/σ→曲線＆数式の強連動 / NormalQuiz）
+- [x] 用語ノード3件（probability-density-function / standard-normal-distribution / standardization）相互リンク
+- [x] MDX `content/topics/normal-distribution.mdx`（L0-L2 充実：密度関数の導出＝ガウス積分で正規化定数・μ/σ²＝期待値/分散、標準化と標準正規・再生性、L3-L6 planned 枠）
+- [x] `/topics` 一覧ページ（`listTopics()` で frontmatter 読込）+ トップのリンク更新 + parseTopicMeta テスト
+
+### レビュー: 正規分布トピック＋ /topics 一覧（2026-06-24）
+- **変更概要**: CLT で確立した4層パターン（計算 lib/stats → 状態 lib/store（createTopicStore）→ 描画 components/topics → コンテンツ MDX、用語ノードは content/terms）を踏襲し、正規分布を1トピックとして縦串。μ/σ スライダーが `useNormalStore`（single source of truth）を更新→密度曲線（NormalCurve, 固定軸でμのスライド・σの高さ変化を可視化）と数式 f(x) の μ・σ 項（TermController の DOM 差分パッチ）が同時連動。±1σ/2σ/3σ の入れ子帯＋確率コールアウトで 68-95-99.7 則を体感。標準正規CDFは A&S 26.2.17 の有理近似で実装し ±kσ 確率を数値根拠つきで提示。`/topics` 一覧ページ追加でトップ→一覧→各トピックの回遊を回復。
+- **検証結果**: Vitest **138 passed**（+33: normal 21 / topics 4 ほか、`registry.test.ts` のリンク切れゼロ維持）。`tsc --noEmit` / `pnpm lint`（警告0）/ `pnpm build`（21ページ SSG：/topics・/topics/normal-distribution・新用語3ページ出力）成功。`pnpm start` + Playwright で実機確認：一覧に CLT＋正規分布、正規分布ページで μ:0→3・σ:1→2 操作時に数式項（term-mu/sigmaA/sigmaB）と σ²=1→4（派生値）が同時更新、釣鐘が μ=3 へ移動、±kσ帯3本・コールアウト・演習・L2標準化・L3-L6 planned 枠を描画、コンソールエラー0件。スクショ `normal-topic.png`。
+- **設計判断**: 曲線は μ±4σ の追従ではなく固定軸（x∈[-10,10], y∈[0,0.85]）で描画し、μ＝横スライド・σ＝高さ/広がりの変化を視覚的に分離。areaWithin(k) はスケール不変（k のみ依存）として実装し「μ・σ をどう変えても ±kσ の確率は不変」を演習・コールアウトの主眼に据えた。
+- **残/次フェーズ**: 信頼区間・仮説検定・単回帰の各トピック（同じ型で順次）。L3-L6（正規性検定・多変量正規・最大エントロピー）は planned 枠のまま。iPhone 実機の体感60fps は pwa.md チェックリストへ。
