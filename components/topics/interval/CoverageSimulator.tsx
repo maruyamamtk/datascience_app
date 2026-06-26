@@ -111,8 +111,20 @@ export function CoverageSimulator() {
         data-testid="coverage-plot"
       >
         {/* 母平均 μ の基準線 */}
-        <line x1={muX} y1={PAD.top - 8} x2={muX} y2={chartH - PAD.bottom + 4} stroke="#16a34a" strokeWidth={1.5} />
-        <text x={muX} y={PAD.top - 11} textAnchor="middle" className="fill-green-700 text-[10px] font-semibold">
+        <line
+          x1={muX}
+          y1={PAD.top - 8}
+          x2={muX}
+          y2={chartH - PAD.bottom + 4}
+          stroke="#16a34a"
+          strokeWidth={1.5}
+        />
+        <text
+          x={muX}
+          y={PAD.top - 11}
+          textAnchor="middle"
+          className="fill-green-700 text-[10px] font-semibold"
+        >
           μ = {MU}
         </text>
 
@@ -121,7 +133,17 @@ export function CoverageSimulator() {
           const isLatest = i === revealedCount - 1;
           const y = PAD.top + i * ROW_H + ROW_H / 2;
           if (!revealed) {
-            return <line key={i} x1={PAD.left} y1={y} x2={W - PAD.right} y2={y} stroke="#f1f5f9" strokeWidth={1} />;
+            return (
+              <line
+                key={i}
+                x1={PAD.left}
+                y1={y}
+                x2={W - PAD.right}
+                y2={y}
+                stroke="#f1f5f9"
+                strokeWidth={1}
+              />
+            );
           }
           const color = iv.contains ? COLOR_HIT : COLOR_MISS;
           const x1 = toX(Math.max(axis.min, iv.lower));
@@ -146,7 +168,12 @@ export function CoverageSimulator() {
         <text x={PAD.left} y={chartH - 8} textAnchor="start" className="fill-slate-400 text-[10px]">
           {formatNumber(axis.min)}
         </text>
-        <text x={W - PAD.right} y={chartH - 8} textAnchor="end" className="fill-slate-400 text-[10px]">
+        <text
+          x={W - PAD.right}
+          y={chartH - 8}
+          textAnchor="end"
+          className="fill-slate-400 text-[10px]"
+        >
           {formatNumber(axis.max)}
         </text>
       </svg>
@@ -154,12 +181,12 @@ export function CoverageSimulator() {
       {/* 集計（提示済み本数・被覆率を名目値と並べる） */}
       <div className="flex flex-wrap items-center justify-center gap-4 text-xs text-slate-500">
         <span className="flex items-center gap-1.5">
-          <span className="inline-block h-1 w-4 rounded" style={{ backgroundColor: COLOR_HIT }} />
-          μ を含む
+          <span className="inline-block h-1 w-4 rounded" style={{ backgroundColor: COLOR_HIT }} />μ
+          を含む
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="inline-block h-1 w-4 rounded" style={{ backgroundColor: COLOR_MISS }} />
-          μ を外す
+          <span className="inline-block h-1 w-4 rounded" style={{ backgroundColor: COLOR_MISS }} />μ
+          を外す
         </span>
         <span className="font-mono text-slate-700">
           {revealedCount} 本中 {hits} 本が的中（被覆率 {formatNumber(rate * 100, 0)}% / 名目{" "}

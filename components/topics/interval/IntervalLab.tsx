@@ -164,8 +164,8 @@ export function IntervalLab() {
 
       <p className="text-xs leading-relaxed text-slate-500">
         ヒント: <span style={{ color: COLOR_Z }}>信頼係数</span> を上げると{" "}
-        <span style={{ color: COLOR_Z }}>z</span> が、<span style={{ color: COLOR_SE }}>n・σ</span> を
-        変えると <span style={{ color: COLOR_SE }}>SE</span> が、数式と同時に追従します。
+        <span style={{ color: COLOR_Z }}>z</span> が、<span style={{ color: COLOR_SE }}>n・σ</span>{" "}
+        を 変えると <span style={{ color: COLOR_SE }}>SE</span> が、数式と同時に追従します。
       </p>
     </div>
   );

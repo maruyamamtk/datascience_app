@@ -65,16 +65,37 @@ export function IntervalBar({
         strokeWidth={1.5}
         strokeDasharray="4 3"
       />
-      <text x={xMu} y={PAD.top - 9} textAnchor="middle" className="fill-green-700 text-[10px] font-semibold">
+      <text
+        x={xMu}
+        y={PAD.top - 9}
+        textAnchor="middle"
+        className="fill-green-700 text-[10px] font-semibold"
+      >
         μ = {mu}
       </text>
 
       {/* 信頼区間（太線 + 端点キャップ） */}
       {finite ? (
         <>
-          <line x1={xLo} y1={BAR_Y} x2={xHi} y2={BAR_Y} stroke={color} strokeWidth={7} strokeLinecap="round" />
+          <line
+            x1={xLo}
+            y1={BAR_Y}
+            x2={xHi}
+            y2={BAR_Y}
+            stroke={color}
+            strokeWidth={7}
+            strokeLinecap="round"
+          />
           {[xLo, xHi].map((x, i) => (
-            <line key={i} x1={x} y1={BAR_Y - 9} x2={x} y2={BAR_Y + 9} stroke={color} strokeWidth={2} />
+            <line
+              key={i}
+              x1={x}
+              y1={BAR_Y - 9}
+              x2={x}
+              y2={BAR_Y + 9}
+              stroke={color}
+              strokeWidth={2}
+            />
           ))}
           {/* 中心 x̄ */}
           <circle cx={xC} cy={BAR_Y} r={4} fill="#fff" stroke={color} strokeWidth={2} />
