@@ -1,0 +1,19 @@
+---
+title: ピボット量
+definition: 母数とデータの両方を含むが、その分布が母数に依存しない量。例 $(\bar x-\mu)/(\sigma/\sqrt n)\sim N(0,1)$。これを不等式で μ について解くと信頼区間が出る。
+aliases: [枢軸量, pivot, pivotal quantity]
+seeAlso: [confidence-interval, standardization, standard-normal-distribution]
+---
+
+# ピボット量
+
+母数とデータを両方含むのに、**分布だけは母数に依らない**ように作った量。σ既知の母平均では
+
+$$
+Z=\frac{\bar x-\mu}{\sigma/\sqrt n}\sim N(0,1)
+$$
+
+が代表例（[標準化](standardization)で[標準正規分布](standard-normal-distribution)に従う）。
+
+- 分布が既知なので $P(-z\le Z\le z)=\gamma$ と確率を固定できる。
+- この不等式を $\mu$ について解くと $\bar x\pm z\,\sigma/\sqrt n$、すなわち[信頼区間](confidence-interval)が導かれる。
