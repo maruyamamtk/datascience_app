@@ -1,0 +1,156 @@
+---
+title: 信頼区間（区間推定）
+summary: 点推定 x̄ に「確からしさの幅」を付ける道具。x̄ ± z·σ/√n の意味と、「95%」が指す頻度論的な約束を操作で体感する。
+status: published
+---
+
+import { IntervalLab } from "@/components/topics/interval/IntervalLab";
+import { CoverageSimulator } from "@/components/topics/interval/CoverageSimulator";
+import { IntervalQuiz } from "@/components/topics/interval/IntervalQuiz";
+
+<Topic title="信頼区間（区間推定）" summary="点推定 x̄ に「確からしさの幅」を付ける道具。x̄ ± z·σ/√n の意味と、「95%」が指す頻度論的な約束を操作で体感する。">
+
+<ReaderGuide>
+
+- **初学者** → L0〜L1（道具として `x̄ ± z·SE` を読む → ピボット量からの導出と「95%」の本当の意味）
+- **一通り使える人** → L2（σ既知 z / 未知 t、母比率・母分散・片側信頼限界）
+- **「完全に理解した」人** → L3 以降（ブートストラップ信頼区間・ベイズ信用区間との対比は到達途上）
+
+前提: <Term id="standard-error">標準誤差</Term> $\sigma/\sqrt n$（[中心極限定理](/topics/central-limit-theorem)）と<Term id="standard-normal-distribution">標準正規分布</Term>・<Term id="standardization">標準化</Term>（[正規分布](/topics/normal-distribution)）。
+
+</ReaderGuide>
+
+<Level level={0} title="ブラックボックス（道具として使う）">
+  <Concept>
+
+調査や実験で得た<Term id="sample-mean">標本平均</Term> $\bar x$ は、<Term id="population-mean">母平均</Term> $\mu$ の**点推定**。
+だが標本ごとに $\bar x$ はぶれるので、「だいたいこの範囲」という幅を添えたい。これが**<Term id="confidence-interval">信頼区間</Term>**。
+
+母標準偏差 $\sigma$ が既知なら、$95\%$ 信頼区間は次の形でツールとして読める。
+
+<Math tex="\bar x \pm z\cdot\dfrac{\sigma}{\sqrt{n}}\quad(z\approx1.96)" />
+
+中心が点推定 $\bar x$、半幅が「臨界値 $z$」×「<Term id="standard-error">標準誤差</Term> $\sigma/\sqrt n$」。
+$n$ が大きいほど幅は狭く（精度が上がる）、<Term id="confidence-level">信頼係数</Term>を上げるほど幅は広くなる。
+
+  </Concept>
+  <Interact>
+
+下のラボで信頼係数・$n$・$\sigma$ を動かすと、区間 $\bar x \pm z\,\sigma/\sqrt n$ の幅が変わり、
+数式の $z$・$\sigma$・$n$・半幅 $h$ に現在値が差し込まれ同時にハイライトされる（操作→グラフ→数式の強連動）。
+
+<IntervalLab />
+
+  </Interact>
+  <Exercise>
+
+確認: 「標本サイズ $n$ を大きくすると、信頼区間は狭くなる」——○か×か。（答: ○。半幅は $z\,\sigma/\sqrt n$ で $\sqrt n$ に反比例）
+
+  </Exercise>
+</Level>
+
+<Level level={1} title="古典的理解（ピボット量からの導出と「95%」の意味）">
+  <Concept>
+
+導出の鍵は**<Term id="pivotal-quantity">ピボット量</Term>**。$X_1,\dots,X_n$ が平均 $\mu$・標準偏差 $\sigma$ から得られるとき、
+[中心極限定理](/topics/central-limit-theorem)と<Term id="standardization">標準化</Term>により
+
+<Math tex="Z=\dfrac{\bar X-\mu}{\sigma/\sqrt{n}}\sim N(0,1)" />
+
+$Z$ は $\mu$ を含むのに、その分布は $\mu$ に依らない（だからピボット）。
+これを使えば確率を $\mu$ について解け、区間が出る。
+
+  </Concept>
+  <Derivation title="ピボット量から x̄ ± z·σ/√n を導く（全ステップ）">
+
+**(1) 確率を固定する.** 標準正規の両側 $\gamma$（例 0.95）を切り取る臨界値 $z=z_{(1+\gamma)/2}$（$\gamma=0.95$ なら $z\approx1.96$）を取ると
+
+$$
+P\!\left(-z\le \frac{\bar X-\mu}{\sigma/\sqrt n}\le z\right)=\gamma.
+$$
+
+**(2) 内側の不等式を μ について解く.** 各辺に $\sigma/\sqrt n$ を掛けて
+
+$$
+-z\,\frac{\sigma}{\sqrt n}\le \bar X-\mu\le z\,\frac{\sigma}{\sqrt n}.
+$$
+
+$\bar X$ を引き符号を整理すると
+
+$$
+\bar X-z\,\frac{\sigma}{\sqrt n}\le \mu\le \bar X+z\,\frac{\sigma}{\sqrt n}.
+$$
+
+**(3) 区間として読む.** したがって
+
+$$
+P\!\left(\bar X-z\,\frac{\sigma}{\sqrt n}\le \mu\le \bar X+z\,\frac{\sigma}{\sqrt n}\right)=\gamma,
+$$
+
+両端 $\bar X\pm z\,\sigma/\sqrt n$ が信頼区間。**確率変数は端点（$\bar X$ を含む）の方**で、$\mu$ は定数であることに注意。
+
+  </Derivation>
+  <Interact>
+
+「95%」は «この 1 本が当たる確率» ではなく «手順を繰り返すと約 95% の区間が $\mu$ を含む» という約束（<Term id="coverage-probability">被覆確率</Term>）。
+下のシミュレーターは母集団から $n$ 個を何度も抽出し、各標本の信頼区間を縦に積む。
+$\mu$ を含む区間は青、外す区間は赤。1 本ずつコマ送りで、被覆率が名目の信頼係数に近づく様子を確かめよう。
+
+<CoverageSimulator />
+
+  </Interact>
+  <Exercise>
+
+<IntervalQuiz />
+
+  </Exercise>
+</Level>
+
+<Level level={2} title="仮定体系（σ既知 z / 未知 t、母比率・母分散・片側）">
+  <Concept>
+
+ここまでは**$\sigma$ 既知**を仮定し標準正規の $z$ を使った。現実には $\sigma$ も未知なことが多い。
+
+- **σ 未知**: 標本標準偏差 $s$ で置き換えると、ピボット量は $\dfrac{\bar X-\mu}{s/\sqrt n}\sim t_{n-1}$（自由度 $n-1$ の **t 分布**）に従う。
+  $z$ の代わりに $t$ 臨界値を使い、$n$ が小さいほど区間は $z$ 版より広い（推定した $s$ のぶれを織り込む）。$n$ が大きいと $t_{n-1}\to N(0,1)$ で z に一致。
+- **母比率 $p$**: 大標本では $\hat p\pm z\sqrt{\hat p(1-\hat p)/n}$（正規近似）。
+- **母分散 $\sigma^2$**: $(n-1)s^2/\sigma^2\sim\chi^2_{n-1}$ をピボットにし、左右非対称な区間になる。
+- **片側信頼限界**: 「下限だけ」「上限だけ」を保証したいときは、裾を片側に寄せて $z_\gamma$（例 $z_{0.95}\approx1.64$）を使う。
+
+いずれも «適切なピボット量を作り、その分布の分位点で挟む» という L1 と同じ骨格。
+
+  </Concept>
+  <Derivation title="なぜ σ 未知だと t 分布になるのか（要点）">
+
+$\sigma$ を標本標準偏差 $s$ で置き換えると、分子の $\bar X-\mu$（正規）に対し分母 $s$ 自身がランダムに揺れる。
+正規変数を、独立な $\chi^2_{n-1}/(n-1)$ の平方根で割った量が定義どおり**自由度 $n-1$ の t 分布**になる。
+$s$ のぶれが裾を重くするため、同じ信頼係数でも t 区間は z 区間より広い。標本が大きいと $s\to\sigma$ で差は消える。
+
+  </Derivation>
+  <Exercise>
+
+確認: 「$\sigma$ が未知で $n$ が小さいとき、$z$ 区間（1.96 を使う）は本来より**狭すぎる**」——○か×か。
+（答: ○。$s$ のぶれを無視するぶん被覆不足になり、$t$ 分布で広げる必要がある）
+
+  </Exercise>
+</Level>
+
+<Level level={3} title="ブートストラップ信頼区間" status="planned">
+  分布を仮定せず、再標本抽出（リサンプリング）で区間を作るパーセンタイル法・BCa 法（前提:
+  標本分布の概念）。
+</Level>
+
+<Level level={4} title="ベイズ信用区間との対比" status="planned">
+  事後分布から作る信用区間（credible
+  interval）と頻度論の信頼区間の解釈の違い（母数に確率を置くか否か）。
+</Level>
+
+<Level level={5} title="高次元・同時信頼区間" status="planned">
+  多数のパラメータを同時に被覆する同時信頼区間、多重比較と区間の補正。
+</Level>
+
+<Level level={6} title="フロンティア" status="planned">
+  モデル選択後の推測（post-selection inference）における区間の妥当性は研究領域（到達途上）。
+</Level>
+
+</Topic>

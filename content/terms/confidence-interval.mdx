@@ -1,0 +1,17 @@
+---
+title: 信頼区間
+definition: 母数（例 母平均 μ）を区間で推定したもの。σ既知の母平均では $\bar x \pm z\,\sigma/\sqrt{n}$。区間自体がランダムで、約「信頼係数」の割合が真の母数を含む。
+aliases: [CI, confidence interval, 区間推定]
+seeAlso: [confidence-level, coverage-probability, standard-error]
+---
+
+# 信頼区間（CI）
+
+点推定 $\bar x$ に「どれだけ確からしいか」の幅を付けた推定。σ既知の母平均なら
+
+$$
+\bar x \pm z_{(1+\gamma)/2}\,\frac{\sigma}{\sqrt{n}}
+$$
+
+- 半幅は[標準誤差](standard-error) $\mathrm{SE}=\sigma/\sqrt n$ と臨界値 $z$ の積。$n$ を増やすと狭く、[信頼係数](confidence-level) $\gamma$ を上げると広くなる。
+- **ランダムなのは区間の方**で、母数は定数。だから「母数がこの区間に入る確率」ではなく[被覆確率](coverage-probability)で意味づけする。

@@ -1,0 +1,15 @@
+---
+title: 被覆確率
+definition: ある区間推定の手順を繰り返したとき、作られた区間が真の母数を含む確率。理想的には信頼係数 γ に一致する。
+aliases: [被覆率, coverage probability, coverage]
+seeAlso: [confidence-interval, confidence-level]
+---
+
+# 被覆確率
+
+[信頼区間](confidence-interval)の手順を同じ条件で何度も繰り返すと、各回ごとに別の区間ができる。
+そのうち**真の母数を含む区間の割合**が被覆確率。
+
+- 理想的には[信頼係数](confidence-level) $\gamma$ に一致する（95% なら約 95% の区間が母数を含む）。
+- 母数は定数なので確率を持つのは «区間» の方、という頻度論の立場をそのまま数値にしたもの。
+- 抽出回数を増やすほど、観測される被覆率は $\gamma$ に近づく（大数の法則）。

@@ -202,3 +202,26 @@ TODO:
 - **検証結果**: Vitest **138 passed**（+33: normal 21 / topics 4 ほか、`registry.test.ts` のリンク切れゼロ維持）。`tsc --noEmit` / `pnpm lint`（警告0）/ `pnpm build`（21ページ SSG：/topics・/topics/normal-distribution・新用語3ページ出力）成功。`pnpm start` + Playwright で実機確認：一覧に CLT＋正規分布、正規分布ページで μ:0→3・σ:1→2 操作時に数式項（term-mu/sigmaA/sigmaB）と σ²=1→4（派生値）が同時更新、釣鐘が μ=3 へ移動、±kσ帯3本・コールアウト・演習・L2標準化・L3-L6 planned 枠を描画、コンソールエラー0件。スクショ `normal-topic.png`。
 - **設計判断**: 曲線は μ±4σ の追従ではなく固定軸（x∈[-10,10], y∈[0,0.85]）で描画し、μ＝横スライド・σ＝高さ/広がりの変化を視覚的に分離。areaWithin(k) はスケール不変（k のみ依存）として実装し「μ・σ をどう変えても ±kσ の確率は不変」を演習・コールアウトの主眼に据えた。
 - **残/次フェーズ**: 信頼区間・仮説検定・単回帰の各トピック（同じ型で順次）。L3-L6（正規性検定・多変量正規・最大エントロピー）は planned 枠のまま。iPhone 実機の体感60fps は pwa.md チェックリストへ。
+
+---
+
+## コンテンツ拡充 #2 — 信頼区間（区間推定）トピック（フル実装）
+
+正規分布(#20)・CLT(#6) を前提に、区間推定を1トピックとして縦串。CLT/正規分布と同等品質
+（Level制・操作→数式の強連動・4層疎結合・純関数＋Vitest・用語ノード・演習）でフル実装し、
+「95%」の頻度論的意味を被覆シミュレーションで体感させる（Issue #21）。
+
+TODO:
+- [x] 計算層 `lib/stats/interval.ts`（confidenceInterval / zCritical / coverageRate / simulateIntervals）+ Vitest（14）
+- [x] `lib/stats/normal.ts` に zQuantile（Acklam 逆正規 CDF）/ normalSample（Box–Muller）追加 + Vitest（+6）
+- [x] 状態層 `lib/store/interval.ts`（createTopicStore で useIntervalStore、controls {n,level,sigma}、derived {z,se,lower,upper,halfWidth}）
+- [x] 描画層 `components/topics/interval/`（IntervalBar=純描画 / IntervalLab=n・信頼係数・σ→区間幅＆数式 z·σ/√n の強連動 / CoverageSimulator=繰り返し抽出をStepPlayerで1本ずつコマ送り・含む青/外す赤 / IntervalQuiz）+ frames.ts ビルダー + Vitest（6）
+- [x] 用語ノード4件（confidence-interval / confidence-level / coverage-probability / pivotal-quantity）相互リンク＋既存（standard-error 等）と結合
+- [x] MDX `content/topics/confidence-interval.mdx`（L0-L2 充実：ピボット量 (x̄−μ)/(σ/√n)~N(0,1) からの全ステップ導出、被覆確率の幾何学的直感、σ既知z/未知t・母比率・母分散・片側、L3-L6 planned 枠）
+- [x] `/topics` 一覧へ自動反映（frontmatter status: published）
+
+### レビュー: 信頼区間トピック（2026-06-26）
+- **変更概要**: 正規分布/CLT で確立した4層パターンを踏襲。n・信頼係数 level・σ スライダーが `useIntervalStore`（single source of truth）を更新→区間バー（IntervalBar, 固定軸±25）と数式 `x̄ ± z·σ/√n` の z・σ・n・半幅 h 項（TermController の DOM 差分パッチ）が同時連動。中核の CoverageSimulator は母集団 N(0,σ²) から n 個を30回抽出し各信頼区間を縦積み描画、StepPlayer で1本ずつコマ送り・母平均を含む区間=青/外す区間=赤・最新フレームを強調し「約95%が母平均を含む」頻度論的意味を体感させる（アルゴリズム図鑑スタイル）。z は標準正規分位点 `zQuantile`（Acklam 有理近似）、母集団抽出は `normalSample`（Box–Muller）を新設し決定的 PRNG で再現可能に。
+- **検証結果**: Vitest **164 passed**（+26: interval 14 / normal +6 / frames 6、`registry.test.ts` のリンク切れゼロ維持）。`tsc --noEmit` / `pnpm lint`（警告0）/ `pnpm build`（26ページ SSG：/topics/confidence-interval・新用語4ページ出力）成功。dev + Playwright で実機確認：信頼係数 95%→99% 操作で数式 z 1.96→2.58・半幅 h 3.92→5.15・区間 [-5.15,5.15] が同時更新、被覆シミュレーターを末尾まで送ると「30本中28本的中（被覆率93%/名目95%）」＋赤い外れ区間2本を描画、コンソールエラー0件。
+- **設計判断**: ラボは x̄=0 固定で「区間幅が z・σ・n で決まる」ことに集中。シミュレーターは μ=0 中心の対称固定軸（全件で決定し提示中に軸が動かない）で被覆の当たり外れを視認しやすくした。z 区間（σ既知）を主軸に据え、σ未知の t 分布・母比率・母分散・片側は L2 概念＋導出要点で網羅（実装は z 区間に限定し MVP のスコープを守る）。
+- **残/次フェーズ**: 仮説検定・単回帰トピック（同じ型で順次）。L3-L6（ブートストラップ区間・ベイズ信用区間・同時信頼区間・post-selection inference）は planned 枠のまま。

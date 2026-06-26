@@ -5,9 +5,12 @@ import {
   normalCdf,
   normalCurve,
   normalPdf,
+  normalSample,
   standardize,
   standardNormalCdf,
+  zQuantile,
 } from "./normal";
+import { mulberry32 } from "./random";
 
 describe("normalPdf", () => {
   it("標準正規のピーク f(0)=1/√(2π)", () => {
@@ -99,6 +102,47 @@ describe("deriveNormal", () => {
     const b = deriveNormal({ mu: 100, sigma: 50 });
     expect(a.p1).toBeCloseTo(b.p1, 12);
     expect(a.p2).toBeCloseTo(b.p2, 12);
+  });
+});
+
+describe("zQuantile（標準正規の分位点 = Φ の逆）", () => {
+  it("既知の臨界値（標準正規表と一致）", () => {
+    expect(zQuantile(0.5)).toBeCloseTo(0, 6);
+    expect(zQuantile(0.975)).toBeCloseTo(1.95996, 4);
+    expect(zQuantile(0.995)).toBeCloseTo(2.57583, 4);
+    expect(zQuantile(0.95)).toBeCloseTo(1.64485, 4);
+  });
+
+  it("対称性 Φ⁻¹(1-p) = -Φ⁻¹(p)", () => {
+    expect(zQuantile(0.025)).toBeCloseTo(-zQuantile(0.975), 5);
+    expect(zQuantile(0.1)).toBeCloseTo(-zQuantile(0.9), 5);
+  });
+
+  it("standardNormalCdf の逆（往復で戻る）", () => {
+    expect(standardNormalCdf(zQuantile(0.8))).toBeCloseTo(0.8, 4);
+    expect(zQuantile(standardNormalCdf(1.23))).toBeCloseTo(1.23, 4);
+  });
+
+  it("単調増加・端点は ±∞", () => {
+    expect(zQuantile(0.6)).toBeGreaterThan(zQuantile(0.55));
+    expect(zQuantile(0)).toBe(-Infinity);
+    expect(zQuantile(1)).toBe(Infinity);
+  });
+});
+
+describe("normalSample（正規母集団からの 1 観測）", () => {
+  it("同じシードなら再現する（決定的）", () => {
+    const a = normalSample(5, 2, mulberry32(42));
+    const b = normalSample(5, 2, mulberry32(42));
+    expect(a).toBe(b);
+  });
+
+  it("多数の標本平均が μ に近づく（大数の法則の素朴な確認）", () => {
+    const rng = mulberry32(123);
+    const N = 5000;
+    let sum = 0;
+    for (let i = 0; i < N; i++) sum += normalSample(10, 3, rng);
+    expect(sum / N).toBeCloseTo(10, 0);
   });
 });
 

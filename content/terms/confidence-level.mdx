@@ -1,0 +1,17 @@
+---
+title: 信頼係数
+definition: 信頼区間が母数を含むよう設計する目標割合 γ（例 0.95）。両側区間では臨界値 $z_{(1+\gamma)/2}$ を決める（γ=0.95 → z≈1.96）。
+aliases: [信頼水準, confidence level, confidence coefficient]
+seeAlso: [confidence-interval, coverage-probability, standard-normal-distribution]
+---
+
+# 信頼係数（γ）
+
+[信頼区間](confidence-interval)を作るときに定める目標割合。両側区間では片側の裾を $(1-\gamma)/2$ ずつ残すので、臨界値は[標準正規分布](standard-normal-distribution)の分位点
+
+$$
+z=z_{(1+\gamma)/2},\qquad \gamma=0.95\Rightarrow z\approx1.96
+$$
+
+- γ を上げる（99% など）と $z$ が大きくなり、区間は広がる（確実さと精度のトレードオフ）。
+- 手順を繰り返したときに区間が母数を含む割合（[被覆確率](coverage-probability)）が、理想的にはこの γ に一致する。
