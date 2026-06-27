@@ -1,0 +1,16 @@
+---
+title: 統計的独立
+definition: 事象 A, B が $P(A\cap B)=P(A)\,P(B)$ を満たすこと。同値に $P(A\mid B)=P(A)$（B を知っても A の確率が変わらない）。
+aliases: [statistical independence, 独立, independent events]
+seeAlso: [conditional-probability, bayes-theorem]
+---
+
+# 統計的独立
+
+$$
+P(A\cap B)=P(A)\,P(B)\iff P(A\mid B)=P(A)
+$$
+
+- 「$B$ が起きたと知っても $A$ の確率が変わらない」こと。[条件付き確率](conditional-probability)が無条件確率に一致する。
+- **排反（互いに素）とは別物**: 排反は $P(A\cap B)=0$。両方の確率が正なら排反な事象は独立ではない（片方が起きると他方は起きないと分かるので情報がある）。
+- $n$ 個の事象がすべての部分集合で積の形を満たすとき «独立»。2 つずつ独立でも全体で独立とは限らない。

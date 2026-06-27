@@ -1,0 +1,160 @@
+---
+title: 事象と確率（条件付き確率・ベイズの定理）
+summary: 確率の基本ルールから、条件付き確率とベイズの定理まで。「陽性でも病気とは限らない」を自然頻度とモザイク図で体感し、独立・包除原理・場合の数で確率を数える。
+status: published
+---
+
+import { BayesLab } from "@/components/topics/probability-basics/BayesLab";
+import { BayesStepper } from "@/components/topics/probability-basics/BayesStepper";
+import { ProbabilityQuiz } from "@/components/topics/probability-basics/ProbabilityQuiz";
+
+<Topic title="事象と確率（条件付き確率・ベイズの定理）" summary="確率の基本ルールから、条件付き確率とベイズの定理まで。「陽性でも病気とは限らない」を自然頻度とモザイク図で体感し、独立・包除原理・場合の数で確率を数える。">
+
+<ReaderGuide>
+
+- **初学者** → L0〜L1（条件付き確率の «向きの罠» を検査の例で体感 → ベイズの定理の導出と自然頻度）
+- **一通り使える人** → L2（統計的独立、包除原理、場合の数＝順列・組合せで確率を数える）
+- **「完全に理解した」人** → L3 以降（確率の公理的基礎・確率と因果の違いは到達途上）
+
+このトピックは多くの統計トピックの土台。<Term id="conditional-probability">条件付き確率</Term>は[仮説検定](/topics/hypothesis-testing)の p 値や[信頼区間](/topics/confidence-interval)の解釈にも通じる。
+
+</ReaderGuide>
+
+<Level level={0} title="ブラックボックス（条件付き確率を道具として読む）">
+  <Concept>
+
+確率とは、起こりうる結果全体（標本空間）の中で、注目する<strong>事象</strong>が占める割合。
+さいころなら $P(\text{偶数})=3/6$ のように「好ましい場合の数 ÷ 全体の場合の数」で数える。
+
+ここで肝心なのが**<Term id="conditional-probability">条件付き確率</Term>** $P(A\mid B)$——「$B$ が起きたと分かったときの $A$ の確率」。
+
+<Math tex="P(A\mid B)=\dfrac{P(A\cap B)}{P(B)}" />
+
+注意すべきは**向き**。「病気なら陽性」$P(+\mid D)$ と「陽性なら病気」$P(D\mid +)$ は**別物**で、
+両者を結ぶのが**<Term id="bayes-theorem">ベイズの定理</Term>**。これを取り違えると「感度99%の検査で陽性＝99%病気」と誤read する。
+
+  </Concept>
+  <Interact>
+
+下のラボで有病率（<Term id="prior-probability">事前確率</Term>）・感度・特異度を動かすと、
+モザイク図（面積比）と、ベイズの定理の数式の各項、そして<Term id="posterior-probability">事後確率</Term> $P(D\mid +)$ が同時に追従する（操作→図→数式の強連動）。
+感度が高くても、有病率が低いと「陽性でも病気」の割合が小さいことを確かめよう。
+
+<BayesLab />
+
+  </Interact>
+  <Exercise>
+
+確認: 「感度（病気なら陽性になる割合）が高ければ、陽性のとき必ず高確率で病気だ」——○か×か。
+（答: ×。事後確率 $P(D\mid+)$ は<Term id="prior-probability">事前確率</Term>＝有病率にも依る。有病率が低いと陽性者の多くは偽陽性）
+
+  </Exercise>
+</Level>
+
+<Level level={1} title="古典的理解（ベイズの定理の導出と自然頻度）">
+  <Concept>
+
+条件付き確率の定義を両向きに書くと、同じ同時確率に等しい（**乗法定理**）。
+
+<Math tex="P(D\cap +)=P(+\mid D)\,P(D)=P(D\mid +)\,P(+)" />
+
+これを $P(D\mid +)$ について解いたものが**<Term id="bayes-theorem">ベイズの定理</Term>**。
+分母 $P(+)$ は**<Term id="law-of-total-probability">全確率の公式</Term>**で「真陽性＋偽陽性」に分けて計算する。
+
+  </Concept>
+  <Derivation title="ベイズの定理 P(D|+) を導く（全ステップ）">
+
+**(1) 乗法定理（条件付き確率の定義を移項）.** 同時確率を二通りに書く：
+
+$$
+P(D\cap +)=P(+\mid D)\,P(D),\qquad P(D\cap +)=P(D\mid +)\,P(+).
+$$
+
+**(2) 等号で結び P(D|+) について解く.**
+
+$$
+P(D\mid +)\,P(+)=P(+\mid D)\,P(D)\ \Longrightarrow\ P(D\mid +)=\frac{P(+\mid D)\,P(D)}{P(+)}.
+$$
+
+**(3) 分母を全確率の公式で展開.** 病気 $D$ と健康 $\lnot D$ は排反かつ網羅的だから
+
+$$
+P(+)=P(+\mid D)\,P(D)+P(+\mid \lnot D)\,P(\lnot D).
+$$
+
+**(4) まとめ.**
+
+$$
+P(D\mid +)=\frac{P(+\mid D)\,P(D)}{P(+\mid D)\,P(D)+P(+\mid \lnot D)\,P(\lnot D)}.
+$$
+
+分子は真陽性の割合、分母は陽性全体（真陽性＋偽陽性）の割合。**事後 ∝ 尤度 × 事前**。
+
+  </Derivation>
+  <Interact>
+
+ベイズの定理は「率」より「**人数（自然頻度）**」で考えると直感的になる。
+下のステッパーは母集団 1000 人を «母集団 → 事前確率で病気/健康 → 検査で陽性/陰性 → 陽性者の中の病気割合» と
+1 コマずつ分割していく。最後のコマで $P(D\mid+)$ が「陽性の人だけの中の真陽性割合」だと見える。
+
+<BayesStepper />
+
+  </Interact>
+  <Exercise>
+
+<ProbabilityQuiz />
+
+  </Exercise>
+</Level>
+
+<Level level={2} title="仮定体系（独立・包除原理・場合の数）">
+  <Concept>
+
+確率を組み立てる 3 つの道具を押さえる。
+
+- **<Term id="statistical-independence">統計的独立</Term>**: $P(A\cap B)=P(A)\,P(B)$。同値に $P(A\mid B)=P(A)$。**排反**（$P(A\cap B)=0$）とは別概念で、両方が起こりうるのに片方を知ると他方が分かるなら独立ではない。
+- **<Term id="inclusion-exclusion-principle">包除原理</Term>**: $P(A\cup B)=P(A)+P(B)-P(A\cap B)$。重複（交わり）を二重に数えない補正。3 事象なら交わりを足し引き交互に補正する。
+- **場合の数**: 並べる＝**順列** $_nP_r=\dfrac{n!}{(n-r)!}$、選ぶ＝**組合せ** $_nC_r=\dfrac{n!}{r!\,(n-r)!}$。階乗 $n!$ は «$n$ 個を一列に並べる方法» の数。「好ましい場合 ÷ 全体」の分子・分母を数えるのに使う。
+
+独立は «情報が増えない» こと、包除原理は «重複を補正» すること、場合の数は «分子・分母を正しく数える» こと——いずれも確率計算の足腰になる。
+
+  </Concept>
+  <Derivation title="なぜ並べると順列・選ぶと組合せか（要点）">
+
+$n$ 個から $r$ 個を取り出して**並べる**と、1 番目に $n$ 通り、2 番目に $n-1$ 通り…と $r$ 個ぶん掛けて
+$_nP_r=n(n-1)\cdots(n-r+1)=\dfrac{n!}{(n-r)!}$。
+**順序を区別しない**なら、同じ選び方が「$r$ 個の並べ替え」$r!$ 通りずつ重複して数えられているので $r!$ で割る：
+
+$$
+{}_nC_r=\frac{{}_nP_r}{r!}=\frac{n!}{r!\,(n-r)!}.
+$$
+
+たとえばトランプ 52 枚から 5 枚を配る手は順序を区別しないので $_{52}C_5=2{,}598{,}960$ 通り。
+
+  </Derivation>
+  <Exercise>
+
+確認: 「事象 A, B が排反（同時に起こらない）なら、A と B は独立である」——○か×か。
+（答: ×。両方の確率が正なら排反な事象は独立ではない。$P(A\cap B)=0\neq P(A)P(B)>0$）
+
+  </Exercise>
+</Level>
+
+<Level level={3} title="確率の公理的基礎（測度論）" status="planned">
+  標本空間・σ加法族・コルモゴロフの公理による確率の厳密な定義。可算加法性と連続性。
+</Level>
+
+<Level level={4} title="確率と因果（条件付き確率 ≠ 介入）" status="planned">
+  「観察した条件付き確率 $P(Y\mid X)$」と「介入したときの $P(Y\mid do(X))$」の違い、
+  シンプソンのパラドックス（前提: 回帰・因果推論トピック）。
+</Level>
+
+<Level level={5} title="高次元・交換可能性" status="planned">
+  独立同分布の一般化としての交換可能性と de Finetti の表現定理。
+</Level>
+
+<Level level={6} title="フロンティア" status="planned">
+  確率の解釈（頻度論 vs ベイズ）をめぐる基礎論は今なお議論が続く領域（到達途上）。
+</Level>
+
+</Topic>

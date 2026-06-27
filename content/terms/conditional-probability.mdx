@@ -1,0 +1,19 @@
+---
+title: 条件付き確率
+definition: 事象 B が起きたという条件のもとでの A の確率 $P(A\mid B)=\dfrac{P(A\cap B)}{P(B)}$（$P(B)>0$）。標本空間を B に限定して測り直したもの。
+aliases: [conditional probability, P(A|B)]
+seeAlso: [bayes-theorem, statistical-independence, posterior-probability]
+---
+
+# 条件付き確率
+
+事象 $B$ が起きたと分かったときの $A$ の確率。
+
+$$
+P(A\mid B)=\frac{P(A\cap B)}{P(B)}\quad(P(B)>0)
+$$
+
+- 「全体（標本空間）」を $B$ に絞り、その中で $A\cap B$ が占める割合を測り直す操作。
+- **向きに注意**: $P(A\mid B)$ と $P(B\mid A)$ は別物。両者を結ぶのが[ベイズの定理](bayes-theorem)。
+- $P(A\mid B)=P(A)$ のとき、$A$ と $B$ は[統計的独立](statistical-independence)。
+- 乗法定理 $P(A\cap B)=P(B)\,P(A\mid B)$ はこの定義を移項しただけ。

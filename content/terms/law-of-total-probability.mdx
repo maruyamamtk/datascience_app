@@ -1,0 +1,18 @@
+---
+title: 全確率の公式
+definition: 標本空間を排反な $D,\lnot D$ に分けたとき $P(E)=P(E\mid D)P(D)+P(E\mid\lnot D)P(\lnot D)$。各場合の確率を重み付きで足し上げる。
+aliases: [law of total probability, 全確率の定理]
+seeAlso: [conditional-probability, bayes-theorem]
+---
+
+# 全確率の公式
+
+標本空間を排反かつ網羅的な事象 $D_1,\dots,D_k$ に分割すると、
+
+$$
+P(E)=\sum_i P(E\mid D_i)\,P(D_i)
+$$
+
+- 2 分割なら $P(E)=P(E\mid D)P(D)+P(E\mid\lnot D)P(\lnot D)$。
+- [ベイズの定理](bayes-theorem)の**分母 $P(E)$** を計算するのに使う。検査の例では「陽性になる確率＝真陽性＋偽陽性」。
+- [条件付き確率](conditional-probability)（各場合での確率）を、その場合が起こる確率で重み付けして足す。
