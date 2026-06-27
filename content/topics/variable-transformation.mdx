@@ -1,0 +1,127 @@
+---
+title: 変数変換と確率変数の線形結合
+summary: 確率変数を Y=g(X) で写すと分布はどう変わるか。線形変換 aX+b のスケール・シフトをヤコビアンとともに体感し、独立な和の分布（畳み込み）まで操作で見る。
+status: published
+---
+
+import { TransformLab } from "@/components/topics/variable-transformation/TransformLab";
+import { ConvolutionStepper } from "@/components/topics/variable-transformation/ConvolutionStepper";
+import { TransformQuiz } from "@/components/topics/variable-transformation/TransformQuiz";
+
+<Topic title="変数変換と確率変数の線形結合" summary="確率変数を Y=g(X) で写すと分布はどう変わるか。線形変換 aX+b のスケール・シフトをヤコビアンとともに体感し、独立な和の分布（畳み込み）まで操作で見る。">
+
+<ReaderGuide>
+
+- **初学者** → L0〜L1（線形変換 Y=aX+b のスケール・シフトと、密度を保つヤコビアン補正）
+- **一通り使える人** → L2（独立な線形結合の分散、和の分布＝畳み込み）
+- **「完全に理解した」人** → L3 以降（多変数変換・非線形変換は到達途上）
+
+前提: [確率分布と母関数](/topics/probability-distributions-mgf)の<Term id="probability-density-function">確率密度関数</Term>、[分布の特性値](/topics/distribution-characteristics)の<Term id="expected-value">期待値</Term>・<Term id="variance">分散</Term>。
+
+</ReaderGuide>
+
+<Level level={0} title="ブラックボックス（線形変換 Y=aX+b）">
+  <Concept>
+
+確率変数 $X$ を $Y=g(X)$ で «写す» と、$Y$ の分布は形を変える。最も基本は線形変換 $Y=aX+b$。
+
+- 期待値は線形に動く: $E[Y]=aE[X]+b$。
+- 分散はスケールの **二乗** で効く: $\mathrm{Var}[Y]=a^2\mathrm{Var}[X]$（平行移動 $b$ は効かない）。
+
+$a$ が «伸縮»、$b$ が «平行移動»。標準化 $Z=(X-\mu)/\sigma$ もこの一種（$a=1/\sigma$, $b=-\mu/\sigma$）。
+
+  </Concept>
+  <Interact>
+
+下のラボで $a$・$b$・$\sigma_X$ を動かすと、元 $X$ の密度（破線）と変換後 $Y=aX+b$ の密度（実線）が変わり、
+数式 $E[aX+b]=\mu_Y$・$\mathrm{Var}[aX+b]=a^2\sigma_X^2=\sigma_Y^2$ の値が同時に追従する（操作→図→数式の強連動）。
+
+<TransformLab />
+
+  </Interact>
+  <Exercise>
+
+確認: 「$Y=3X+10$ のとき、$\mathrm{Var}[Y]=3\,\mathrm{Var}[X]+10$」——○か×か。
+（答: ×。$\mathrm{Var}[Y]=3^2\mathrm{Var}[X]=9\,\mathrm{Var}[X]$。平行移動 $+10$ は分散に効かない）
+
+  </Exercise>
+</Level>
+
+<Level level={1} title="古典的理解（ヤコビアンで密度を補正）">
+  <Concept>
+
+«密度» の変換には注意がいる。横軸を $a$ 倍に伸ばすと、確率（＝面積）が変わってしまうので、高さを補正する。
+
+<Math tex="f_Y(y)=f_X\!\left(\dfrac{y-b}{a}\right)\cdot\left|\dfrac{1}{a}\right|" />
+
+末尾の $|1/a|$ が**<Term id="jacobian">ヤコビアン</Term>**。これで «面積=確率は 1 のまま» を保証する。
+
+  </Concept>
+  <Derivation title="なぜ高さを 1/|a| 倍するのか（面積保存）">
+
+累積分布関数で考える。$a>0$ のとき
+
+$$
+F_Y(y)=P(aX+b\le y)=P\!\left(X\le \frac{y-b}{a}\right)=F_X\!\left(\frac{y-b}{a}\right).
+$$
+
+両辺を $y$ で微分すると、連鎖律で内側の微分 $1/a$ が出る：
+
+$$
+f_Y(y)=f_X\!\left(\frac{y-b}{a}\right)\cdot\frac{1}{a}.
+$$
+
+$a<0$ では不等号の向きが変わるので、まとめて絶対値 $|1/a|$。これが**<Term id="change-of-variables">変数変換</Term>**の公式で、$|1/a|$ がヤコビアン。横を伸ばした分だけ高さを縮め、面積（確率）を保つ。
+
+  </Derivation>
+  <Exercise>
+
+確認: 「$Y=2X$ のとき、$Y$ の密度の高さは $X$ の密度の **2 倍** になる」——○か×か。
+（答: ×。横を 2 倍に伸ばすので高さは $1/2$ 倍。面積を 1 に保つためのヤコビアン補正）
+
+  </Exercise>
+</Level>
+
+<Level level={2} title="仮定体系（線形結合と和の分布＝畳み込み）">
+  <Concept>
+
+2 つの確率変数を組み合わせる**<Term id="linear-combination">線形結合</Term>** $Z=aX+bY$ では、
+
+- 期待値は常に線形: $E[Z]=aE[X]+bE[Y]$。
+- 分散は $\mathrm{Var}[Z]=a^2\mathrm{Var}[X]+b^2\mathrm{Var}[Y]+2ab\,\mathrm{Cov}(X,Y)$。**独立なら共分散項が消えて «足し算»**。
+
+そして独立な和 $Z=X+Y$ の «分布» 自体を求めるのが**<Term id="convolution">畳み込み</Term>** $P(Z=k)=\sum_i P(X=i)P(Y=k-i)$。
+
+下のステッパーで、2 つのサイコロの和が畳み込みで «三角形» になる様子を 1 マスずつ確かめよう。
+
+  </Concept>
+  <Interact>
+
+<ConvolutionStepper />
+
+  </Interact>
+  <Exercise>
+
+<TransformQuiz />
+
+  </Exercise>
+</Level>
+
+<Level level={3} title="多変数の変数変換（ヤコビ行列式）" status="planned">
+  $(X,Y)\to(U,V)$ の変換で密度に $|\det J|$
+  が掛かる。極座標変換・ボックス–ミュラー法による正規乱数生成 （前提: 偏微分・重積分）。
+</Level>
+
+<Level level={4} title="非線形変換と分布の歪み" status="planned">
+  $Y=X^2$ や $Y=\log X$ など単調でない／非線形な変換、対数正規分布の導出、デルタ法との関係。
+</Level>
+
+<Level level={5} title="高次元の変換と正規化フロー" status="planned">
+  可逆変換の連鎖でヤコビアンを積み上げて複雑な分布を表す生成モデル（normalizing flow）。
+</Level>
+
+<Level level={6} title="フロンティア" status="planned">
+  高次元で扱いやすい可逆変換とヤコビアン計算の設計は、生成モデルの研究で活発な領域（到達途上）。
+</Level>
+
+</Topic>

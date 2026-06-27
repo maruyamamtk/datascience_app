@@ -17,6 +17,7 @@
 - ✅ B-1 事象と確率 `probability-basics`（#27, PR #109）
 - ✅ B-3 分布の特性値 `distribution-characteristics`（#28）
 - ✅ B-2 確率分布と母関数 `probability-distributions-mgf`（#29）
+- ✅ B-4 変数変換と線形結合 `variable-transformation`（#30）
 
 ## キュー（優先順）
 
@@ -25,7 +26,7 @@
 | 1 | #27 | B-1 | 事象と確率（条件付き確率・ベイズの定理） | probability-basics | （なし） | ✅ done |
 | 2 | #28 | B-3 | 分布の特性値（期待値・分散・モーメント） | distribution-characteristics | probability-basics | ✅ done |
 | 3 | #29 | B-2 | 確率分布と母関数 | probability-distributions-mgf | distribution-characteristics | ✅ done |
-| 4 | #30 | B-4 | 変数変換と確率変数の線形結合 | variable-transformation | probability-distributions-mgf | pending |
+| 4 | #30 | B-4 | 変数変換と確率変数の線形結合 | variable-transformation | probability-distributions-mgf | ✅ done |
 | 5 | #31 | C-1 | 離散型確率分布（二項・ポアソン他） | discrete-distributions | probability-distributions-mgf | pending |
 | 6 | #32 | C-2 | 連続型確率分布（指数・ガンマ・ベータ他） | continuous-distributions | discrete-distributions, normal-distribution | pending |
 | 7 | #33 | B-5 | 大数の法則と正規近似 | law-of-large-numbers | central-limit-theorem | pending |

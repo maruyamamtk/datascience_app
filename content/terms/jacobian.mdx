@@ -1,0 +1,14 @@
+---
+title: ヤコビアン
+definition: 変数変換で «面積・体積» の拡大率を表す量。1変数では $|dx/dy|$、多変数ではヤコビ行列の行列式の絶対値。密度変換で確率を保つために掛ける。
+aliases: [Jacobian, ヤコビ行列式, 関数行列式]
+seeAlso: [change-of-variables, probability-density-function]
+---
+
+# ヤコビアン
+
+[変数変換](change-of-variables)で、座標の «伸縮率» を表す量。
+
+- 1 変数なら $\left|\dfrac{dx}{dy}\right|$。$Y=aX$ では $|1/a|$。
+- 横軸を $a$ 倍に伸ばすと、確率（＝面積）を 1 に保つため密度の高さは $1/|a|$ 倍になる。これがヤコビアン補正。
+- 多変数では変換のヤコビ行列の行列式の絶対値 $|\det J|$。重積分の変数変換でも同じ係数が現れる。
