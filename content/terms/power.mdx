@@ -1,0 +1,16 @@
+---
+title: 検出力
+definition: 対立仮説が正しいとき、正しく帰無仮説を棄却できる確率 $1-\beta$。効果量・標本サイズ・有意水準が大きいほど高い。
+aliases: [power, 検定力, 1-β, statistical power]
+seeAlso: [type-ii-error, type-i-error, alternative-hypothesis, significance-level]
+---
+
+# 検出力（1−β）
+
+[対立仮説](alternative-hypothesis) $H_1$ が真であるとき、**正しく[帰無仮説](null-hypothesis)を棄却できる確率** $1-\beta$。
+[第二種の過誤](type-ii-error) $\beta$ の裏返し。
+
+- $H_1$ のもとで[検定統計量](test-statistic)は $N(\delta,1)$（$\delta=d\sqrt n$、$d$ は効果量）に従い、検出力 = この分布が[棄却域](rejection-region)に入る確率。
+- **効果量 $d$↑・標本サイズ $n$↑・[有意水準](significance-level) $\alpha$↑** のいずれでも検出力は上がる。
+- 慣習的に $0.8$ 以上を目標とし、必要な $n$ を逆算する（サンプルサイズ設計）。
+- $\alpha$ を下げると検出力は下がる（[第一種の過誤](type-i-error)とのトレードオフ）。

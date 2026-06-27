@@ -1,0 +1,16 @@
+---
+title: 棄却域
+definition: 検定統計量がそこに入れば帰無仮説を棄却する範囲。両側は $|Z|>z_{1-\alpha/2}$、片側は $Z>z_{1-\alpha}$ など。境界が臨界値。
+aliases: [critical region, 採択域, 臨界値, rejection region]
+seeAlso: [significance-level, test-statistic, p-value, alternative-hypothesis]
+---
+
+# 棄却域
+
+[検定統計量](test-statistic)がそこに入れば[帰無仮説](null-hypothesis)を棄却する、と決めておく範囲。
+境界の値を**臨界値**という。[有意水準](significance-level) $\alpha$ と[対立仮説](alternative-hypothesis)の向きで決まる。
+
+- 両側: $|Z|>z_{1-\alpha/2}$（例 $\alpha=0.05$ で $\pm1.96$）。
+- 右片側: $Z>z_{1-\alpha}$（例 $1.645$）、左片側: $Z<-z_{1-\alpha}$。
+- 棄却域の外側は採択域。「検定統計量が棄却域に入る」ことと「[p値](p-value) $<\alpha$」は同値。
+- $\alpha$ を小さくすると臨界値が外へ動き、棄却域は狭くなる。

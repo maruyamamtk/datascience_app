@@ -1,0 +1,15 @@
+---
+title: 有意水準
+definition: 帰無仮説が正しいのに棄却してしまう確率（第一種の過誤）の許容上限 $\alpha$。例 0.05。棄却域の広さを決める。
+aliases: [alpha, α, significance level, 危険率]
+seeAlso: [type-i-error, rejection-region, p-value, null-hypothesis]
+---
+
+# 有意水準（α）
+
+[帰無仮説](null-hypothesis)が正しいのに誤って棄却してしまう確率（[第一種の過誤](type-i-error)）の
+**許容上限**。検定を始める前に決める（例 $\alpha=0.05$）。
+
+- $\alpha$ は[棄却域](rejection-region)の広さを決める。$\alpha$ を小さくすると棄却域は狭まり、めったに棄却しなくなる。
+- 判定は「[p値](p-value) $<\alpha$ なら棄却」。
+- $\alpha$ を下げると第一種の過誤は減るが、その代わり[第二種の過誤](type-ii-error) $\beta$ が増え[検出力](power)が下がる（トレードオフ）。
