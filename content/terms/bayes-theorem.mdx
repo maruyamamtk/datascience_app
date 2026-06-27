@@ -1,0 +1,19 @@
+---
+title: ベイズの定理
+definition: 条件付き確率の向きを入れ替える公式 $P(D\mid E)=\dfrac{P(E\mid D)\,P(D)}{P(E)}$。事前確率 $P(D)$ を観測 $E$ で更新し事後確率 $P(D\mid E)$ を得る。
+aliases: [Bayes' theorem, ベイズの公式, Bayes rule]
+seeAlso:
+  [conditional-probability, prior-probability, posterior-probability, law-of-total-probability]
+---
+
+# ベイズの定理
+
+[条件付き確率](conditional-probability)の定義 $P(D\cap E)=P(E\mid D)P(D)=P(D\mid E)P(E)$ を解くと、
+
+$$
+P(D\mid E)=\frac{P(E\mid D)\,P(D)}{P(E)}
+$$
+
+- 分母 $P(E)$ は[全確率の公式](law-of-total-probability) $P(E)=P(E\mid D)P(D)+P(E\mid\lnot D)P(\lnot D)$ で展開できる。
+- 読み方は「**[事後](posterior-probability) ∝ 尤度 × [事前](prior-probability)**」。観測 $E$ で信念を更新する。
+- 検査の例では「病気→陽性」$P(+\mid D)$ から「陽性→病気」$P(D\mid +)$ を求める。有病率（事前）が低いと事後は意外に小さい。

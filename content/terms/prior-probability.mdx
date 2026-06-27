@@ -1,0 +1,13 @@
+---
+title: 事前確率
+definition: 観測データを見る前に仮説・状態に与える確率 $P(D)$。検査の例では有病率に相当する。
+aliases: [prior probability, prior, 事前分布]
+seeAlso: [bayes-theorem, posterior-probability]
+---
+
+# 事前確率
+
+[ベイズの定理](bayes-theorem)で「観測の前」に持っている確率 $P(D)$。
+
+- 検査の例では**有病率**。事前確率が低いと、感度の高い検査で陽性でも[事後確率](posterior-probability)は低くなりうる。
+- データを得るたびに、前回の事後確率が次の事前確率になる（逐次更新）。

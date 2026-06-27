@@ -225,3 +225,27 @@ TODO:
 - **検証結果**: Vitest **164 passed**（+26: interval 14 / normal +6 / frames 6、`registry.test.ts` のリンク切れゼロ維持）。`tsc --noEmit` / `pnpm lint`（警告0）/ `pnpm build`（26ページ SSG：/topics/confidence-interval・新用語4ページ出力）成功。dev + Playwright で実機確認：信頼係数 95%→99% 操作で数式 z 1.96→2.58・半幅 h 3.92→5.15・区間 [-5.15,5.15] が同時更新、被覆シミュレーターを末尾まで送ると「30本中28本的中（被覆率93%/名目95%）」＋赤い外れ区間2本を描画、コンソールエラー0件。
 - **設計判断**: ラボは x̄=0 固定で「区間幅が z・σ・n で決まる」ことに集中。シミュレーターは μ=0 中心の対称固定軸（全件で決定し提示中に軸が動かない）で被覆の当たり外れを視認しやすくした。z 区間（σ既知）を主軸に据え、σ未知の t 分布・母比率・母分散・片側は L2 概念＋導出要点で網羅（実装は z 区間に限定し MVP のスコープを守る）。
 - **残/次フェーズ**: 仮説検定・単回帰トピック（同じ型で順次）。L3-L6（ブートストラップ区間・ベイズ信用区間・同時信頼区間・post-selection inference）は planned 枠のまま。
+
+---
+
+## カリキュラム網羅フェーズ — SPEC §3 全領域(A〜S) をバックログ起票し優先順に実装
+
+MVP 5トピック完了後、SPEC §3 のチェックリスト全項目（A〜S, 約82トピック）を Level制でサイトに反映する
+目標に着手。全件を GitHub issue（#27〜#108）として依存の浅い順に起票し、キューを [tasks/backlog.md](./backlog.md) に記録。
+以降このフェーズは「1トピック=1issue=1PR」で順次マージしていく。
+
+### コンテンツ拡充 #27 — [B-1] 事象と確率（条件付き確率・ベイズの定理）
+
+優先度 1/82。確率の最も土台のトピック。中核可視化は**ベイズの定理を自然頻度で体感**するラボ。
+
+- [x] 計算層 `lib/stats/bayes.ts`（deriveBayes / bayesPosterior / naturalFrequencies / 独立性）+ `combinatorics.ts`（factorial / nPr / nCr / 包除原理）+ Vitest（24）
+- [x] 状態層 `lib/store/probability-basics.ts`（createTopicStore, controls {prior,sensitivity,specificity}）
+- [x] 描画層 `components/topics/probability-basics/`（MosaicPlot=面積比の純描画 / BayesLab=3スライダー→数式 P(D|+) の各項＆事後確率の強連動 / BayesStepper=自然頻度の4段コマ送り / ProbabilityQuiz）+ frames.ts + Vitest（4）
+- [x] 用語ノード7件（conditional-probability / bayes-theorem / statistical-independence / prior-probability / posterior-probability / law-of-total-probability / inclusion-exclusion-principle）相互リンク
+- [x] MDX `content/topics/probability-basics.mdx`（L0-L2 充実：条件付き確率の向きの罠→ベイズ導出全ステップ→独立・包除・場合の数、L3-L6 planned 枠）
+- [x] `/topics` 一覧へ反映（status: published）
+
+#### レビュー: 事象と確率トピック（2026-06-28）
+- **変更概要**: 既存4層パターン（計算 lib/stats → 状態 lib/store → 描画 components/topics → MDX、用語 content/terms）を踏襲。有病率(事前)・感度・特異度の3スライダーが `useProbabilityStore`（single source of truth）を更新→モザイク図（病気/健康×陽性/陰性の面積分割）と数式 `P(D|+)=P(+|D)P(D)/[…]` の各項（TermController の DOM 差分パッチ）と事後確率が同時連動。BayesStepper は母集団1000人を「母集団→事前で病気/健康→検査で陽性/陰性→陽性者の中の病気割合」と4段でコマ送り（アルゴリズム図鑑スタイル）、最終コマで P(D|+) が「陽性の人だけの中の真陽性割合」と腑に落ちる。場合の数（階乗・nPr・nCr）と包除原理は計算層＋テストで固め L2 で網羅。
+- **検証結果**: Vitest **237 passed**（+28: bayes 11 / combinatorics 13 / frames 4、`registry.test.ts` のリンク切れゼロ維持）。`tsc --noEmit` / `pnpm lint`（警告0）/ `pnpm build`（51ページ SSG：/topics/probability-basics・新用語7ページ出力）成功。`pnpm start` + Playwright で実機確認：有病率 1%→30% 操作で数式 term-post 0.09→0.81・term-prior/priorc 追従、モザイク「P(D|+)=9%→81%」、ステッパー最終コマで自然頻度（陽性333=真陽性270＋偽陽性63, P(D|+)=81%）を描画、/topics 一覧に反映、コンソールエラー0件。
+- **設計判断**: 中核例は「有病率1%・感度90%・特異度91%→事後9%」の検査の罠を初期値に採用し、最初の一手で «P(+|D)≠P(D|+)» を体感させる。モザイク図は面積比で「陽性帯の中の青の横割合＝事後確率」を直感化。自然頻度ステッパーは率より人数で考える方が直感的という認知科学の知見に沿う。
