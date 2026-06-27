@@ -1,0 +1,16 @@
+---
+title: チェビシェフの不等式
+definition: どんな分布でも $P(|X-\mu|\ge k\sigma)\le 1/k^2$（$k>1$）。分布の形を仮定せず «平均から離れる確率» を抑える普遍的な上界。
+aliases: [Chebyshev's inequality, チェビシェフ]
+seeAlso: [variance, expected-value]
+---
+
+# チェビシェフの不等式
+
+$$
+P(|X-\mu|\ge k\sigma)\le \frac{1}{k^2}\quad(k>1)
+$$
+
+- $k=2$ で $1/4$、$k=3$ で $1/9$。**分布の形に依らない**のが強み。
+- 正規分布なら $2\sigma$ 外は約 5% とずっと小さいが、チェビシェフは «形を仮定しない» 分だけ緩い。
+- [分散](variance)が有限でさえあれば成り立つ。大数の法則の証明にも使われる。

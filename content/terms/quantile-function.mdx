@@ -1,0 +1,16 @@
+---
+title: 分位点関数
+definition: 累積分布関数 $F$ の逆 $Q(p)=F^{-1}(p)$。$p$ の割合がそれ以下になる値を返す。中央値は $Q(0.5)$。
+aliases: [quantile function, 分位数, パーセンタイル, 逆累積分布関数]
+seeAlso: [expected-value, variance]
+---
+
+# 分位点関数
+
+$$
+Q(p)=\inf\{x: F(x)\ge p\}
+$$
+
+- $p$ 分位点は «下から $p$ の割合» に当たる値。$Q(0.5)$ が中央値、$Q(0.25),Q(0.75)$ が四分位。
+- 外れ値に頑健で、[期待値](expected-value)・[分散](variance)が外れ値に弱いのと対照的。
+- 逆関数法による乱数生成（$U\sim\text{一様}$ なら $Q(U)$ が目的の分布）にも使う。

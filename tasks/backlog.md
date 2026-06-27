@@ -14,13 +14,15 @@
 - ✅ D-5 信頼区間 `confidence-interval`（#21）
 - ✅ E-1 仮説検定 `hypothesis-testing`（#22）
 - ✅ F-1 単回帰 `simple-regression`（#23）
+- ✅ B-1 事象と確率 `probability-basics`（#27, PR #109）
+- ✅ B-3 分布の特性値 `distribution-characteristics`（#28）
 
 ## キュー（優先順）
 
 | # | issue | §3 | トピック | slug | 前提 | 状態 |
 | --- | --- | --- | --- | --- | --- | --- |
-| 1 | #27 | B-1 | 事象と確率（条件付き確率・ベイズの定理） | probability-basics | （なし） | in-progress (PR) |
-| 2 | #28 | B-3 | 分布の特性値（期待値・分散・モーメント） | distribution-characteristics | probability-basics | pending |
+| 1 | #27 | B-1 | 事象と確率（条件付き確率・ベイズの定理） | probability-basics | （なし） | ✅ done |
+| 2 | #28 | B-3 | 分布の特性値（期待値・分散・モーメント） | distribution-characteristics | probability-basics | ✅ done |
 | 3 | #29 | B-2 | 確率分布と母関数 | probability-distributions-mgf | distribution-characteristics | pending |
 | 4 | #30 | B-4 | 変数変換と確率変数の線形結合 | variable-transformation | probability-distributions-mgf | pending |
 | 5 | #31 | C-1 | 離散型確率分布（二項・ポアソン他） | discrete-distributions | probability-distributions-mgf | pending |

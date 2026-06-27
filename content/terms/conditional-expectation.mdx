@@ -1,0 +1,16 @@
+---
+title: 条件付き期待値
+definition: 事象や変数を条件にした期待値 $E[Y\mid X=x]$。$X$ を知ったうえでの $Y$ の平均。条件付き分散 $\mathrm{Var}[Y\mid X]$ は条件下のばらつき。
+aliases: [conditional expectation, 条件付き平均, 条件付き分散]
+seeAlso: [expected-value, variance, conditional-probability]
+---
+
+# 条件付き期待値・条件付き分散
+
+$$
+E[Y\mid X=x]=\sum_y y\,P(Y=y\mid X=x)
+$$
+
+- $X$ の値を知ったうえでの $Y$ の平均。回帰関数 $E[Y\mid X=x]$ は «$x$ ごとの平均» を結んだ曲線。
+- **全期待値の法則** $E[Y]=E\big[E[Y\mid X]\big]$、**分散分解** $\mathrm{Var}[Y]=E[\mathrm{Var}[Y\mid X]]+\mathrm{Var}[E[Y\mid X]]$。
+- [条件付き確率](conditional-probability)を期待値に持ち上げた概念。回帰・分散分析の土台。
