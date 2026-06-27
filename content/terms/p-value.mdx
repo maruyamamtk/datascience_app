@@ -1,0 +1,15 @@
+---
+title: p値
+definition: 帰無仮説が正しいと仮定したとき、観測した検定統計量と同じかそれ以上に極端な値が出る確率。小さいほど $H_0$ と矛盾する。
+aliases: [p-value, 有意確率, p value]
+seeAlso: [null-hypothesis, test-statistic, significance-level, rejection-region]
+---
+
+# p値
+
+[帰無仮説](null-hypothesis) $H_0$ が正しいと**仮定したうえで**、観測した[検定統計量](test-statistic)と
+同じかそれ以上に極端な値が出る確率。
+
+- 両側検定: $p=2\bigl(1-\Phi(|z|)\bigr)$、右片側: $p=1-\Phi(z)$、左片側: $p=\Phi(z)$。
+- $p<\alpha$（[有意水準](significance-level)）なら「$H_0$ のもとでは珍しすぎる」として $H_0$ を**棄却**する（[棄却域](rejection-region)に入ることと同値）。
+- **誤読に注意**: p値は «$H_0$ が正しい確率» でも «対立仮説が正しい確率» でもない。あくまで «$H_0$ を仮定した条件つき確率»。

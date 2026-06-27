@@ -1,0 +1,18 @@
+---
+title: 検定統計量
+definition: データを 1 つの数に要約し、帰無仮説のもとで分布が分かる量。σ既知の母平均では $Z=(\bar x-\mu_0)/(\sigma/\sqrt n)\sim N(0,1)$。
+aliases: [test statistic, 検定量]
+seeAlso: [null-hypothesis, standardization, standard-normal-distribution, rejection-region, p-value]
+---
+
+# 検定統計量
+
+データを 1 つの数に要約し、[帰無仮説](null-hypothesis)のもとでの**分布が分かる**ように作った量。
+σ既知の母平均の検定では[標準化](standardization)により
+
+$$
+Z=\frac{\bar x-\mu_0}{\sigma/\sqrt n}\sim N(0,1)
+$$
+
+- 分母 $\sigma/\sqrt n$ は[標準誤差](standard-error)。$Z$ は「$\mu_0$ から標準誤差いくつ分ずれたか」を表す。
+- 帰無分布（ここでは[標準正規分布](standard-normal-distribution)）が分かるので、$Z$ が[棄却域](rejection-region)に入るか、[p値](p-value)がいくつかを評価できる。
