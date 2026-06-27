@@ -1,0 +1,19 @@
+---
+title: 残差
+definition: 実測値と回帰直線の予測値の差 e_i=y_i−ŷ_i。縦方向のずれ。最小二乗解では残差の和が 0 になる。
+aliases: [residual, 誤差（標本）, residuals]
+seeAlso: [residual-sum-of-squares, regression-line, least-squares]
+---
+
+# 残差
+
+各データ点の実測値 $y_i$ と[回帰直線](regression-line)の予測値 $\hat y_i$ との**縦方向のずれ**
+
+$$
+e_i=y_i-\hat y_i.
+$$
+
+- 散布図では点から直線へ下ろした縦線として描ける。
+- [最小二乗法](least-squares)で当てはめると、残差の和は必ず $\sum e_i=0$（重心を通るため）。
+- 残差の二乗和が[残差平方和](residual-sum-of-squares)で、これを最小化するのが最小二乗法。
+- 理論上の「誤差」（観測できない真の値からのずれ）とは区別する。残差はその標本における推定値。

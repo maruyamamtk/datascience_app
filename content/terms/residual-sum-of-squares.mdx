@@ -1,0 +1,19 @@
+---
+title: 残差平方和
+definition: 残差の二乗和 RSS=Σ(y_i−ŷ_i)²。回帰直線の当てはまりの悪さを表し、最小二乗法はこれを最小化する。
+aliases: [RSS, 残差二乗和, sum of squared residuals, SSE]
+seeAlso: [residual, least-squares, coefficient-of-determination]
+---
+
+# 残差平方和（RSS）
+
+[残差](residual)の二乗和
+
+$$
+\mathrm{RSS}=\sum_{i}(y_i-\hat y_i)^2.
+$$
+
+- [回帰直線](regression-line)の**当てはまりの悪さ**を表す（小さいほど良い）。
+- [最小二乗法](least-squares)はこの RSS を最小にする直線を選ぶ。傾きについて下に凸の放物線で、その底が最小二乗解。
+- どんな直線の RSS も最小二乗解の RSS 以上になる（OLS が下限）。
+- [決定係数](coefficient-of-determination) $R^2=1-\mathrm{RSS}/\mathrm{SST}$ の分子に現れる。

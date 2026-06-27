@@ -1,0 +1,19 @@
+---
+title: 決定係数
+definition: 回帰の当てはまりを表す指標 R²=1−RSS/SST。y の全変動のうち回帰で説明できた割合（0〜1）。単回帰では相関係数の二乗。
+aliases: [R2, R², R-squared, 寄与率, coefficient of determination]
+seeAlso: [residual-sum-of-squares, regression-line, variance]
+---
+
+# 決定係数（R²）
+
+[回帰直線](regression-line)の当てはまりの良さを表す指標
+
+$$
+R^2=1-\frac{\mathrm{RSS}}{\mathrm{SST}},\qquad \mathrm{SST}=\sum(y_i-\bar y)^2.
+$$
+
+- 全変動 $\mathrm{SST}$（$y$ の[分散](variance)×n）のうち、回帰で**説明できた割合**。$0\le R^2\le 1$。
+- $R^2=1$ なら全点が直線上（[残差平方和](residual-sum-of-squares) RSS=0）、$R^2=0$ なら $x$ は $y$ の説明にまったく役立たない。
+- 単回帰では $R^2$ は相関係数の二乗に等しい（相関係数そのものではない）。
+- 説明変数を増やすと必ず増えるため、重回帰では自由度調整済み $R^2$ を使う。

@@ -1,0 +1,155 @@
+---
+title: 単回帰
+summary: x から y を直線で予測する道具。最小二乗法が残差平方和を最小にする様子を、点ドラッグと直線操作で体感する。回帰係数 β̂1 と決定係数 R² が操作に強連動。
+status: published
+---
+
+import { RegressionLab } from "@/components/topics/regression/RegressionLab";
+import { LeastSquaresStepper } from "@/components/topics/regression/LeastSquaresStepper";
+import { RegressionQuiz } from "@/components/topics/regression/RegressionQuiz";
+
+<Topic title="単回帰" summary="x から y を直線で予測する道具。最小二乗法が残差平方和を最小にする様子を、点ドラッグと直線操作で体感する。回帰係数 β̂1 と決定係数 R² が操作に強連動。">
+
+<ReaderGuide>
+
+- **初学者** → L0〜L1（道具として回帰直線・R² を読む → 最小二乗法の完全導出と残差の幾何）
+- **一通り使える人** → L2（ガウス–マルコフの仮定と BLUE・決定係数・残差分析の入口）
+- **「完全に理解した」人** → L3 以降（バイアス–バリアンス/正則化・交絡と欠落変数バイアスは到達途上）
+
+前提: <Term id="expected-value">期待値</Term>・<Term id="variance">分散</Term>（共変動の考え方）。誤差項の分布は[正規分布](/topics/normal-distribution)（L2 以降）。
+
+</ReaderGuide>
+
+<Level level={0} title="ブラックボックス（道具として使う）">
+  <Concept>
+
+2 つの量 $x,y$ の関係を**直線で要約**したい。<Term id="regression-line">回帰直線</Term> $\hat y=\hat\beta_0+\hat\beta_1 x$ を引けば、$x$ から $y$ を予測できる。
+
+- $\hat\beta_1$ は<Term id="regression-coefficient">回帰係数</Term>（傾き）。「$x$ が 1 増えると $y$ は平均 $\hat\beta_1$ 変わる」。
+- $\hat\beta_0$ は切片。
+- 当てはまりの良さは<Term id="coefficient-of-determination">決定係数</Term> $R^2$（0〜1、1 に近いほど良い）で読む。
+
+では「最も良い直線」はどう決める？ 各点と直線の縦のずれ＝<Term id="residual">残差</Term>の二乗和<Term id="residual-sum-of-squares">残差平方和</Term> RSS を最小にする直線を選ぶ。これが**<Term id="least-squares">最小二乗法</Term>**。
+
+  </Concept>
+  <Interact>
+
+下のラボで点をドラッグしたり手動直線の傾き・切片を動かすと、各点の残差（橙の縦線）と RSS が実時間で変わる。
+緑の線が最小二乗解。「最小二乗解に合わせる」を押すと手動直線が緑に重なり RSS が最小になる。
+数式 $\hat\beta_1=S_{xy}/S_{xx}$ の値も同時に追従する（操作→グラフ→数式の強連動）。
+
+<RegressionLab />
+
+  </Interact>
+  <Exercise>
+
+確認: 「最小二乗法は残差の二乗和を最小にする直線を選ぶ」——○か×か。（答: ○。符号つきの残差の和は最小二乗解で常に 0 になるので、基準には残差の**二乗**和 RSS を使う）
+
+  </Exercise>
+</Level>
+
+<Level level={1} title="古典的理解（最小二乗法の完全導出と残差の幾何）">
+  <Concept>
+
+最小二乗法は、残差平方和を $\beta_0,\beta_1$ の関数とみて最小化する問題。
+
+<Math tex="\mathrm{RSS}(\beta_0,\beta_1)=\sum_{i=1}^n\bigl(y_i-\beta_0-\beta_1 x_i\bigr)^2" />
+
+これを $\beta_0,\beta_1$ で偏微分して 0 とおく（下に凸なので極小＝最小）。
+
+  </Concept>
+  <Derivation title="RSS を偏微分して正規方程式を解く（全ステップ）">
+
+**(1) 切片で偏微分.**
+
+$$
+\frac{\partial \mathrm{RSS}}{\partial \beta_0}=-2\sum(y_i-\beta_0-\beta_1 x_i)=0
+\;\Rightarrow\; \bar y=\beta_0+\beta_1\bar x.
+$$
+
+これは「直線が**重心 $(\bar x,\bar y)$ を通る**」こと、すなわち $\hat\beta_0=\bar y-\hat\beta_1\bar x$。
+
+**(2) 傾きで偏微分.**
+
+$$
+\frac{\partial \mathrm{RSS}}{\partial \beta_1}=-2\sum x_i(y_i-\beta_0-\beta_1 x_i)=0.
+$$
+
+**(3) (1) を代入して β1 について解く.** $\beta_0=\bar y-\beta_1\bar x$ を入れて整理すると、$\bar x,\bar y$ を中心化した形になり
+
+$$
+\hat\beta_1=\frac{\sum(x_i-\bar x)(y_i-\bar y)}{\sum(x_i-\bar x)^2}=\frac{S_{xy}}{S_{xx}}.
+$$
+
+分子は $x,y$ の共変動（共分散×n）、分母は $x$ の<Term id="variance">分散</Term>×n。つまり**「共分散 ÷ x の分散」**。
+
+**(4) 幾何学的直感.** $y$ を「$x$ の張る空間」へ**正射影**したのが予測値 $\hat y$。残差ベクトル $e=y-\hat y$ は説明変数と直交する（$\sum x_i e_i=0$）。これが正規方程式の本質。
+
+  </Derivation>
+  <Interact>
+
+下のコマ送りは直線の傾きを 1 段ずつ回し、その RSS を放物線として描く。RSS は傾きについて**下に凸**で、その底（緑の破線＝最小二乗解の傾き）で最小になる。偏微分=0 が「放物線の底」に対応することを確かめよう。
+
+<LeastSquaresStepper />
+
+  </Interact>
+  <Exercise>
+
+確認: 「最小二乗解の回帰直線は必ず重心 $(\bar x,\bar y)$ を通る」——○か×か。（答: ○。切片での偏微分=0 が $\bar y=\hat\beta_0+\hat\beta_1\bar x$ を与える）
+
+  </Exercise>
+</Level>
+
+<Level level={2} title="仮定体系（ガウス–マルコフと BLUE・決定係数・残差分析）">
+  <Concept>
+
+最小二乗推定がどんな意味で「良い」かは、誤差項 $\varepsilon_i$ への仮定で決まる。
+
+- **ガウス–マルコフの仮定**: ① 線形性、② 誤差の期待値 0（$E[\varepsilon]=0$）、③ 等分散（$\mathrm{Var}[\varepsilon]=\sigma^2$ 一定）、④ 無相関（$\mathrm{Cov}[\varepsilon_i,\varepsilon_j]=0$）。
+- これらが成り立つとき、OLS 推定量は**BLUE**（Best Linear Unbiased Estimator＝線形不偏推定量の中で分散最小）。誤差が[正規分布](/topics/normal-distribution)なら、さらに係数の検定・区間推定ができる。
+
+当てはまりは<Term id="coefficient-of-determination">決定係数</Term>で測る。
+
+<Math tex="R^2=1-\dfrac{\mathrm{RSS}}{\mathrm{SST}},\quad \mathrm{SST}=\textstyle\sum(y_i-\bar y)^2" />
+
+全変動 SST のうち回帰で説明できた割合。単回帰では $R^2$ は相関係数の二乗に等しい。
+
+  </Concept>
+  <Derivation title="なぜ外れ値に弱いのか（残差分析の入口）">
+
+RSS は残差を**二乗**するため、直線から遠い点ほど寄与が二次で効く。1 点でも大きく外れると、その点の二乗残差を減らそうとして直線全体が引っ張られる（頑健でない）。
+だから当てはめたあとは**残差プロット**（残差 vs 予測値）を見て、外れ値・非線形・不等分散（誤差の分散が一定でない）の兆候を確認する。これが残差分析の入口。
+
+  </Derivation>
+  <Interact>
+
+ラボで右端の点を大きく上へドラッグして外れ値を作ると、緑の最小二乗解がその点へ引っ張られ、傾きと $R^2$ が動くのを確かめよう（外れ値が係数を引っ張る）。
+
+<RegressionLab />
+
+  </Interact>
+  <Exercise>
+
+<RegressionQuiz />
+
+  </Exercise>
+</Level>
+
+<Level level={3} title="バイアス–バリアンスと正則化" status="planned">
+  過剰適合とのトレードオフ、リッジ/ラッソ回帰による係数の縮小（前提: 多変数の回帰）。
+</Level>
+
+<Level level={4} title="交絡・欠落変数バイアスと FWL" status="planned">
+  欠落変数が係数を歪めるしくみと Frisch–Waugh–Lovell
+  定理。将来の因果推論トピックへつながる（到達途上）。
+</Level>
+
+<Level level={5} title="一般化線形モデル・ロバスト回帰" status="planned">
+  ロジスティック回帰など GLM への拡張、外れ値に強いロバスト回帰（Huber 損失など）。
+</Level>
+
+<Level level={6} title="フロンティア" status="planned">
+  高次元回帰（p≫n）でのスパース推定や、機械学習的な非線形回帰との接続は研究の只中（到達途上）。
+</Level>
+
+</Topic>

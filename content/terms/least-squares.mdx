@@ -1,0 +1,15 @@
+---
+title: 最小二乗法
+definition: 残差平方和 RSS=Σ(y−ŷ)² を最小にするように直線（回帰係数）を選ぶ推定法。正規方程式で閉形式に解ける。
+aliases: [OLS, 最小2乗法, ordinary least squares, least squares]
+seeAlso: [regression-line, regression-coefficient, residual, residual-sum-of-squares]
+---
+
+# 最小二乗法（OLS）
+
+各点と直線の縦のずれ＝[残差](residual)の**二乗和**[残差平方和](residual-sum-of-squares) $\mathrm{RSS}=\sum(y_i-\hat y_i)^2$ を
+最小にするように[回帰直線](regression-line)を選ぶ推定法。
+
+- RSS を $\beta_0,\beta_1$ で偏微分して 0 とおくと**正規方程式**が得られ、閉形式で解ける。
+- 単回帰の[回帰係数](regression-coefficient)は $\hat\beta_1=\dfrac{\sum(x-\bar x)(y-\bar y)}{\sum(x-\bar x)^2}$、切片は $\hat\beta_0=\bar y-\hat\beta_1\bar x$。
+- 残差を**二乗**するため、遠い外れ値の影響を強く受ける（頑健ではない）。
