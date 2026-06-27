@@ -8,6 +8,18 @@
   教科書でよく見る **n≈64 は二標本（各群）の値**。一標本と混同してテスト期待値を誤らない。
   - 出典: Issue #22 仮説検定トピック実装時の self-correction。
 
+## SVG の点ドラッグ（回帰ラボ等のインタラクション）
+
+- ドラッグは pointer events で実装する: 各要素の `onPointerDown` で `dragRef.current=index` と
+  `setPointerCapture` を行い、`<svg>` 側の `onPointerMove`/`onPointerUp`/`onPointerLeave` で更新・終了。
+  クライアント座標→データ座標の逆変換は `svg.getBoundingClientRect()` で viewBox スケールを補正する。
+  SVG には `touch-none select-none` を付け、スマホのスクロール/選択と競合させない。
+- React の `<input type=range>` を**プログラムから off-step な値**にセットすると、つまみ表示は最寄り
+  step にスナップする（store 値・計算結果は正確）。表示ラベルは store 値を出せばズレない。実害は出にくいが
+  「合わせる」系ボタンの見た目を気にするなら step に丸めて渡す。
+- Playwright で React の状態更新を読むときは、クリック/イベント発火と**同じ evaluate 内で同期的に読むと
+  再レンダー前の古い値**が返る。別の tool 呼び出しに分けて読む。
+
 ## 数式の強連動（TermController）
 
 - 同一ページに同じ数式コンポーネント（同じ `term-*` id）を複数配置しても問題ない。
