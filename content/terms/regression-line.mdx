@@ -1,0 +1,18 @@
+---
+title: 回帰直線
+definition: 説明変数 x から目的変数 y を予測する直線 ŷ=β̂0+β̂1·x。最小二乗法で当てはめると重心 (x̄,ȳ) を必ず通る。
+aliases: [回帰式, 予測直線, regression line]
+seeAlso: [least-squares, regression-coefficient, residual]
+---
+
+# 回帰直線
+
+説明変数 $x$ から目的変数 $y$ を予測する直線
+
+$$
+\hat y=\hat\beta_0+\hat\beta_1 x
+$$
+
+- $\hat\beta_1$ が傾き（[回帰係数](regression-coefficient)）、$\hat\beta_0$ が切片。
+- [最小二乗法](least-squares)で当てはめた直線は**重心 $(\bar x,\bar y)$ を必ず通る**（$\hat\beta_0=\bar y-\hat\beta_1\bar x$ より）。
+- 予測値 $\hat y_i$ と実測値 $y_i$ のずれが[残差](residual)。

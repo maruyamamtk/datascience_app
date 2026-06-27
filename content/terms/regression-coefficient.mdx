@@ -1,0 +1,19 @@
+---
+title: 回帰係数
+definition: 回帰直線の傾き β̂1。x が1単位増えたときの y の平均的な変化量。単回帰では β̂1=Σ(x−x̄)(y−ȳ)/Σ(x−x̄)²。
+aliases: [傾き, slope, 偏回帰係数, regression coefficient]
+seeAlso: [least-squares, regression-line, variance, expected-value]
+---
+
+# 回帰係数
+
+[回帰直線](regression-line)の傾き $\hat\beta_1$。**$x$ が 1 単位増えたときの $y$ の平均的な変化量**を表す。
+単回帰の[最小二乗法](least-squares)では
+
+$$
+\hat\beta_1=\frac{\sum(x-\bar x)(y-\bar y)}{\sum(x-\bar x)^2}=\frac{S_{xy}}{S_{xx}}
+$$
+
+- 分子 $S_{xy}=\sum(x-\bar x)(y-\bar y)$ は $x,y$ の共変動、分母 $S_{xx}=\sum(x-\bar x)^2$ は $x$ の[分散](variance)（×n）。
+- すなわち「共分散 ÷ x の分散」。x と y が一緒に動くほど傾きは大きい。
+- 切片は $\hat\beta_0=\bar y-\hat\beta_1\bar x$（[期待値](expected-value)＝重心を通す条件）。
