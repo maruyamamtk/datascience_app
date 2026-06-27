@@ -178,12 +178,22 @@ export function MomentLab() {
         <Stat
           label="歪度 γ₁"
           value={formatNumber(skewness)}
-          hint={skewness > 0.05 ? "右に裾" : skewness < -0.05 ? "左に裾" : "ほぼ対称"}
+          hint={
+            !Number.isFinite(skewness)
+              ? "定義不可（σ=0）"
+              : skewness > 0.05
+                ? "右に裾"
+                : skewness < -0.05
+                  ? "左に裾"
+                  : "ほぼ対称"
+          }
         />
         <Stat
           label="尖度 γ₂"
           value={formatNumber(kurtosis)}
-          hint={kurtosis > 0 ? "尖り/重い裾" : "平たい"}
+          hint={
+            !Number.isFinite(kurtosis) ? "定義不可（σ=0）" : kurtosis > 0 ? "尖り/重い裾" : "平たい"
+          }
         />
         <Stat label="変動係数 CV" value={formatNumber(cv)} hint="σ/μ" />
         <Stat label="標準偏差 σ" value={formatNumber(std)} hint="√分散" />
