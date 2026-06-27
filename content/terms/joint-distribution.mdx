@@ -1,0 +1,16 @@
+---
+title: 同時分布
+definition: 2つ以上の確率変数を同時に見た分布 $P(X=i, Y=j)$（連続なら同時密度 $f(x,y)$）。変数間の関係を含む «全情報»。
+aliases: [joint distribution, 結合分布, 同時確率分布]
+seeAlso: [marginal-distribution, conditional-distribution, statistical-independence]
+---
+
+# 同時分布
+
+$$
+P(X=i,\ Y=j)
+$$
+
+- $X,Y$ を «組» として見たときの確率。表（行=X, 列=Y）の各セルに確率が入り、総和は 1。
+- ここから一方を足し消すと[周辺分布](marginal-distribution)、一方を固定して正規化すると[条件付き分布](conditional-distribution)。
+- $P(X,Y)=P(X)P(Y)$ がすべてのセルで成り立つとき $X,Y$ は[統計的独立](statistical-independence)。

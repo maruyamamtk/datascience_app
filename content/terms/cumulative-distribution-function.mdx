@@ -1,0 +1,16 @@
+---
+title: 累積分布関数
+definition: $F(x)=P(X\le x)$。確率関数/密度関数を «それ以下» で足し上げた量。単調非減少で、$x\to\infty$ で 1、$x\to-\infty$ で 0。
+aliases: [cumulative distribution function, CDF, 分布関数]
+seeAlso: [probability-mass-function, probability-density-function, survival-function]
+---
+
+# 累積分布関数（CDF）
+
+$$
+F(x)=P(X\le x)
+$$
+
+- 離散なら $F(x)=\sum_{k\le x}P(X=k)$（階段関数）、連続なら $F(x)=\int_{-\infty}^x f(t)\,dt$。
+- **単調非減少**で右端は 1、左端は 0。どんな分布でも定義できる «共通言語»。
+- 残り $1-F(x)$ が[生存関数](survival-function)。逆関数 $F^{-1}$ が分位点関数。

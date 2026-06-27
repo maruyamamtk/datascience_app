@@ -1,0 +1,16 @@
+---
+title: 条件付き分布
+definition: 一方の変数を固定したときの分布 $P(X=i\mid Y=j)=\dfrac{P(X=i,Y=j)}{P(Y=j)}$。その «列» を取り出し合計1に正規化する。
+aliases: [conditional distribution, 条件付き確率分布]
+seeAlso: [joint-distribution, marginal-distribution, conditional-probability]
+---
+
+# 条件付き分布
+
+$$
+P(X=i\mid Y=j)=\frac{P(X=i,\ Y=j)}{P(Y=j)}
+$$
+
+- [同時分布](joint-distribution)の «その列だけ» を取り出し、[周辺](marginal-distribution) $P(Y=j)$ で割って合計を 1 にしたもの。
+- [条件付き確率](conditional-probability)を «分布» に拡張した概念。$Y$ を知ったうえでの $X$ の確率。
+- $P(X\mid Y)=P(X)$ なら $X,Y$ は独立（$Y$ を知っても $X$ の分布が変わらない）。
