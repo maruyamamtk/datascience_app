@@ -1,0 +1,18 @@
+---
+title: 畳み込み
+definition: 独立な確率変数の和 $Z=X+Y$ の分布を求める演算 $P(Z=k)=\sum_i P(X=i)P(Y=k-i)$（連続なら $f_Z=\int f_X(x)f_Y(z-x)\,dx$）。
+aliases: [convolution, たたみこみ, 合成積]
+seeAlso: [linear-combination, probability-mass-function, moment-generating-function]
+---
+
+# 畳み込み
+
+独立な $X,Y$ の和 $Z=X+Y$ の分布。
+
+$$
+P(Z=k)=\sum_i P(X=i)\,P(Y=k-i)
+$$
+
+- 2 つのサイコロの和が «三角形» になるのはこれ（和 7 が最多の 6 通り）。
+- [モーメント母関数](moment-generating-function)・確率母関数では畳み込みが «積» に化けるので、和の分布の計算が楽になる。
+- 一様分布どうしの和でも中央が膨らむ——これを繰り返すと正規分布へ（中心極限定理の芽）。

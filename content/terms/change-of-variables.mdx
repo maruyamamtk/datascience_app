@@ -1,0 +1,18 @@
+---
+title: 変数変換
+definition: 確率変数 $X$ を関数 $Y=g(X)$ で写したときの分布の求め方。単調な $g$ では $f_Y(y)=f_X(g^{-1}(y))\,\bigl|\frac{d}{dy}g^{-1}(y)\bigr|$（ヤコビアン補正）。
+aliases: [change of variables, 確率変数の変換, transformation]
+seeAlso: [jacobian, linear-combination, probability-density-function]
+---
+
+# 変数変換
+
+確率変数 $X$ を $Y=g(X)$ に写したときの $Y$ の分布。$g$ が単調なら
+
+$$
+f_Y(y)=f_X\!\bigl(g^{-1}(y)\bigr)\,\Bigl|\tfrac{d}{dy}g^{-1}(y)\Bigr|
+$$
+
+- 末尾の $|\cdot|$ が[ヤコビアン](jacobian)。横軸の伸縮で面積（確率）が変わらないよう高さを補正する。
+- 線形変換 $Y=aX+b$ なら $f_Y(y)=f_X((y-b)/a)/|a|$、$E[Y]=aE[X]+b$、$\mathrm{Var}[Y]=a^2\mathrm{Var}[X]$。
+- 標準化 $Z=(X-\mu)/\sigma$ や逆関数法による乱数生成もこの枠組み。

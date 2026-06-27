@@ -281,3 +281,19 @@ MVP 5トピック完了後、SPEC §3 のチェックリスト全項目（A〜S,
 - **変更概要**: 二項分布 Bin(n,p) を題材に4層実装。n・p・しきい値 x のスライダーが `useMassStore`（SSOT）を更新→確率関数の棒（x以下=青）・累積分布関数の階段・数式 `F(x)=Σ_{k≤x}P(X=k)`・`S(x)=1−F(x)` の値（TermController）が同時連動。CdfStepper は P(X=k) を1本ずつ累積に加え階段が1へ到達する過程をコマ送り。JointDistribution は天気×傘の同時分布ヒートマップで行和=周辺P(X)・列和=周辺P(Y)を示し、列クリックで条件付き P(X|Y=y)（列を正規化）を提示。母関数 MGF/PGF は計算層＋テスト（M'(0)=μ を中心差分で確認）＋L2導出（テイラー展開）で網羅。二項係数は combinatorics.ts を再利用。
 - **検証結果**: Vitest **278 passed**（+16: mass-functions 13 / frames 3、registry リンク切れゼロ維持）。tsc / lint（警告0）/ build（/topics/probability-distributions-mgf・新用語8ページ出力）成功。`pnpm start` + Playwright 実機確認: 初期 F(5)=62%（Bin(10,.5)のCDFと一致）、x 5→7 で F→95%・S→5% が数式追従、同時分布で「傘あり」列クリックで P(雨|傘あり)=0.59 を正しく算出、CdfStepper で F(3)=17.2%、コンソールエラー0件。
 - **設計判断**: 連続の確率密度関数は既存トピック（正規分布）に譲り、離散の二項を主役にして «確率関数→CDF→生存» の積み上げ関係を強連動で見せることに集中。同時分布は身近な «天気×傘» の従属例にして周辺化・条件付け・独立性を一望。レビューで n を x 未満に下げると x が範囲外になる不整合を発見→ n 変更時に x をクランプして修正。
+
+### コンテンツ拡充 #30 — [B-4] 変数変換と確率変数の線形結合
+
+優先度 4/82。前提=確率分布と母関数。線形変換 aX+b のスケール・シフトをヤコビアンとともに体感。
+
+- [x] 計算層 `lib/stats/transform.ts`（linearTransformMoments / linearTransformNormalPdf / linearCombinationMoments / convolve / fairDie、normalPdf 再利用）+ Vitest（10）
+- [x] 状態層 `lib/store/variable-transformation.ts`（controls {muX,sigmaX,a,b}）
+- [x] 描画層 `components/topics/variable-transformation/`（TransformLab=a/b/σ→元と変換後の密度＆数式 E[aX+b]・Var[aX+b] 強連動＋ヤコビアン / ConvolutionStepper=2サイコロの和を6×6グリッドの反対角線で1マスずつ畳み込むコマ送り / TransformQuiz）+ frames.ts + Vitest（4）
+- [x] 用語ノード4件（change-of-variables / jacobian / linear-combination / convolution）
+- [x] MDX `content/topics/variable-transformation.mdx`（L0-L2 充実：線形変換のモーメント→ヤコビアン補正の導出（CDF微分）→線形結合の分散と畳み込み、L3-L6 planned）
+- [x] `/topics` 一覧へ反映（status: published）
+
+#### レビュー: 変数変換トピック（2026-06-28）
+- **変更概要**: X~N(μ,σ²) に Y=aX+b を施す4層実装。a・b・σ_X のスライダーが `useTransformStore`（SSOT）を更新→元X（破線）と変換後Y（実線）の密度曲線・数式 `E[aX+b]=μ_Y`・`Var[aX+b]=a²σ²=σ_Y²`（TermController）が同時連動。ヤコビアン 1/|a|（面積=確率を保つ高さ補正）をコールアウト＋導出（CDFを微分し連鎖律で1/aが出る）で説明。ConvolutionStepper は2サイコロの和を6×6グリッドの反対角線(i+j=s)強調＋和の分布（三角形）の積み上げでコマ送りし、畳み込み P(Z=k)=ΣP(X=i)P(Y=k−i) を可視化。線形結合の分散（独立で足し算・共分散項）も計算層＋L2で網羅。normalPdf を再利用。
+- **検証結果**: Vitest **292 passed**（+14: transform 10 / frames 4、registry リンク切れゼロ維持）。tsc / lint（警告0）/ build（/topics/variable-transformation・新用語4ページ出力）成功。`pnpm start` + Playwright 実機確認: 初期 a=2,b=1 で μ_Y=1・Var_Y=4、a 2→3 で Var_Y→9 が数式追従、畳み込みステッパーで P(Z=7)=16.7%（6通り/36）、コンソールエラー0件。
+- **設計判断**: 密度変換のヤコビアンは «横を伸ばすと面積保存で高さが縮む» を曲線の見た目＋導出で二重に提示。和の分布は «一様どうしの和でも中央が膨らむ＝CLTの芽» と次トピック（大数の法則・CLT）への伏線にした。ConvolutionStepper は frame 状態を useTransformStore に同居（TransformLab は frame 不使用なので競合なし）。

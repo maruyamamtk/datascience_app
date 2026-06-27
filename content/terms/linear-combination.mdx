@@ -1,0 +1,16 @@
+---
+title: 確率変数の線形結合
+definition: $Z=aX+bY$ の形。期待値は常に線形 $E[Z]=aE[X]+bE[Y]$。分散は $\mathrm{Var}[Z]=a^2\mathrm{Var}[X]+b^2\mathrm{Var}[Y]+2ab\,\mathrm{Cov}(X,Y)$（独立なら共分散項 0）。
+aliases: [linear combination, 線形結合, 一次結合]
+seeAlso: [expected-value, variance, convolution]
+---
+
+# 確率変数の線形結合
+
+$$
+Z=aX+bY
+$$
+
+- **期待値は常に線形**: $E[Z]=aE[X]+bE[Y]$（独立でなくても成り立つ）。
+- **分散**: $\mathrm{Var}[Z]=a^2\mathrm{Var}[X]+b^2\mathrm{Var}[Y]+2ab\,\mathrm{Cov}(X,Y)$。独立なら最後の項が消えて «足し算»。
+- 差 $X-Y$ でも独立なら $\mathrm{Var}[X-Y]=\mathrm{Var}[X]+\mathrm{Var}[Y]$。和の «分布» は[畳み込み](convolution)で求める。
