@@ -249,3 +249,19 @@ MVP 5トピック完了後、SPEC §3 のチェックリスト全項目（A〜S,
 - **変更概要**: 既存4層パターン（計算 lib/stats → 状態 lib/store → 描画 components/topics → MDX、用語 content/terms）を踏襲。有病率(事前)・感度・特異度の3スライダーが `useProbabilityStore`（single source of truth）を更新→モザイク図（病気/健康×陽性/陰性の面積分割）と数式 `P(D|+)=P(+|D)P(D)/[…]` の各項（TermController の DOM 差分パッチ）と事後確率が同時連動。BayesStepper は母集団1000人を「母集団→事前で病気/健康→検査で陽性/陰性→陽性者の中の病気割合」と4段でコマ送り（アルゴリズム図鑑スタイル）、最終コマで P(D|+) が「陽性の人だけの中の真陽性割合」と腑に落ちる。場合の数（階乗・nPr・nCr）と包除原理は計算層＋テストで固め L2 で網羅。
 - **検証結果**: Vitest **237 passed**（+28: bayes 11 / combinatorics 13 / frames 4、`registry.test.ts` のリンク切れゼロ維持）。`tsc --noEmit` / `pnpm lint`（警告0）/ `pnpm build`（51ページ SSG：/topics/probability-basics・新用語7ページ出力）成功。`pnpm start` + Playwright で実機確認：有病率 1%→30% 操作で数式 term-post 0.09→0.81・term-prior/priorc 追従、モザイク「P(D|+)=9%→81%」、ステッパー最終コマで自然頻度（陽性333=真陽性270＋偽陽性63, P(D|+)=81%）を描画、/topics 一覧に反映、コンソールエラー0件。
 - **設計判断**: 中核例は「有病率1%・感度90%・特異度91%→事後9%」の検査の罠を初期値に採用し、最初の一手で «P(+|D)≠P(D|+)» を体感させる。モザイク図は面積比で「陽性帯の中の青の横割合＝事後確率」を直感化。自然頻度ステッパーは率より人数で考える方が直感的という認知科学の知見に沿う。
+
+### コンテンツ拡充 #28 — [B-3] 分布の特性値（期待値・分散・モーメント）
+
+優先度 2/82。前提=事象と確率。中核可視化は**数直線上の点をドラッグして特性値が連動**するラボ。
+
+- [x] 計算層 `lib/stats/moments.ts`（centralMoment / variance(母/標本) / skewness / kurtosisExcess / cv / quantile / chebyshevBound / correlation / partialCorrelation、`mean` は sample.ts を再利用）+ Vitest（21）
+- [x] 状態層 `lib/store/distribution-characteristics.ts`（createTopicStore, controls {points}）
+- [x] 描画層 `components/topics/distribution-characteristics/`（MomentLab=点ドラッグ→重心・μ±σ帯・μ/σ²数式の強連動＋歪度/尖度/CV数値 / VarianceStepper=偏差平方を1点ずつ積み上げるコマ送り / MomentQuiz）+ frames.ts + Vitest（4）
+- [x] 用語ノード9件（moment / skewness / kurtosis / coefficient-of-variation / correlation-coefficient / partial-correlation / chebyshev-inequality / quantile-function / conditional-expectation）+ 既存 expected-value/variance 再利用
+- [x] MDX `content/topics/distribution-characteristics.mdx`（L0-L2 充実：期待値=重心・分散の組み立て→モーメントで形を測る→変動係数/分位点/相関/偏相関/条件付き期待値/チェビシェフ導出、L3-L6 planned）
+- [x] `/topics` 一覧へ反映（status: published）
+
+#### レビュー: 分布の特性値トピック（2026-06-28）
+- **変更概要**: 単回帰と同じ «点ドラッグ» 型の4層実装。数直線上の7点を `useMomentStore`（SSOT）が保持し、ドラッグ→期待値 μ（重心の三角フルクラム）・μ±σ帯・数式 `μ=1/n Σx`・`σ²=1/n Σ(x−μ)²` の値（TermController の DOM 差分パッチ）・歪度/尖度/変動係数の数値が同時連動。VarianceStepper は偏差平方 (xᵢ−μ)² を1点ずつ加え最後に n で割ると母分散になる過程をコマ送り（アルゴリズム図鑑スタイル）。相関・偏相関・分位点・チェビシェフは計算層＋テスト＋L2導出で網羅（チェビシェフはマルコフから1行で導出）。`mean` は既存 sample.ts を再利用し重複を避けた。
+- **検証結果**: Vitest **262 passed**（+25: moments 21 / frames 4、registry リンク切れゼロ維持）。tsc / lint（警告0）/ build（/topics/distribution-characteristics・新用語9ページ出力）成功。`pnpm start` + Playwright 実機確認: 初期 μ=3.29・σ²=4.49・歪度+1.33（右裾）、外れ値 8→3 ドラッグで μ→2.57・σ²→0.82・歪度→−0.21 が数式・統計値・ステッパー（μ追従）とも実時間追従、コンソールエラー0件。
+- **設計判断**: 初期標本は右に裾の長い [1,2,2,3,3,4,8] にして «歪度が正» を最初の一手で見せる。分散を平方和で測る理由（符号消去＋外れ強調）を導出とステッパーの両輪で説明。相関/偏相関は2変数で別概念のため重い専用ラボは作らず、計算層＋概念＋数式で反映（回帰トピックで再登場）。

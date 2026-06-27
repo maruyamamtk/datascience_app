@@ -1,0 +1,17 @@
+---
+title: モーメント
+definition: 分布の形を表す量。原点まわりの $k$ 次モーメント $E[X^k]$、平均まわり（中心）の $k$ 次モーメント $E[(X-\mu)^k]$。1次=期待値、2次（中心）=分散、3次=歪度、4次=尖度の素。
+aliases: [moment, 積率, 中心モーメント]
+seeAlso: [expected-value, variance, skewness, kurtosis]
+---
+
+# モーメント
+
+分布を «次数» で特徴づける量。中心モーメント $\mu_k=E[(X-\mu)^k]$ が基本。
+
+- $\mu_2=\sigma^2$ が[分散](variance)（ばらつき）。
+- $\mu_3$ を $\sigma^3$ で割ると[歪度](skewness)（非対称）。
+- $\mu_4$ を $\sigma^4$ で割ると[尖度](kurtosis)（裾の重さ）。
+- 1 次の原点モーメント $E[X]$ は[期待値](expected-value)（重心）。
+
+低次から順に «位置 → 広がり → 偏り → 尖り» と分布の形を捉えていく。

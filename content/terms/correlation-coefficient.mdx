@@ -1,0 +1,16 @@
+---
+title: 相関係数
+definition: 2変数の直線的関係の強さ $r=\dfrac{\mathrm{Cov}(X,Y)}{\sigma_X\sigma_Y}$（$-1\le r\le 1$）。±1 は完全な直線、0 は無相関。
+aliases: [correlation coefficient, ピアソンの相関係数, r]
+seeAlso: [variance, partial-correlation, expected-value]
+---
+
+# 相関係数
+
+$$
+r=\frac{\mathrm{Cov}(X,Y)}{\sigma_X\,\sigma_Y},\qquad \mathrm{Cov}(X,Y)=E[(X-\mu_X)(Y-\mu_Y)]
+$$
+
+- 共分散を各標準偏差で割って $[-1,1]$ に正規化したもの。
+- **相関 ≠ 因果**。第3変数による «見かけの相関» は[偏相関係数](partial-correlation)で切り分ける。
+- 直線関係しか測れない（曲線的な強い関係でも $r\approx0$ になりうる）。

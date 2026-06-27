@@ -1,0 +1,16 @@
+---
+title: 偏相関係数
+definition: 第3変数 $Z$ の影響を取り除いた $X,Y$ の相関 $r_{XY\cdot Z}=\dfrac{r_{XY}-r_{XZ}r_{YZ}}{\sqrt{(1-r_{XZ}^2)(1-r_{YZ}^2)}}$。
+aliases: [partial correlation, 偏相関]
+seeAlso: [correlation-coefficient]
+---
+
+# 偏相関係数
+
+$$
+r_{XY\cdot Z}=\frac{r_{XY}-r_{XZ}\,r_{YZ}}{\sqrt{(1-r_{XZ}^2)(1-r_{YZ}^2)}}
+$$
+
+- 共通原因 $Z$ を «制御» したときの $X,Y$ の[相関](correlation-coefficient)。
+- 見かけの相関が $Z$ 経由なら偏相関は 0 に近づく（例: アイス売上と水難事故は気温 $Z$ 経由）。
+- 相関から因果へ近づく第一歩。グラフィカルモデル・回帰の調整と同じ発想。

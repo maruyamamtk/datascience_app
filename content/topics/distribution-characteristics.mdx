@@ -1,0 +1,134 @@
+---
+title: 分布の特性値（期待値・分散・モーメント）
+summary: 分布を数個の «特性値» で要約する。期待値（重心）・分散（広がり）・歪度（偏り）・尖度（裾）をドラッグで体感し、変動係数・相関・チェビシェフまでつなぐ。
+status: published
+---
+
+import { MomentLab } from "@/components/topics/distribution-characteristics/MomentLab";
+import { VarianceStepper } from "@/components/topics/distribution-characteristics/VarianceStepper";
+import { MomentQuiz } from "@/components/topics/distribution-characteristics/MomentQuiz";
+
+<Topic title="分布の特性値（期待値・分散・モーメント）" summary="分布を数個の «特性値» で要約する。期待値（重心）・分散（広がり）・歪度（偏り）・尖度（裾）をドラッグで体感し、変動係数・相関・チェビシェフまでつなぐ。">
+
+<ReaderGuide>
+
+- **初学者** → L0〜L1（期待値＝重心・分散＝広がりを点ドラッグで体感 → モーメントで «形» を測る仕組み）
+- **一通り使える人** → L2（変動係数・分位点・相関/偏相関・条件付き期待値・チェビシェフの不等式）
+- **「完全に理解した」人** → L3 以降（モーメント母関数・高次元の共分散構造は到達途上）
+
+前提: [事象と確率](/topics/probability-basics)の<Term id="expected-value">期待値</Term>の考え方。この特性値は[正規分布](/topics/normal-distribution)・[中心極限定理](/topics/central-limit-theorem)・回帰のいたるところで使う。
+
+</ReaderGuide>
+
+<Level level={0} title="ブラックボックス（期待値＝重心・分散＝広がり）">
+  <Concept>
+
+分布全体を眺める代わりに、数個の **特性値** で要約したい。最も基本は «どこにある（位置）» と «どれだけ散らばる（広がり）»。
+
+- **<Term id="expected-value">期待値</Term>** $\mu=E[X]$: 分布の**重心**。データを乗せた数直線が釣り合う支点。
+- **<Term id="variance">分散</Term>** $\sigma^2=E[(X-\mu)^2]$: 平均からの «離れ» を平方して平均したもの。広がりの指標。平方根 $\sigma$ が標準偏差。
+
+平方するのは、符号を消して «大きく外れた点» を強調するため。だから外れ値は分散を大きく押し上げる。
+
+  </Concept>
+  <Interact>
+
+下のラボで数直線上の点をドラッグすると、<Term id="expected-value">期待値</Term> $\mu$（紫の重心）と
+数式 $\mu=\frac1n\sum x_i$・$\sigma^2=\frac1n\sum(x_i-\mu)^2$ の値が同時に追従する（操作→図→数式の強連動）。
+1 点を遠くへ引き離すと、重心がそちらへ動き、青帯（μ±σ）が広がる。
+
+<MomentLab />
+
+  </Interact>
+  <Exercise>
+
+確認: 「1 つの点を平均からどんどん遠ざけると、分散は青天井に増える」——○か×か。
+（答: ○。分散は偏差の «平方» 平均なので、外れるほど二次で効く。中央値はこうした外れに頑健）
+
+  </Exercise>
+</Level>
+
+<Level level={1} title="古典的理解（モーメントで «形» を測る）">
+  <Concept>
+
+期待値・分散は «1 次・2 次» の<Term id="moment">モーメント</Term>。次数を上げると分布の «形» がさらに見える。
+
+- 3 次（標準化）= **<Term id="skewness">歪度</Term>** $\gamma_1=E[(X-\mu)^3]/\sigma^3$。左右の偏り。正なら右に裾。
+- 4 次（標準化）= **<Term id="kurtosis">尖度</Term>** $\gamma_2=E[(X-\mu)^4]/\sigma^4-3$。裾の重さ・尖り。正規分布を基準（0）にする。
+
+低次から «位置 → 広がり → 偏り → 尖り» と、分布を段階的に特徴づけていく。
+
+  </Concept>
+  <Derivation title="なぜ平方して足すと «広がり» になるのか（分散の組み立て）">
+
+分散は各点の偏差 $x_i-\mu$ を平方して平均したもの $\sigma^2=\frac1n\sum_i (x_i-\mu)^2$。
+
+- 偏差をそのまま足すと $\sum_i (x_i-\mu)=0$（重心の定義）で打ち消し合い、広がりを測れない。
+- 平方すれば符号が消え、**大きく外れた点ほど二次で重く効く**。だから外れ値に敏感。
+- 同じ理由で、3 乗（符号を保つ）は偏り＝歪度、4 乗（外れを強調）は裾の重さ＝尖度を測る。
+
+下のステッパーで、偏差平方 $(x_i-\mu)^2$ を 1 点ずつ足し、最後に $n$ で割ると母分散になる過程を追える。
+
+  </Derivation>
+  <Interact>
+
+<VarianceStepper />
+
+  </Interact>
+  <Exercise>
+
+<MomentQuiz />
+
+  </Exercise>
+</Level>
+
+<Level level={2} title="仮定体系（変動係数・分位点・相関・条件付き期待値・チェビシェフ）">
+  <Concept>
+
+特性値を «比べる・関係づける・保証する» 道具へ広げる。
+
+- **<Term id="coefficient-of-variation">変動係数</Term>** $\mathrm{CV}=\sigma/\mu$: 単位に依らない相対ばらつき。平均が違う 2 群の散らばりを比較できる。
+- **<Term id="quantile-function">分位点関数</Term>** $Q(p)=F^{-1}(p)$: 中央値 $Q(0.5)$・四分位など。外れ値に頑健で、平均・分散と補い合う。
+- **<Term id="correlation-coefficient">相関係数</Term>** $r=\mathrm{Cov}(X,Y)/(\sigma_X\sigma_Y)$: 2 変数の直線関係の強さ。**相関≠因果**で、共通原因 $Z$ の «見かけの相関» は**<Term id="partial-correlation">偏相関係数</Term>**で切り分ける。
+- **<Term id="conditional-expectation">条件付き期待値</Term>** $E[Y\mid X]$ と条件付き分散: «$X$ を知ったうえで» の平均・ばらつき。回帰・分散分析の土台。
+
+そして分布の形を仮定せず «外れにくさ» を保証するのが**<Term id="chebyshev-inequality">チェビシェフの不等式</Term>** $P(|X-\mu|\ge k\sigma)\le 1/k^2$。
+
+  </Concept>
+  <Derivation title="チェビシェフの不等式の導出（マルコフから1行）">
+
+非負確率変数 $Z\ge0$ に対するマルコフの不等式 $P(Z\ge a)\le E[Z]/a$ を、$Z=(X-\mu)^2$、$a=(k\sigma)^2$ に当てはめる。
+
+$$
+P\big((X-\mu)^2\ge k^2\sigma^2\big)\le \frac{E[(X-\mu)^2]}{k^2\sigma^2}=\frac{\sigma^2}{k^2\sigma^2}=\frac{1}{k^2}.
+$$
+
+左辺は $P(|X-\mu|\ge k\sigma)$ に等しい。分布の形を一切仮定していないので、**どんな分布でも** 成り立つ普遍的な上界になる。
+
+  </Derivation>
+  <Exercise>
+
+確認: 「変動係数 $\mathrm{CV}=\sigma/\mu$ は、平均が大きく異なる 2 つのデータのばらつきを比べるのに向く」——○か×か。
+（答: ○。$\sigma$ だけだと単位・スケールに引きずられるが、$\mu$ で割ると相対化できる。ただし $\mu=0$ 付近では不安定）
+
+  </Exercise>
+</Level>
+
+<Level level={3} title="モーメント母関数・特性関数" status="planned">
+  全モーメントを生成する母関数 $M_X(t)=E[e^{tX}]$
+  と特性関数、分布の一意性・たたみ込みへの応用（前提: 確率分布と母関数）。
+</Level>
+
+<Level level={4} title="多変量の特性値（共分散行列）" status="planned">
+  期待値ベクトル・共分散行列、マハラノビス距離、相関行列と偏相関行列の関係。
+</Level>
+
+<Level level={5} title="高次元・ロバスト統計" status="planned">
+  外れ値に頑健な位置・尺度（中央値・MAD・トリム平均）、高次元での標本共分散の不安定性。
+</Level>
+
+<Level level={6} title="フロンティア" status="planned">
+  重い裾（モーメントが存在しない）分布の扱いは、金融・極値理論で今も研究が続く領域（到達途上）。
+</Level>
+
+</Topic>
