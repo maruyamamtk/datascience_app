@@ -14,7 +14,7 @@ const FORMULA = `Z=\\dfrac{\\bar x-\\mu_0}{\\sigma/\\sqrt n}\\;\\Rightarrow\\;\\
   "d",
 )}\\sqrt{${term("n", "n")}}=${term("delta", "\\delta")}`;
 
-const D_MIN = 0;
+const D_MIN = -1.5; // 符号は効果の向き（右片側は d>0、左片側は d<0 で検出力が出る）
 const D_MAX = 1.5;
 const N_MIN = 5;
 const N_MAX = 100;
@@ -64,7 +64,7 @@ export function HypothesisLab() {
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <label htmlFor="ht-d" className="text-sm font-semibold text-slate-700">
-            効果量 d =(μ₁−μ₀)/σ（H₀ と H₁ の距離）
+            効果量 d =(μ₁−μ₀)/σ（符号=向き・大きさ=H₀ との距離）
           </label>
           <span className="font-mono text-sm" style={{ color: COLOR_D }}>
             d = {formatNumber(effectSize)}
