@@ -1,0 +1,16 @@
+---
+title: 周辺分布
+definition: 同時分布から一方の変数を足し合わせて得る分布 $P(X=i)=\sum_j P(X=i,Y=j)$。注目しない変数を «消す»（周辺化）。
+aliases: [marginal distribution, 周辺確率]
+seeAlso: [joint-distribution, conditional-distribution]
+---
+
+# 周辺分布
+
+$$
+P(X=i)=\sum_j P(X=i,\ Y=j)
+$$
+
+- [同時分布](joint-distribution)の表で «行和»（または列和）を取ったもの。
+- 注目しない変数 $Y$ を足して消す操作を**周辺化**という。連続なら積分 $f_X(x)=\int f(x,y)\,dy$。
+- 周辺分布だけでは変数間の関係は分からない（関係は[条件付き分布](conditional-distribution)や同時分布に宿る）。

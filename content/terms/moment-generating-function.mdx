@@ -1,0 +1,16 @@
+---
+title: モーメント母関数
+definition: $M_X(t)=E[e^{tX}]$。原点で $k$ 回微分すると $k$ 次モーメント $M^{(k)}(0)=E[X^k]$ を生む。分布を一意に定める（存在すれば）。
+aliases: [moment generating function, MGF, 積率母関数]
+seeAlso: [moment, expected-value, probability-generating-function]
+---
+
+# モーメント母関数（MGF）
+
+$$
+M_X(t)=E[e^{tX}],\qquad M^{(k)}(0)=E[X^k]
+$$
+
+- $e^{tX}=\sum_k \dfrac{(tX)^k}{k!}$ の期待値を取ると、係数に[モーメント](moment)が並ぶ。だから微分で «生成» できる。
+- $M(0)=1$、$M'(0)=\mu$、$M''(0)=E[X^2]$。
+- **独立な和**では $M_{X+Y}(t)=M_X(t)\,M_Y(t)$（畳み込みが積に化ける）。分布の再生性の証明に使う。

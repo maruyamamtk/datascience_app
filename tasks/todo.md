@@ -265,3 +265,19 @@ MVP 5トピック完了後、SPEC §3 のチェックリスト全項目（A〜S,
 - **変更概要**: 単回帰と同じ «点ドラッグ» 型の4層実装。数直線上の7点を `useMomentStore`（SSOT）が保持し、ドラッグ→期待値 μ（重心の三角フルクラム）・μ±σ帯・数式 `μ=1/n Σx`・`σ²=1/n Σ(x−μ)²` の値（TermController の DOM 差分パッチ）・歪度/尖度/変動係数の数値が同時連動。VarianceStepper は偏差平方 (xᵢ−μ)² を1点ずつ加え最後に n で割ると母分散になる過程をコマ送り（アルゴリズム図鑑スタイル）。相関・偏相関・分位点・チェビシェフは計算層＋テスト＋L2導出で網羅（チェビシェフはマルコフから1行で導出）。`mean` は既存 sample.ts を再利用し重複を避けた。
 - **検証結果**: Vitest **262 passed**（+25: moments 21 / frames 4、registry リンク切れゼロ維持）。tsc / lint（警告0）/ build（/topics/distribution-characteristics・新用語9ページ出力）成功。`pnpm start` + Playwright 実機確認: 初期 μ=3.29・σ²=4.49・歪度+1.33（右裾）、外れ値 8→3 ドラッグで μ→2.57・σ²→0.82・歪度→−0.21 が数式・統計値・ステッパー（μ追従）とも実時間追従、コンソールエラー0件。
 - **設計判断**: 初期標本は右に裾の長い [1,2,2,3,3,4,8] にして «歪度が正» を最初の一手で見せる。分散を平方和で測る理由（符号消去＋外れ強調）を導出とステッパーの両輪で説明。相関/偏相関は2変数で別概念のため重い専用ラボは作らず、計算層＋概念＋数式で反映（回帰トピックで再登場）。
+
+### コンテンツ拡充 #29 — [B-2] 確率分布と母関数
+
+優先度 3/82。前提=分布の特性値。二項分布を題材に PMF→CDF→生存関数の連結を強連動で。
+
+- [x] 計算層 `lib/stats/mass-functions.ts`（binomialPmf/Vector・cdfFromPmf・survivalFromCdf・cdfAt・binomialMgf/Pgf・mgfDerivativeAtZero・marginalX/Y・conditionalXgivenY・isIndependentJoint、二項係数は combinatorics.ts 再利用）+ Vitest（13）
+- [x] 状態層 `lib/store/probability-distributions-mgf.ts`（createTopicStore, controls {n,p,x}）
+- [x] 描画層 `components/topics/probability-distributions-mgf/`（DistributionLab=PMF棒/CDF階段/生存＋数式 F(x)・S(x) 強連動 / CdfStepper=PMFを1本ずつ積んでCDFを作るコマ送り / JointDistribution=同時分布ヒートマップ＋周辺＋列クリックで条件付き / DistributionQuiz）+ frames.ts + Vitest（3）
+- [x] 用語ノード8件（probability-mass-function / cumulative-distribution-function / survival-function / joint-distribution / marginal-distribution / conditional-distribution / moment-generating-function / probability-generating-function）+ 既存 probability-density-function 再利用
+- [x] MDX `content/topics/probability-distributions-mgf.mdx`（L0-L2 充実：PMF/CDF/生存→積み上げ導出→同時/周辺/条件付き＋母関数（テイラー展開でモーメント生成）、L3-L6 planned）
+- [x] `/topics` 一覧へ反映（status: published）
+
+#### レビュー: 確率分布と母関数トピック（2026-06-28）
+- **変更概要**: 二項分布 Bin(n,p) を題材に4層実装。n・p・しきい値 x のスライダーが `useMassStore`（SSOT）を更新→確率関数の棒（x以下=青）・累積分布関数の階段・数式 `F(x)=Σ_{k≤x}P(X=k)`・`S(x)=1−F(x)` の値（TermController）が同時連動。CdfStepper は P(X=k) を1本ずつ累積に加え階段が1へ到達する過程をコマ送り。JointDistribution は天気×傘の同時分布ヒートマップで行和=周辺P(X)・列和=周辺P(Y)を示し、列クリックで条件付き P(X|Y=y)（列を正規化）を提示。母関数 MGF/PGF は計算層＋テスト（M'(0)=μ を中心差分で確認）＋L2導出（テイラー展開）で網羅。二項係数は combinatorics.ts を再利用。
+- **検証結果**: Vitest **278 passed**（+16: mass-functions 13 / frames 3、registry リンク切れゼロ維持）。tsc / lint（警告0）/ build（/topics/probability-distributions-mgf・新用語8ページ出力）成功。`pnpm start` + Playwright 実機確認: 初期 F(5)=62%（Bin(10,.5)のCDFと一致）、x 5→7 で F→95%・S→5% が数式追従、同時分布で「傘あり」列クリックで P(雨|傘あり)=0.59 を正しく算出、CdfStepper で F(3)=17.2%、コンソールエラー0件。
+- **設計判断**: 連続の確率密度関数は既存トピック（正規分布）に譲り、離散の二項を主役にして «確率関数→CDF→生存» の積み上げ関係を強連動で見せることに集中。同時分布は身近な «天気×傘» の従属例にして周辺化・条件付け・独立性を一望。レビューで n を x 未満に下げると x が範囲外になる不整合を発見→ n 変更時に x をクランプして修正。
