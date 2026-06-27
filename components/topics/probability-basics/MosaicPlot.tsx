@@ -57,19 +57,31 @@ export function MosaicPlot({ prior, sensitivity, fpr, posterior }: Props) {
       <rect x={xSplit} y={y0} width={healthyW} height={fpH} fill={COLOR_FP} />
       <rect x={xSplit} y={y0 + fpH} width={healthyW} height={PLOT_H - fpH} fill={COLOR_TN} />
 
-      {/* 陽性領域（上段＝真陽性＋偽陽性）を囲む：事後確率はこの帯の中の青の横割合 */}
+      {/* 陽性領域（真陽性＋偽陽性）を囲む。列ごとに陽性バンドの «高さが異なる»（感度 vs 偽陽性率）
+          ため、1 枚の矩形では陰性領域まで囲ってしまう。各列を正しい高さで別々に破線で囲む
+          （可視化の教育的正しさ, tasks/lessons.md）。事後確率はこの 2 領域のうち青（病気列）の横割合。 */}
       <rect
         x={x0}
-        y={y0 - 4}
-        width={PLOT_W}
-        height={Math.max(tpH, fpH) + 4}
+        y={y0 - 3}
+        width={sickW}
+        height={tpH + 3}
+        fill="none"
+        stroke="#0f172a"
+        strokeWidth={1.2}
+        strokeDasharray="4 3"
+      />
+      <rect
+        x={xSplit}
+        y={y0 - 3}
+        width={healthyW}
+        height={fpH + 3}
         fill="none"
         stroke="#0f172a"
         strokeWidth={1.2}
         strokeDasharray="4 3"
       />
       <text x={x0} y={y0 - 10} className="fill-slate-700 text-[11px] font-semibold">
-        ⎯ 陽性（+）の人： P(D|+) = {formatNumber(posterior * 100, 0)}% が病気
+        ⎯ 陽性（+）の人＝青＋赤の上段： P(D|+) = {formatNumber(posterior * 100, 0)}% が病気
       </text>
 
       {/* 列ラベル（横軸＝事前確率の分割） */}
