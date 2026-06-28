@@ -1,0 +1,147 @@
+---
+title: 点推定の性質（不偏性・一致性・バイアス分散分解）
+summary: 良い推定量とは何か。不偏性・一致性・有効性、平均二乗誤差のバイアス分散分解を、推定量の «標本分布» を作って体感する。なぜ標本分散は n−1 で割るのか。
+status: published
+---
+
+import { BiasVarianceLab } from "@/components/topics/point-estimation-properties/BiasVarianceLab";
+import { ConsistencyStepper } from "@/components/topics/point-estimation-properties/ConsistencyStepper";
+import { EstPropQuiz } from "@/components/topics/point-estimation-properties/EstPropQuiz";
+
+<Topic title="点推定の性質（不偏性・一致性・バイアス分散分解）" summary="良い推定量とは何か。不偏性・一致性・有効性、平均二乗誤差のバイアス分散分解を、推定量の «標本分布» を作って体感する。なぜ標本分散は n−1 で割るのか。">
+
+<ReaderGuide>
+
+- **初学者** → L0〜L1（推定量の標本分布、バイアスと分散、なぜ n−1 で割るか）
+- **一通り使える人** → L2（一致性・有効性、MSE のバイアス分散分解、クラメール・ラオ、ガウス・マルコフ）
+- **「完全に理解した」人** → L3 以降（縮小推定・高次元の推定は到達途上）
+
+前提: [推定法](/topics/estimation-methods)の<Term id="maximum-likelihood">最尤法</Term>、[分布の特性値](/topics/distribution-characteristics)の<Term id="variance">分散</Term>。
+
+</ReaderGuide>
+
+<Level level={0} title="ブラックボックス（推定量の標本分布とバイアス）">
+  <Concept>
+
+推定量 $\hat\theta$ は標本ごとにぶれるので、«その標本分布» で良さを測る。代表が 2 つ。
+
+- **<Term id="unbiasedness">不偏性</Term>**: 期待値が真値に一致 $E[\hat\theta]=\theta$（平均すれば当たる）。
+- **<Term id="variance">分散</Term>**: 推定量のばらつき（小さいほど安定）。
+
+例として母分散 $\sigma^2$ の 2 つの推定量を比べる: $1/n$ で割る $S^2_n$（偏る）と $1/(n-1)$ で割る $s^2$（不偏）。
+
+  </Concept>
+  <Interact>
+
+下のラボで $n$ を動かすと、母集団から何度も標本を取って計算した 2 つの推定量の «標本分布»（ヒストグラム）と、
+バイアス・分散・MSE が同時に動く（操作→図→数式の強連動）。偏り分散（赤）の山が真値 $\sigma^2$ より左にずれることを確かめよう。
+
+<BiasVarianceLab />
+
+  </Interact>
+  <Exercise>
+
+確認: 「標本分散を $1/n$ で割ると、母分散を平均的に **過小評価** する」——○か×か。
+（答: ○。$E[S^2_n]=(n-1)/n\cdot\sigma^2$ で $-\sigma^2/n$ だけ下に偏る。平均をデータから推定したぶん散らばりを小さく見積もる。だから $1/(n-1)$ で補正する）
+
+  </Exercise>
+</Level>
+
+<Level level={1} title="古典的理解（なぜ n−1 で割るか・一致性）">
+  <Concept>
+
+$1/(n-1)$ で割ると不偏になる理由は «自由度»。平均 $\bar x$ をデータから推定したぶん、偏差 $x_i-\bar x$ は 1 つ分だけ «縮む»。
+
+<Math tex="E\!\left[\sum_i (x_i-\bar x)^2\right]=(n-1)\sigma^2\ \Rightarrow\ E[s^2]=\sigma^2" />
+
+そして $n\to\infty$ では、偏り分散も不偏分散も真値に潰れる——**<Term id="consistency">一致性</Term>**。
+
+  </Concept>
+  <Derivation title="E[Σ(xᵢ−x̄)²]=(n−1)σ² の導出">
+
+偏差平方和を母平均 $\mu$ からのずれに分解する：
+
+$$
+\sum_i (x_i-\bar x)^2=\sum_i (x_i-\mu)^2-n(\bar x-\mu)^2.
+$$
+
+期待値を取ると、$E[(x_i-\mu)^2]=\sigma^2$、$E[(\bar x-\mu)^2]=\sigma^2/n$ なので
+
+$$
+E\!\left[\sum_i (x_i-\bar x)^2\right]=n\sigma^2-n\cdot\frac{\sigma^2}{n}=(n-1)\sigma^2.
+$$
+
+よって $1/(n-1)$ で割れば $E[s^2]=\sigma^2$（不偏）。$\bar x$ を推定したぶん «自由度» が 1 減ることが $n-1$ の正体。下のステッパーで一致性も確かめよう。
+
+  </Derivation>
+  <Interact>
+
+<ConsistencyStepper />
+
+  </Interact>
+  <Exercise>
+
+<EstPropQuiz />
+
+  </Exercise>
+</Level>
+
+<Level level={2} title="仮定体系（MSE分解・有効性・下限・BLUE）">
+  <Concept>
+
+良さの «総合指標» が**<Term id="mean-squared-error">平均二乗誤差</Term>** MSE で、**<Term id="bias-variance-decomposition">バイアス分散分解</Term>**できる。
+
+<Math tex="\mathrm{MSE}=\text{バイアス}^2+\text{分散}" />
+
+- **<Term id="efficiency">有効性</Term>**: 不偏推定量のうち分散が最小。2 つの推定量の分散の比が相対効率。
+- **<Term id="cramer-rao-bound">クラメール・ラオの不等式</Term>**: 不偏推定量の分散には下限がある。達成すると有効。
+- **<Term id="gauss-markov-theorem">ガウス・マルコフの定理</Term>**: 線形回帰で最小二乗推定量は «線形不偏で最小分散»（BLUE）。
+
+不偏が常に最良ではない——少し偏らせて分散を下げ MSE を小さくする «縮小推定» もある。
+
+  </Concept>
+  <Derivation title="MSE = バイアス² + 分散 の導出">
+
+真値 $\theta$、推定量 $\hat\theta$、その期待値 $E[\hat\theta]$ について
+
+$$
+\mathrm{MSE}=E[(\hat\theta-\theta)^2]=E\big[(\hat\theta-E[\hat\theta]+E[\hat\theta]-\theta)^2\big].
+$$
+
+展開すると交差項 $2E[(\hat\theta-E[\hat\theta])]\cdot(E[\hat\theta]-\theta)=0$（$E[\hat\theta-E[\hat\theta]]=0$）なので、
+
+$$
+\mathrm{MSE}=\underbrace{E[(\hat\theta-E[\hat\theta])^2]}_{\text{分散}}+\underbrace{(E[\hat\theta]-\theta)^2}_{\text{バイアス}^2}.
+$$
+
+ばらつきと «中心のずれ» の和。これが推定・予測（機械学習の汎化）の誤差を読み解く基本枠組み。
+
+  </Derivation>
+  <Exercise>
+
+確認: 「不偏推定量（バイアス0）は、必ず最小の MSE を持つ」——○か×か。
+（答: ×。MSE=バイアス²+分散。バイアス0でも分散が大きければ MSE は大きい。少し偏らせて分散を大きく下げれば MSE を小さくできることがある＝縮小推定）
+
+  </Exercise>
+</Level>
+
+<Level level={3} title="縮小推定・正則化" status="planned">
+  ジェームズ–スタイン推定量、Ridge/Lasso による «バイアスを入れて分散を下げる» 推定（前提:
+  正則化）。
+</Level>
+
+<Level level={4} title="漸近的性質（フィッシャー情報量・漸近正規性）" status="planned">
+  最尤推定量の一致性・漸近正規性・漸近有効性、フィッシャー情報量とクラメール・ラオ下限の達成（次トピック
+  D-4）。
+</Level>
+
+<Level level={5} title="高次元での推定" status="planned">
+  パラメータ数が標本数に近い高次元での推定リスク、スパース推定の理論、ミニマックス最適性。
+</Level>
+
+<Level level={6} title="フロンティア" status="planned">
+  複雑モデル（深層学習）での «暗黙の正則化»
+  とバイアス分散の現代的理解（二重降下）は研究が続く領域（到達途上）。
+</Level>
+
+</Topic>

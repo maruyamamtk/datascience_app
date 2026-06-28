@@ -24,6 +24,7 @@
 - ✅ C-3 標本分布（t・カイ二乗・F） `sampling-distributions`（#34）
 - ✅ D-1 統計量と十分性 `statistics-sufficiency`（#35）
 - ✅ D-2 推定法 `estimation-methods`（#36）
+- ✅ D-3 点推定の性質 `point-estimation-properties`（#37）
 
 ## キュー（優先順）
 
@@ -39,7 +40,7 @@
 | 8 | #34 | C-3 | 標本分布（t・カイ二乗・F） | sampling-distributions | continuous-distributions | ✅ done |
 | 9 | #35 | D-1 | 統計量と十分性 | statistics-sufficiency | sampling-distributions | ✅ done |
 | 10 | #36 | D-2 | 推定法（最尤法・モーメント法・最小二乗法） | estimation-methods | statistics-sufficiency | ✅ done |
-| 11 | #37 | D-3 | 点推定の性質 | point-estimation-properties | estimation-methods | pending |
+| 11 | #37 | D-3 | 点推定の性質 | point-estimation-properties | estimation-methods | ✅ done |
 | 12 | #38 | D-4 | 推定量の漸近的性質 | asymptotic-properties | point-estimation-properties | pending |
 | 13 | #39 | E-2 | 検定法の導出（ネイマン・ピアソン） | test-derivation | hypothesis-testing, point-estimation-properties | pending |
 | 14 | #40 | E-3 | 正規分布に関する検定（t検定・2標本） | normal-tests | test-derivation, sampling-distributions | pending |

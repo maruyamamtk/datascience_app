@@ -1,0 +1,16 @@
+---
+title: 一致性
+definition: 標本サイズ n→∞ で推定量が真の母数に確率収束する性質。バイアスも分散も 0 へ向かう。データを増やせば正解に近づく «最低限» の良さ。
+aliases: [consistency, 一致推定量, consistent]
+seeAlso: [unbiasedness, mean-squared-error]
+---
+
+# 一致性
+
+$$
+\hat\theta_n\xrightarrow{P}\theta\quad(n\to\infty)
+$$
+
+- «データを増やせば真値に収束» する性質（確率収束）。推定量に求める最低限の良さ。
+- バイアス→0 かつ 分散→0 なら一致。$1/n$ の偏り分散はバイアスがあるが $n\to\infty$ で 0 になるので一致推定量。
+- [不偏性](unbiasedness)は «有限 n でも平均が真値»、一致性は «n→∞ で収束» で別概念（不偏でなくても一致しうる）。

@@ -393,3 +393,19 @@ MVP 5トピック完了後、SPEC §3 のチェックリスト全項目（A〜S,
 - **変更概要**: «母数をどう決めるか» の3流儀を4層実装。MleLab は指数分布の率 λ スライダー→対数尤度曲線上の現在地・勾配（スコア）・MLE頂上 λ̂=1/x̄（TermController）が同時更新。GradientAscentStepper は勾配上昇法で出発点から頂上（勾配0=MLE）へ1ステップずつ登る過程をコマ送り（アルゴリズム図鑑スタイル）。モーメント法（一様U[0,θ]の2x̄ vs 最尤max）・最小二乗＝正規誤差の最尤を導出で網羅し、線形模型・回帰へ接続。
 - **検証結果**: Vitest **380 passed**（+14: estimation 10 / frames 4、registry リンク切れゼロ）。tsc / lint（警告0）/ build（/topics/estimation-methods・新用語4ページ出力）成功。`pnpm start` + Playwright 実機確認: 初期 λ=0.3/logL=−13.35/λ̂=0.65、λ→0.65 で logL=−11.51（上昇）・勾配−0.09（≈0）、勾配上昇ステッパー末尾で λ=0.645=λ̂・勾配0、コンソールエラー0件。
 - **設計判断 / つまずき**: 抽象的な «尤度最大化» を «曲線を登る» 操作に落とした。勾配上昇の学習率は安定領域 η<2/n を超えると発散（η=0.5>2/8で発散）→テスト・部品とも η=0.2 に設定、lessons.md に教訓追記。モーメント法は «2x̄ が最大観測を覆えない» 反例で «推定法で答えが変わる» ことを実感させた。最小二乗＝正規誤差の最尤の導出で前トピック（単回帰）と接続。
+
+### コンテンツ拡充 #37 — [D-3] 点推定の性質（不偏性・一致性・バイアス分散分解）
+
+優先度 11/82。前提=推定法。推定量の標本分布でバイアス/分散/MSE/一致性を体感。
+
+- [x] 計算層 `lib/stats/estimator-properties.ts`（sampleVarianceBiased/Unbiased / bias / estimatorVariance / meanSquaredError / biasVarianceDecomposition / relativeEfficiency / simulateVarianceEstimators、normalSample・mean 再利用）+ Vitest（7, MC込み）
+- [x] 状態層 `lib/store/point-estimation-properties.ts`（controls {n}・母σ=2固定）
+- [x] 描画層 `components/topics/point-estimation-properties/`（BiasVarianceLab=n→偏り/不偏分散の標本分布ヒストグラム＋バイアス/分散/MSEテーブル＋数式 MSE=bias²+分散の強連動 / ConsistencyStepper=nを増やし標本分布が真値へ集中するコマ送り / EstPropQuiz）+ frames.ts + Vitest（4）
+- [x] 用語ノード7件（unbiasedness / consistency / efficiency / mean-squared-error / bias-variance-decomposition / cramer-rao-bound / gauss-markov-theorem）相互リンク
+- [x] MDX `content/topics/point-estimation-properties.mdx`（L0-L2 充実：標本分布とバイアス→n−1で割る理由の導出・一致性→MSE分解の導出/有効性/クラメールラオ/ガウスマルコフ、L3-L6 planned）
+- [x] `/topics` 一覧へ反映（status: published）
+
+#### レビュー: 点推定の性質トピック（2026-06-28）
+- **変更概要**: «良い推定量とは» を推定量の標本分布で体感する4層実装。BiasVarianceLab は母 N(0,4) から サイズ n を2000回抽出し、偏り分散(1/n,赤)と不偏分散(1/(n-1),青)の標本分布ヒストグラムを重ね描き、各バイアス/分散/MSE と数式 MSE=bias²+分散（TermController）が n に同時連動。偏り分散の山が真値σ²より −σ²/n 左へずれる «なぜ n−1 で割るか» を体感。ConsistencyStepper は n を 3→200 と増やし不偏分散の標本分布が真値の一点へ潰れる（一致性）をコマ送り。MSE分解・有効性・クラメールラオ・ガウスマルコフ(BLUE)を導出＋用語で網羅。
+- **検証結果**: Vitest **391 passed**（+11: estimator-properties 7 / frames 4、registry リンク切れゼロ）。tsc / lint（警告0）/ build（/topics/point-estimation-properties・新用語7ページ出力）成功。`pnpm start` + Playwright 実機確認: n=5 で MSE=5.87=bias²(0.5)+分散(5.38)、n=40 で MSE=0.82・bias²=0.01（バイアス→0）、一致性ステッパー n=200 で推定量分散0.17へ縮小、コンソールエラー0件。
+- **設計判断 / つまずき**: «n−1で割る» の腑落ちを «標本分布の山が左にずれる» 可視化＋自由度の導出で二重化。simulateVarianceEstimators のテストは MC誤差を見込み厳密一致でなく範囲/緩い許容で検証（不偏バイアス<0.2、偏りバイアス∈(−1.2,−0.5)）。フィッシャー情報量は次トピック D-4 の主役なので前方リンクせず本文テキストで触れるに留めた。frame は ConsistencyStepper のみ使用で競合なし。
