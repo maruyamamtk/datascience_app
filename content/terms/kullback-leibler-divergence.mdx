@@ -1,0 +1,16 @@
+---
+title: カルバック・ライブラー情報量
+definition: 2つの分布の «違い» を測る量 KL(p‖q)=∫p log(p/q)。0以上で p=q のとき0、一般に非対称（距離ではない）。
+aliases: [Kullback-Leibler divergence, KLダイバージェンス, KL情報量, 相対エントロピー]
+seeAlso: [maximum-likelihood, fisher-information]
+---
+
+# カルバック・ライブラー情報量（KL）
+
+$$
+\mathrm{KL}(p\,\|\,q)=\sum_x p(x)\log\frac{p(x)}{q(x)}\quad(\ge 0)
+$$
+
+- 真の分布 $p$ を $q$ で近似したときの «情報損失»。$p=q$ で 0、ずれるほど大きい。
+- **非対称** $\mathrm{KL}(p\|q)\ne\mathrm{KL}(q\|p)$ なので «距離» ではない。
+- [最尤推定](maximum-likelihood)は «経験分布とモデルの KL を最小化» することと等価。[フィッシャー情報量](fisher-information)は KL の2次近似に現れる。

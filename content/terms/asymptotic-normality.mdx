@@ -1,0 +1,16 @@
+---
+title: 漸近正規性
+definition: 標本サイズ n→∞ で推定量の分布が正規分布に近づく性質。最尤推定量は √n(θ̂−θ)→N(0, 1/I(θ)) に分布収束する。
+aliases: [asymptotic normality, 漸近正規性]
+seeAlso: [fisher-information, maximum-likelihood, convergence-in-distribution]
+---
+
+# 漸近正規性
+
+$$
+\sqrt n(\hat\theta-\theta)\ \xrightarrow{d}\ N\!\left(0,\ \frac{1}{I(\theta)}\right)
+$$
+
+- [最尤推定量](maximum-likelihood)は大標本で正規分布に近づく（[分布収束](convergence-in-distribution)）。中心は真値、分散は[フィッシャー情報量](fisher-information)の逆数。
+- 小標本では歪んでいても、n を増やすと左右対称な正規になる。
+- これにより最尤推定量の信頼区間・検定が «正規近似» で作れる（Wald 型）。
