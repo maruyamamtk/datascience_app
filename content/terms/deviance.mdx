@@ -1,0 +1,18 @@
+---
+title: デビアンス
+definition: GLM の当てはまりの悪さ D=2(飽和モデルの対数尤度−当該モデルの対数尤度)。線形回帰の残差平方和の一般化。小さいほど良く、モデル比較に使う。
+aliases: [deviance, デビアンス, 逸脱度]
+seeAlso: [generalized-linear-model, likelihood-ratio-test]
+---
+
+# デビアンス
+
+[一般化線形モデル](generalized-linear-model)の «当てはまりの悪さ»。
+
+$$
+D=2\bigl(\ell_{\text{飽和}}-\ell_{\text{モデル}}\bigr)
+$$
+
+- 飽和モデル（各点を完全に当てる）との対数尤度の差。**小さいほど良い**。
+- 線形回帰（正規）では **残差平方和に一致** する。その一般化。
+- 入れ子のモデルのデビアンス差は[尤度比検定](likelihood-ratio-test)の統計量になり、変数の有意性やモデル選択に使う。

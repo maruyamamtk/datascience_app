@@ -1,0 +1,144 @@
+---
+title: 一般化線形モデルと発展
+summary: 線形回帰・ロジスティック・ポアソン回帰を «線形予測子＋リンク関数＋分布» で統一する枠組み。ポアソン回帰（件数データ）を具体例に、リンク関数・デビアンス・過分散を操作で体感する。
+status: published
+---
+
+import { PoissonRegressionLab } from "@/components/topics/generalized-linear-models/PoissonRegressionLab";
+import { GlmFamilyStepper } from "@/components/topics/generalized-linear-models/GlmFamilyStepper";
+import { GlmQuiz } from "@/components/topics/generalized-linear-models/GlmQuiz";
+
+<Topic title="一般化線形モデルと発展" summary="線形回帰・ロジスティック・ポアソン回帰を «線形予測子＋リンク関数＋分布» で統一する枠組み。ポアソン回帰（件数データ）を具体例に、リンク関数・デビアンス・過分散を操作で体感する。">
+
+<ReaderGuide>
+
+- **初学者** → L0〜L1（ポアソン回帰で件数を回帰、3つの回帰を統一する «リンク関数»）
+- **一通り使える人** → L2（指数型分布族・デビアンス・過分散・IRLS・モデル選択）
+- **「完全に理解した」人** → L3 以降（混合効果・ベイズGLM・GAMは到達途上）
+
+前提: [質的回帰](/topics/qualitative-regression)の<Term id="logistic-regression">ロジスティック回帰</Term>、[離散型確率分布](/topics/discrete-distributions)の<Term id="poisson-distribution">ポアソン分布</Term>。
+
+</ReaderGuide>
+
+<Level level={0} title="ブラックボックス（ポアソン回帰）">
+  <Concept>
+
+応答が «件数»（0,1,2,… の事故数・来店数）のとき使うのが**<Term id="poisson-regression">ポアソン回帰</Term>**。
+件数の平均 λ は正でなければならないので、**対数リンク** $\log\lambda=b_0+b_1x$ を使う。逆に解けば $\lambda=e^{b_0+b_1x}>0$。
+
+<Math tex="\lambda=e^{b_0+b_1 x}" />
+
+直線回帰（連続）・ロジスティック（2値）と並ぶ «もう一つの回帰»。共通の屋根が**<Term id="generalized-linear-model">一般化線形モデル</Term>**。
+
+  </Concept>
+  <Interact>
+
+下のラボで $b_0$・$b_1$ を動かすと、指数の平均曲線 $\lambda=e^{b_0+b_1x}$・**<Term id="deviance">デビアンス</Term>**・対数尤度が変わり、数式が同時に追従する（操作→図→数式の強連動）。
+件数データ（点）に曲線が馴染むよう係数を調整し、デビアンスを最小にしてみよう。
+
+<PoissonRegressionLab />
+
+  </Interact>
+  <Exercise>
+
+確認: 「ポアソン回帰で対数リンクを使うのは、平均 λ を必ず正に保つため」——○か×か。
+（答: ○。件数の平均は正。log λ=線形 とすれば λ=exp(線形)>0 が保証される。リンク関数は «平均の範囲» を線形予測子に合わせる役割）
+
+  </Exercise>
+</Level>
+
+<Level level={1} title="古典的理解（リンク関数で統一する）">
+  <Concept>
+
+線形回帰・ロジスティック・ポアソンは、ばらばらの手法ではなく **同じ線形予測子 $\eta=b_0+b_1x$ を «リンク関数» で応答の型に合わせている** だけ。
+
+- **恒等リンク**（正規）: $\mu=\eta$ → 直線。
+- **ロジットリンク**（二項）: $\mu=\sigma(\eta)$ → S字（0〜1の確率）。
+- **対数リンク**（ポアソン）: $\mu=e^\eta$ → 指数（正の件数）。
+
+下のステッパーで3つの族を切り替え、同じ $\eta$ がリンクの逆関数で別の «平均曲線» になる様子を追える。
+
+  </Concept>
+  <Derivation title="なぜ «リンク関数» が必要なのか">
+
+線形予測子 $\eta=b_0+b_1x$ は $-\infty$ から $\infty$ まで動く。
+ところが応答の平均 $\mu$ には範囲の制約がある：
+
+- 確率なら $0\le\mu\le1$、件数の平均なら $\mu>0$。
+
+$\mu=\eta$ と直結すると、確率が1を超えたり件数の平均が負になったりして破綻する。
+そこで «$\mu$ を $-\infty\sim\infty$ に引き伸ばす» 変換 $g$（リンク関数）を噛ませ、$g(\mu)=\eta$ とする。
+
+- 確率 → ロジット $\log\frac{\mu}{1-\mu}$、件数 → 対数 $\log\mu$。
+
+逆リンク $g^{-1}$ で戻せば $\mu$ は必ず正しい範囲に収まる。これが «応答の型ごとにリンクを選ぶ» 一般化線形モデルの核心。
+
+  </Derivation>
+  <Interact>
+
+<GlmFamilyStepper />
+
+  </Interact>
+  <Exercise>
+
+<GlmQuiz />
+
+  </Exercise>
+</Level>
+
+<Level level={2} title="仮定体系（指数型分布族・デビアンス・過分散）">
+  <Concept>
+
+GLM を支える理論と実務の道具を整理する。
+
+- **<Term id="exponential-family">指数型分布族</Term>**: 正規・二項・ポアソン・ガンマ等の共通構造。これが «ひとつの最尤・IRLS» で扱える根拠。
+- **IRLS（反復重み付け最小二乗）**: GLM の最尤を解く数値法。各反復で «作業反応» に重み付き最小二乗を当てる。
+- **<Term id="deviance">デビアンス</Term>**: 当てはまりの悪さ（残差平方和の一般化）。入れ子モデルの差は尤度比検定に。
+- **過分散**: ポアソンの «平均=分散» を超えて散らばる現象。準ポアソン・負の二項回帰で対処。
+
+«線形予測子＋リンク＋分布» という3部品の組み替えで、応答が連続でも2値でも件数でも同じ作法で回帰できる。
+
+  </Concept>
+  <Derivation title="デビアンスはなぜ «残差平方和の一般化» なのか">
+
+デビアンスは $D=2(\ell_{\text{飽和}}-\ell_{\text{モデル}})$。飽和モデルは各点を完全に当てる（$\hat\mu_i=y_i$）。
+
+正規分布（分散 $\sigma^2$ 既知）の対数尤度は $\ell=-\frac{1}{2\sigma^2}\sum(y_i-\mu_i)^2+\text{const}$。
+飽和モデルでは $\mu_i=y_i$ で二乗和が0なので、
+
+$$
+D=2(\ell_{\text{飽和}}-\ell_{\text{モデル}})=\frac{1}{\sigma^2}\sum(y_i-\hat\mu_i)^2.
+$$
+
+つまり正規 GLM のデビアンスは（スケールを除けば）**残差平方和そのもの**。
+ポアソンや二項では別の式になるが、«飽和モデルからの対数尤度の隔たり» という意味は共通で、だから残差平方和の自然な一般化になっている。
+
+  </Derivation>
+  <Exercise>
+
+確認: 「ポアソン回帰は平均と分散が等しいことを仮定するが、実データはそれより散らばることがある（過分散）」——○か×か。
+（答: ○。ポアソンは平均=分散。実データが過分散なら、分散を別に許す準ポアソン・負の二項回帰を使う）
+
+  </Exercise>
+</Level>
+
+<Level level={3} title="混合効果・階層モデル" status="planned">
+  個体差・グループ構造をランダム効果で表す一般化線形混合モデル（GLMM）、縦断データへの拡張（前提:
+  ベイズ）。
+</Level>
+
+<Level level={4} title="加法モデル・非線形化（GAM）" status="planned">
+  リンクの中身を平滑関数にする一般化加法モデル（GAM）、スプライン・正則化による柔軟な平均構造。
+</Level>
+
+<Level level={5} title="ベイズGLM・正則化" status="planned">
+  係数に事前分布を置くベイズGLM、L1/L2 正則化つき
+  GLM、高次元での推定（多変量・機械学習トピックへ）。
+</Level>
+
+<Level level={6} title="フロンティア" status="planned">
+  «解釈できる統計モデル» と «柔軟な機械学習»
+  の橋渡し（GAM・ニューラル加法モデル等）は研究が活発（到達途上）。
+</Level>
+
+</Topic>

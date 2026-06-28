@@ -1,0 +1,18 @@
+---
+title: 指数型分布族
+definition: 正規・二項・ポアソン・指数・ガンマ等を含む分布の族。密度が exp 形 f(y)=exp((yθ−b(θ))/φ+c(y,φ)) で書ける。GLM の理論的な土台。
+aliases: [exponential family, 指数型分布族, 指数分布族]
+seeAlso: [generalized-linear-model, sufficient-statistic]
+---
+
+# 指数型分布族
+
+密度が次の形で書ける分布の族。
+
+$$
+f(y\mid\theta)=\exp\!\left(\frac{y\theta-b(\theta)}{\phi}+c(y,\phi)\right)
+$$
+
+- 正規・二項・ポアソン・指数・ガンマ・ベータなど多くの分布を含む。
+- 平均 $\mu=b'(\theta)$、分散 $=\phi\,b''(\theta)$ が母関数 $b$ から決まる。[十分統計量](sufficient-statistic)が自然に定まる。
+- この共通構造が[一般化線形モデル](generalized-linear-model)を «ひとつの最尤・IRLS» で扱える根拠になる。

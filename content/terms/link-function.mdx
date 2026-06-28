@@ -1,0 +1,14 @@
+---
+title: リンク関数
+definition: GLM で平均 μ を線形予測子 η に結ぶ関数 g(μ)=η。μ の動く範囲（確率なら0〜1、件数なら正）を線形予測子(−∞〜∞)に合わせる役割。
+aliases: [link function, リンク関数]
+seeAlso: [generalized-linear-model, log-odds]
+---
+
+# リンク関数
+
+GLM で «平均 μ» と «線形予測子 η» を結ぶ関数 $g(\mu)=\eta$。
+
+- 役割は «μ の動く範囲» を線形予測子 $(-\infty,\infty)$ に合わせること。
+- **恒等** $g(\mu)=\mu$（正規）、**[ロジット](log-odds)** $g(\mu)=\log\frac{\mu}{1-\mu}$（二項, 0〜1）、**対数** $g(\mu)=\log\mu$（ポアソン, 正）。
+- 逆リンク $g^{-1}$ で η→μ に戻す。応答の型に応じてリンクを選ぶのが[一般化線形モデル](generalized-linear-model)。
