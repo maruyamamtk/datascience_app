@@ -1,0 +1,18 @@
+---
+title: 因子分析
+definition: 観測変数の相関を、少数の潜在因子（共通因子）で説明する統計モデル。観測変数=因子負荷×共通因子+独自因子。背後の構造を仮説検証する。
+aliases: [factor analysis, 因子分析, 探索的因子分析, 確認的因子分析]
+seeAlso: [factor-loading, communality, covariance-structure-analysis]
+---
+
+# 因子分析
+
+観測変数の相関を «背後の潜在因子» で説明するモデル。
+
+$$
+x_i=\lambda_i F+\varepsilon_i
+$$
+
+- $F$＝共通因子、$\lambda_i$＝[因子負荷](factor-loading)、$\varepsilon_i$＝独自因子（その変数固有＋誤差）。
+- 相関は共通因子経由で生じ、$r_{ij}=\lambda_i\lambda_j$ と再現される。[共通性](communality) $h^2=\lambda^2$ が «因子で説明できた分散»。
+- [主成分分析](principal-component)が «分散を要約する軸» なのに対し、因子分析は «潜在因子が観測を生む» 生成モデル。回転で解釈を整える。

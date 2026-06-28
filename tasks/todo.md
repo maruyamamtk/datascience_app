@@ -633,3 +633,19 @@ MVP 5トピック完了後、SPEC §3 のチェックリスト全項目（A〜S,
 - **変更概要**: 教師なし学習のクラスタリングを4層実装。ClusterLab はクラスター数 k スライダー→色分けクラスター・重心(輪)・WCSS（TermController）・エルボー曲線（k=1..6のWCSS、現在kを強調）が同時連動、k=4が自然な分割（エルボー）であることを可視化。KmeansStepper は «割り当て→重心更新» の各ステップを★重心の移動と点の色変化でコマ送り（ロイドのアルゴリズムの収束）。k-meansが必ず収束する導出（割り当て・更新の両操作がWCSSを非増加）・エルボーとシルエットでkを選ぶ導出を網羅。pca.Point2を再利用、initCentroidsはk-means++風。
 - **検証結果**: Vitest **570 passed**（+14: clustering 10 / frames 4、registry リンク切れゼロ）。tsc / lint（警告0）/ build成功。`pnpm start` + Playwright 実機確認: k=4 で WCSS=52.5（1ステップ収束）、k=2 で WCSS=450.9（6ステップ・k=2と4の大差でエルボーがk=4を示す）、k-meansステッパーがk=4でステップ1・WCSS52.5収束（ラボと一致）、コンソールエラー0件。
 - **設計判断**: PCA（次元圧縮）・判別分析（教師あり分類）に続き «教師なし分類» を据え、H群の多変量解析を «分散最大／分離最大／まとまり最大» の3視点で揃えた。WCSS by k のエルボー曲線をラボに併置し «k選択» を体感させた。CLUSTER_COLORS を ClusterLab から export し Stepper と共有。frame は KmeansStepper のみ使用で競合なし。次は H-4 共分散構造分析・因子分析へ。
+
+### コンテンツ拡充 #52 — [H-4] 共分散構造分析・因子分析
+
+優先度 26/82。前提=主成分分析。観測相関を潜在因子で説明する因子分析・SEM。
+
+- [x] 計算層 `lib/stats/factor-analysis.ts`（impliedCorrelation(λᵢλⱼ)/communality/uniqueness/residualMatrix/residualSumOfSquares/meanCommunality/fitOneFactor(主因子法・冪乗法)）+ Vitest（7）
+- [x] 状態層 `lib/store/factor-analysis.ts`（controls {loadingScale}・固定観測相関=真の1因子モデル）
+- [x] 描画層 `components/topics/covariance-structure-analysis/`（FactorLab=負荷倍率→観測相関/含意相関のヒートマップ・残差・共通性/独自性バーの強連動 / CommunalityStepper=各変数の分散1=共通性+独自性を積み木でコマ送り / FactorQuiz）+ frames.ts + Vitest（4）
+- [x] 用語ノード4件（factor-analysis / factor-loading / communality / covariance-structure-analysis）相互リンク
+- [x] MDX `content/topics/covariance-structure-analysis.mdx`（L0-L2 充実：潜在因子で相関説明→共通性=λ²・相関=λᵢλⱼの導出→回転/因子数/SEM＋回転の不定性の導出、L3-L6 planned）
+- [x] `/topics` 一覧へ反映（status: published）
+
+#### レビュー: 共分散構造分析・因子分析トピック（2026-06-29）
+- **変更概要**: 潜在因子で観測相関を説明する因子分析・SEMを4層実装。FactorLab は因子負荷倍率スライダー→観測相関と含意相関 r_ij=λ_iλ_j のヒートマップ並置・残差平方和（TermController）・共通性(青)/独自性(黄)バーが同時連動、倍率1（真値）で含意相関が観測相関に一致し残差0に。CommunalityStepper は各変数の分散1=共通性λ²+独自性(1−λ²)を積み木でコマ送り。共通性=λ²・相関=λ_iλ_jの導出（独自因子の無相関で交差項が消える）・因子回転の不定性の導出（直交回転で含意共分散不変）を網羅。fitOneFactorは主因子法（冪乗法）。
+- **検証結果**: Vitest **581 passed**（+11: factor-analysis 7 / frames 4、registry リンク切れゼロ）。tsc / lint（警告0）/ build成功。`pnpm start` + Playwright 実機確認: 倍率0.6 で 残差平方和1.201（ずれあり）、倍率1 で 残差0・平均共通性0.5（よく当てはまる、含意相関が観測に一致）、共通性分解ステッパーが理科でλ=0.55・共通性0.30+独自性0.70=1、コンソールエラー0件。
+- **設計判断**: «潜在因子が観測相関を生む» を観測相関と含意相関のヒートマップ並置で直接見せ、PCA（記述）との違いを共通性/独自性の分散分解で明確化。回転の不定性を導出で扱い «当てはまり不変で解釈だけ整える» 点を強調。frame は CommunalityStepper のみ使用で競合なし。次は H-5 その他の多変量解析へ。

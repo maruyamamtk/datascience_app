@@ -1,0 +1,141 @@
+---
+title: 共分散構造分析・因子分析
+summary: 観測変数の相関を少数の潜在因子で説明する因子分析と、潜在変数の関係を共分散構造として検証するSEM。因子負荷から含意相関を再現する仕組み・共通性と独自性・残差を操作で体感する。
+status: published
+---
+
+import { FactorLab } from "@/components/topics/covariance-structure-analysis/FactorLab";
+import { CommunalityStepper } from "@/components/topics/covariance-structure-analysis/CommunalityStepper";
+import { FactorQuiz } from "@/components/topics/covariance-structure-analysis/FactorQuiz";
+
+<Topic title="共分散構造分析・因子分析" summary="観測変数の相関を少数の潜在因子で説明する因子分析と、潜在変数の関係を共分散構造として検証するSEM。因子負荷から含意相関を再現する仕組み・共通性と独自性・残差を操作で体感する。">
+
+<ReaderGuide>
+
+- **初学者** → L0〜L1（因子負荷で相関を再現、共通性と独自性の分解）
+- **一通り使える人** → L2（因子の回転・因子数の決定・確認的因子分析・SEMと適合度）
+- **「完全に理解した」人** → L3 以降（多群・縦断SEM・ベイズSEMは到達途上）
+
+前提: [主成分分析](/topics/principal-component-analysis)の<Term id="covariance-matrix">共分散行列</Term>、[分布の特性値](/topics/distribution-characteristics)の<Term id="correlation-coefficient">相関係数</Term>。
+
+</ReaderGuide>
+
+<Level level={0} title="ブラックボックス（潜在因子で相関を説明）">
+  <Concept>
+
+たくさんの観測変数（例: 4科目の成績）が互いに相関するのは、«背後に共通の潜在因子（学力）がある» からかもしれない——これが**<Term id="factor-analysis">因子分析</Term>**の発想。
+
+各変数 $x_i=\lambda_i F+\varepsilon_i$（$F$＝共通因子、$\lambda_i$＝**<Term id="factor-loading">因子負荷</Term>**、$\varepsilon_i$＝独自因子）。
+すると2変数の相関は共通因子経由で $r_{ij}=\lambda_i\lambda_j$ と再現される。
+
+  </Concept>
+  <Interact>
+
+下のラボで因子負荷の倍率を変えると、モデルが含意する相関行列・観測相関との残差・**<Term id="communality">共通性</Term>**が変わり、数式が同時に追従する（操作→図→数式の強連動）。
+倍率を1（真値）に合わせると含意相関が観測相関に一致し、残差が0に近づくのを確かめよう。
+
+<FactorLab />
+
+  </Interact>
+  <Exercise>
+
+確認: 「因子分析で、2つの観測変数の相関はモデル上 λ_i λ_j（因子負荷の積）で表される」——○か×か。
+（答: ○。相関は共通因子を経由して生じるので、含意相関 r_ij=λ_i·λ_j。これが観測相関に合うよう負荷を推定する）
+
+  </Exercise>
+</Level>
+
+<Level level={1} title="古典的理解（共通性と独自性）">
+  <Concept>
+
+各観測変数の分散は **共通性** と **独自性** に分かれる。標準化すると
+
+<Math tex="1=\underbrace{h_i^2}_{\text{共通性}=\lambda_i^2}+\underbrace{\psi_i}_{\text{独自性}=1-\lambda_i^2}" />
+
+共通性は «共通因子で説明できた分散»、独自性は «その変数固有＋誤差»。
+下のステッパーで各変数の分散を共通性＋独自性に分解し、負荷が大きい変数ほど共通性が高いことを追える。
+
+  </Concept>
+  <Derivation title="なぜ共通性が λ² で、相関が λ_i λ_j なのか">
+
+標準化した変数 $x_i=\lambda_i F+\varepsilon_i$（$F$ は分散1、$\varepsilon_i$ は互いに無相関で $F$ とも無相関）。
+
+分散を取ると
+
+$$
+\operatorname{Var}(x_i)=\lambda_i^2\operatorname{Var}(F)+\operatorname{Var}(\varepsilon_i)=\lambda_i^2+\psi_i=1.
+$$
+
+$\lambda_i^2$ が共通因子由来＝**共通性**、$\psi_i$ が独自＝**独自性**。次に共分散（相関）：
+
+$$
+\operatorname{Cov}(x_i,x_j)=\operatorname{Cov}(\lambda_iF+\varepsilon_i,\ \lambda_jF+\varepsilon_j)=\lambda_i\lambda_j\operatorname{Var}(F)=\lambda_i\lambda_j.
+$$
+
+$\varepsilon$ どうし・$\varepsilon$ と $F$ が無相関なので交差項が消え、**相関は共通因子だけを通じて $\lambda_i\lambda_j$** になる。
+これが «観測相関を因子負荷の積で再現する» 因子分析の数理的な核。
+
+  </Derivation>
+  <Interact>
+
+<CommunalityStepper />
+
+  </Interact>
+  <Exercise>
+
+<FactorQuiz />
+
+  </Exercise>
+</Level>
+
+<Level level={2} title="仮定体系（回転・因子数・SEM）">
+  <Concept>
+
+因子分析と共分散構造分析の論点を整理する。
+
+- **因子の回転**: 解には回転の自由度（同じ当てはまりで無数の負荷）。バリマックス等で **単純構造**（各変数が少数の因子に強く乗る）にして解釈しやすく。
+- **因子数の決定**: 固有値1以上（カイザー）、スクリープロット、平行分析。多すぎ／少なすぎを避ける。
+- **探索 vs 確認**: 探索的因子分析は構造を «見つける»、確認的因子分析は仮説の構造を «検証» する。
+- **<Term id="covariance-structure-analysis">共分散構造分析（SEM）</Term>**: 測定モデル（因子分析）＋潜在変数間のパス（因果）。観測共分散をモデルが再現できるか **適合度**（χ²・RMSEA・CFI）で評価。
+
+«観測された共分散の構造を、潜在変数のモデルで説明する» のが共分散構造分析の一貫した考え方。
+
+  </Concept>
+  <Derivation title="因子の «回転の不定性» はどこから来るのか">
+
+1因子なら負荷は（符号を除き）定まるが、2因子以上では不定性が生じる。
+因子得点ベクトル $\mathbf F$（共分散が単位行列）に直交行列 $R$（$R^\top R=I$）をかけて $\tilde{\mathbf F}=R\mathbf F$ としても、
+
+$$
+\operatorname{Cov}(\tilde{\mathbf F})=R\,I\,R^\top=I
+$$
+
+で因子の前提（無相関・分散1）は保たれる。負荷を $\tilde\Lambda=\Lambda R^\top$ に取り替えれば、含意共分散 $\Lambda\Lambda^\top=\tilde\Lambda\tilde\Lambda^\top$ は **不変**。
+つまり «当てはまりが同じ» 負荷パターンが回転で無数にある。だから解釈しやすい単純構造へ回転する（当てはまりは変えずに見やすくするだけ）。
+
+  </Derivation>
+  <Exercise>
+
+確認: 「因子の回転（バリマックスなど）は、モデルの当てはまり（再現される相関）を保ったまま、負荷を解釈しやすくする」——○か×か。
+（答: ○。回転は含意共分散を変えない（不定性）。当てはまりは同じで、単純構造にして «どの因子が何か» を読みやすくするのが目的）
+
+  </Exercise>
+</Level>
+
+<Level level={3} title="確認的因子分析・適合度" status="planned">
+  仮説の因子構造を検証する確認的因子分析、適合度指標（χ²・RMSEA・CFI・SRMR）の読み方（前提: 検定）。
+</Level>
+
+<Level level={4} title="構造方程式モデリングの一般形" status="planned">
+  潜在変数間のパス・媒介・調整効果、識別性・推定（最尤・WLS）、多群比較（測定不変性）。
+</Level>
+
+<Level level={5} title="縦断・多レベルSEM" status="planned">
+  潜在成長曲線モデル、多レベル因子分析、ベイズSEM（マルコフ連鎖トピックへ）。
+</Level>
+
+<Level level={6} title="フロンティア" status="planned">
+  «潜在構造の因果» の識別と機械学習による表現学習の接続は研究が活発（到達途上）。
+</Level>
+
+</Topic>
