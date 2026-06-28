@@ -1,0 +1,16 @@
+---
+title: ネイマンの分解定理
+definition: 尤度が L(θ)=h(x)·g(T(x),θ) と «データだけの因子» と «T と θ を通した因子» に分解できる ⇔ T が十分統計量、という判定定理。
+aliases: [Neyman factorization theorem, 因子分解定理, factorization criterion]
+seeAlso: [sufficient-statistic, statistic]
+---
+
+# ネイマンの分解定理（因子分解定理）
+
+$$
+L(\theta)=f(x_1,\dots,x_n\mid\theta)=h(x)\cdot g\bigl(T(x),\theta\bigr)
+$$
+
+- 尤度が «データだけの因子 $h(x)$» と «統計量 $T$ と母数 $\theta$ を通した因子 $g(T,\theta)$» に分かれるとき、$T$ は[十分統計量](sufficient-statistic)。
+- $\theta$ はデータに $T$ を «通してしか» 効かない、という形が要点。
+- 例: ベルヌーイの尤度 $p^{T}(1-p)^{n-T}$ は $h(x)=1$, $g(T,p)=p^T(1-p)^{n-T}$ と分解でき、成功数 $T$ が十分と分かる。

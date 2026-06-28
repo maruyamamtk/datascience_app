@@ -361,3 +361,19 @@ MVP 5トピック完了後、SPEC §3 のチェックリスト全項目（A〜S,
 - **変更概要**: t・カイ二乗・F を共通インターフェース SAMPLING_SPECS で統一した4層実装。カイ二乗は gammaPdf(k/2,2)、t/F は lnGamma で正規化（continuous.ts 再利用）。族ボタン＋自由度スライダーが PDF曲線・平均線・数式 E[X]=μ/Var[X]=σ²（モーメント存在条件込み）を同時更新。TtoNormalStepper は ν を 1→200 と増やし、裾の重い t が標準正規（赤点線）へ重なる過程を中心の差%でコマ送り。σ未知で t 分布になる理由（Z/√(χ²/ν)）・標本分散がカイ二乗・t²=F を導出で網羅。
 - **検証結果**: Vitest **354 passed**（+15: sampling 11 / frames 4、registry リンク切れゼロ）。tsc / lint（警告0）/ build（/topics/sampling-distributions・新用語5ページ出力）成功。`pnpm start` + Playwright 実機確認: t(ν=3) μ=0/σ²=3、χ²(k=3) に切替で μ=3/σ²=6、TtoNormalStepper ν=200で中心差0.0005、コンソールエラー0件。
 - **設計判断**: 3分布をバラバラに教えず «正規からの作られ方»（二乗和→χ²、正規÷√(χ²/ν)→t、χ²の比→F）で関係づけ、検定・区間推定（次フェーズ）の伏線にした。t 分布のテスト許容精度は ν=500・精度3 に調整（ν=200・精度3は0.0005差で落ちたため）。非心分布は検出力の基礎として概念＋power 用語リンクで反映。
+
+### コンテンツ拡充 #35 — [D-1] 統計量と十分性
+
+優先度 9/82（Tier2 推定の起点）。前提=標本分布。十分統計量・ネイマン分解・順序統計量を体感。
+
+- [x] 計算層 `lib/stats/sufficiency.ts`（bernoulliSuccesses / bernoulliLogLikelihood / bernoulliMle / likelihoodCurve / orderStatistics / orderStatistic / sampleMedian）+ Vitest（8）
+- [x] 状態層 `lib/store/statistics-sufficiency.ts`（controls {bits}・derived {successes,n,mle}）
+- [x] 描画層 `components/topics/statistics-sufficiency/`（SufficiencyLab=コイン列トグル→成功数T・尤度曲線・MLE p̂=T/n の強連動＋「並べ替え（T不変）」で十分性を実証 / OrderStatStepper=標本を昇順に整列し最小・中央値・最大を取り出すコマ送り / SufficiencyQuiz）+ frames.ts + Vitest（4）
+- [x] 用語ノード4件（statistic / sufficient-statistic / neyman-factorization-theorem / order-statistic）相互リンク
+- [x] MDX `content/topics/statistics-sufficiency.mdx`（L0-L2 充実：統計量と十分性→ネイマン分解でベルヌーイのTが十分の導出→順序統計量・標本平均と標本分散の独立性とt分布、L3-L6 planned）
+- [x] `/topics` 一覧へ反映（status: published）
+
+#### レビュー: 統計量と十分性トピック（2026-06-28）
+- **変更概要**: «要約はどこまで情報を保つか» を体感する4層実装。SufficiencyLab はベルヌーイのコイン列（0/1トグル）→ 成功数 T（十分統計量）・尤度曲線 L(p)=pᵀ(1−p)ⁿ⁻ᵀ・MLE p̂=T/n（TermController）が同時更新。「並べ替え（T不変）」ボタンで «順序を変えても T が同じなら尤度も p̂ も不変» を実証＝十分性の核心。OrderStatStepper は標本を昇順に整列し x₍₁₎（最小）→中央値→x₍ₙ₎（最大）を1つずつ取り出すコマ送り。ネイマンの分解定理（L=h(x)g(T,θ)）と標本平均・標本分散の独立性（コクラン）→t分布の正当性を導出で網羅。
+- **検証結果**: Vitest **366 passed**（+12: sufficiency 8 / frames 4、registry リンク切れゼロ）。tsc / lint（警告0）/ build（/topics/statistics-sufficiency・新用語4ページ出力）成功。`pnpm start` + Playwright 実機確認: 初期 T=6/n=10/p̂=0.6、並べ替えで T=6・p̂=0.6 不変（十分性）、コイン反転で T=5・p̂=0.5（データ変更で追従）、順序統計量ステッパーが [7,2,9,4,2,6,1,8]→[1,2,2,4,6,7,8,9] に整列、コンソールエラー0件。
+- **設計判断**: 抽象的な «十分性» を «並べ替えても尤度が動かない» という操作可能な現象に落として体感させた。標本平均と標本分散の独立性を前トピック（標本分布）の t 分布導出と接続し、推定・検定の正当性の土台として位置づけた。frame は OrderStatStepper のみ使用（SufficiencyLab は frame 不使用）で競合なし。
