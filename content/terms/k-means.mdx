@@ -1,0 +1,17 @@
+---
+title: k-means法
+definition: データを k 個のクラスターに分ける手法。各点を最寄りの重心に割り当て、重心を平均へ更新するロイドのアルゴリズムを繰り返す。WCSSを局所最小化。
+aliases: [k-means, k平均法, ロイドのアルゴリズム, Lloyd]
+seeAlso: [cluster-analysis, within-cluster-sum-of-squares]
+---
+
+# k-means法
+
+データを k 個の塊に分ける代表的な[クラスタリング](cluster-analysis)。
+
+1. **割り当て**: 各点を最も近い重心のクラスターへ。
+2. **更新**: 各重心をクラスター内の点の平均へ動かす。
+
+- 1と2を交互に繰り返すと[群内平方和（WCSS）](within-cluster-sum-of-squares)が必ず減り、有限回で収束（ロイドのアルゴリズム）。
+- WCSS の **局所** 最小化なので、初期重心しだいで結果が変わる。k-means++ で良い初期値を選び複数回試す。
+- k は先に指定。エルボーやシルエット係数で適切な値を選ぶ。

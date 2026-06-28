@@ -1,0 +1,15 @@
+---
+title: クラスター分析
+definition: ラベルなしのデータを、近いものどうしまとめてグループ（クラスター）に分ける教師なし学習。k-means や階層クラスタリングが代表。
+aliases: [cluster analysis, クラスター分析, クラスタリング, clustering]
+seeAlso: [k-means, hierarchical-clustering, dimensionality-reduction]
+---
+
+# クラスター分析
+
+ラベルのないデータを «似たものどうし» のグループに分ける教師なし学習。
+
+- 正解ラベルを使わず、データ内の «近さ» だけで構造を見つける（判別分析は教師あり、こちらは教師なし）。
+- **[k-means](k-means)**: k 個の重心の周りにまとめる（k を先に指定）。
+- **[階層クラスタリング](hierarchical-clustering)**: 近いものから順に併合しデンドログラムを作る（k を後で決められる）。
+- 適切なクラスター数は[群内平方和](within-cluster-sum-of-squares)のエルボーやシルエット係数で選ぶ。
