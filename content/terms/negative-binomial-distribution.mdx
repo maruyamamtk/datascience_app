@@ -1,0 +1,17 @@
+---
+title: 負の二項分布
+definition: r 回成功するまでの «失敗回数» $P(X=k)=\binom{k+r-1}{k}p^r(1-p)^k$。$E[X]=r(1-p)/p$。r=1 で幾何分布。過分散データに使う。
+aliases: [negative binomial distribution, NB(r, p), パスカル分布]
+seeAlso: [geometric-distribution, poisson-distribution]
+---
+
+# 負の二項分布
+
+$r$ 回成功するまでに何回失敗するか。[幾何分布](geometric-distribution)の一般化（$r=1$ で一致）。
+
+$$
+P(X=k)=\binom{k+r-1}{k}p^r(1-p)^k
+$$
+
+- $E[X]=r(1-p)/p$、分散は平均より大きい（過分散）。
+- 分散>平均のカウントデータで[ポアソン分布](poisson-distribution)の代わりに使われる（ポアソン–ガンマ混合として導ける）。

@@ -1,0 +1,138 @@
+---
+title: 離散型確率分布（二項・ポアソン他）
+summary: 離散一様・ベルヌーイ・二項・ポアソン・幾何・負の二項を «何を数えるか» で選び分ける。パラメータを動かして形と平均・分散を体感し、二項→ポアソンの収束まで見る。
+status: published
+---
+
+import { DiscreteExplorer } from "@/components/topics/discrete-distributions/DiscreteExplorer";
+import { PoissonLimitStepper } from "@/components/topics/discrete-distributions/PoissonLimitStepper";
+import { DiscreteQuiz } from "@/components/topics/discrete-distributions/DiscreteQuiz";
+
+<Topic title="離散型確率分布（二項・ポアソン他）" summary="離散一様・ベルヌーイ・二項・ポアソン・幾何・負の二項を «何を数えるか» で選び分ける。パラメータを動かして形と平均・分散を体感し、二項→ポアソンの収束まで見る。">
+
+<ReaderGuide>
+
+- **初学者** → L0〜L1（各分布が «何を数えるか»、パラメータと形・平均・分散の対応）
+- **一通り使える人** → L2（分布どうしのつながり：ベルヌーイ→二項→ポアソン、幾何→負の二項、多項分布）
+- **「完全に理解した」人** → L3 以降（指数型分布族・十分統計量は到達途上）
+
+前提: [確率分布と母関数](/topics/probability-distributions-mgf)の<Term id="probability-mass-function">確率関数</Term>、[分布の特性値](/topics/distribution-characteristics)の<Term id="expected-value">期待値</Term>・<Term id="variance">分散</Term>。
+
+</ReaderGuide>
+
+<Level level={0} title="ブラックボックス（分布族を選んで形を見る）">
+  <Concept>
+
+離散分布は «何を数えるか» で使い分ける。
+
+- **<Term id="discrete-uniform-distribution">離散一様</Term>**: どの値も等確率（サイコロ）。
+- **<Term id="bernoulli-distribution">ベルヌーイ</Term>**: 1 回の成功/失敗。
+- **<Term id="binomial-distribution">二項</Term>**: n 回中の成功数。
+- **<Term id="poisson-distribution">ポアソン</Term>**: 一定時間の稀な事象の回数（平均=分散=λ）。
+- **<Term id="geometric-distribution">幾何</Term>**: 初成功までの失敗回数。
+- **<Term id="negative-binomial-distribution">負の二項</Term>**: r 回成功までの失敗回数。
+
+それぞれパラメータが «形» と «平均・分散» を決める。
+
+  </Concept>
+  <Interact>
+
+下のエクスプローラで分布族を切り替え、パラメータを動かすと、確率関数の棒と平均（紫線）が変わり、
+数式 $E[X]=\mu$・$\mathrm{Var}[X]=\sigma^2$ の値が同時に追従する（操作→図→数式の強連動）。
+
+<DiscreteExplorer />
+
+  </Interact>
+  <Exercise>
+
+確認: 「ポアソン分布では平均と分散が等しい」——○か×か。
+（答: ○。$E[X]=\mathrm{Var}[X]=\lambda$。これがポアソンの目印。エクスプローラで λ を変えて μ と σ² が一致するのを確かめよう）
+
+  </Exercise>
+</Level>
+
+<Level level={1} title="古典的理解（分布のつながり：二項→ポアソン）">
+  <Concept>
+
+これらの分布はバラバラではなく «つながって» いる。代表が二項 → ポアソンの極限。
+
+$n$ を大きく・$p$ を小さく、ただし $np=\lambda$ を一定に保つと、二項 $\mathrm{Bin}(n,\lambda/n)$ はポアソン $\mathrm{Po}(\lambda)$ に収束する。
+
+<Math tex="\binom{n}{k}\left(\frac{\lambda}{n}\right)^k\left(1-\frac{\lambda}{n}\right)^{n-k}\ \xrightarrow{n\to\infty}\ \frac{e^{-\lambda}\lambda^k}{k!}" />
+
+  </Concept>
+  <Derivation title="二項 → ポアソンの極限（要点）">
+
+$p=\lambda/n$ を代入して $n\to\infty$ を取る。
+
+$$
+\binom{n}{k}p^k(1-p)^{n-k}=\underbrace{\frac{n(n-1)\cdots(n-k+1)}{n^k}}_{\to1}\cdot\frac{\lambda^k}{k!}\cdot\underbrace{\left(1-\frac{\lambda}{n}\right)^{n}}_{\to e^{-\lambda}}\cdot\underbrace{\left(1-\frac{\lambda}{n}\right)^{-k}}_{\to1}.
+$$
+
+3 つの極限（前の積 →1、$(1-\lambda/n)^n\to e^{-\lambda}$、最後 →1）を合わせると $\dfrac{e^{-\lambda}\lambda^k}{k!}$。
+«多数回の試行で各回は稀» のときポアソンが現れる。
+
+  </Derivation>
+  <Interact>
+
+<PoissonLimitStepper />
+
+  </Interact>
+  <Exercise>
+
+<DiscreteQuiz />
+
+  </Exercise>
+</Level>
+
+<Level level={2} title="仮定体系（分布の地図と多項分布）">
+  <Concept>
+
+分布の «地図» を押さえると選択に迷わない。
+
+- ベルヌーイを $n$ 回 → **二項**。二項の稀少極限 → **ポアソン**。
+- 初成功までの失敗 → **幾何**。それを $r$ 回成功まで → **負の二項**（過分散データに）。
+- 二項を 3 カテゴリ以上へ → **<Term id="multinomial-distribution">多項分布</Term>**（サイコロの目の回数、適合度検定の度数）。
+
+選ぶ基準は «数えている対象»（回数か、待ち時間か、カテゴリ別度数か）と «平均と分散の関係»。
+ポアソンは平均=分散、負の二項は分散>平均（過分散）。
+
+  </Concept>
+  <Derivation title="多項分布の確率（なぜ多項係数が付くか）">
+
+$n$ 回の独立試行で各回カテゴリ $i$ が確率 $p_i$。特定の並び（例: AAB…）の確率は $p_1^{x_1}\cdots p_m^{x_m}$。
+同じ度数 $(x_1,\dots,x_m)$ を与える «並べ方» は多項係数 $\dfrac{n!}{x_1!\cdots x_m!}$ 通りあるので、
+
+$$
+P(X_1=x_1,\dots,X_m=x_m)=\frac{n!}{x_1!\cdots x_m!}\,p_1^{x_1}\cdots p_m^{x_m}.
+$$
+
+各カテゴリの周辺分布は二項 $\mathrm{Bin}(n,p_i)$。合計が $n$ で固定なのでカテゴリ間は負に相関する。
+
+  </Derivation>
+  <Exercise>
+
+確認: 「カウントデータで分散が平均よりかなり大きい（過分散）とき、ポアソンより負の二項が適することが多い」——○か×か。
+（答: ○。ポアソンは平均=分散を仮定するので過分散を表せない。負の二項は分散>平均を許す）
+
+  </Exercise>
+</Level>
+
+<Level level={3} title="指数型分布族・十分統計量" status="planned">
+  二項・ポアソン・幾何などを統一的に扱う指数型分布族の形と、十分統計量・共役事前分布との関係 （前提:
+  推定法）。
+</Level>
+
+<Level level={4} title="混合分布・過分散のモデル" status="planned">
+  ポアソン–ガンマ混合としての負の二項、ゼロ過剰モデル、混合分布による異質性の表現。
+</Level>
+
+<Level level={5} title="高次元のカウントデータ" status="planned">
+  多変量カウント（多項・ディリクレ多項）、スパースな高次元頻度の扱い。
+</Level>
+
+<Level level={6} title="フロンティア" status="planned">
+  複雑な離散構造（順列・グラフ）上の確率分布の効率的な表現・サンプリングは研究が続く領域（到達途上）。
+</Level>
+
+</Topic>
