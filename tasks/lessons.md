@@ -26,6 +26,22 @@
   `TermController.getTermElement` は `this.root.querySelector`（描画コンテナ限定）で id を解決するため、
   `document.getElementById` のような全体衝突は起きない。Level をまたいで同じラボを再掲してよい。
 
+## 用語(terms)の seeAlso・本文リンクは «用語slug» のみ。トピックslugを混ぜると registry test が落ちる
+
+- `content/terms/*.mdx` の seeAlso と本文 `[..](slug)` リンクは **他の用語(term)** を指す前提で registry test が検証する。
+  `hypothesis-testing`・`sampling-distributions` のような **トピック(topic)slug** を書くと «リンク切れ» 判定で fail。
+  - 対策: 検定の話なら `significance-level`/`null-hypothesis`/`p-value`、分布なら `f-distribution` 等の **用語slug** を使う。
+    迷ったら `ls content/terms/` で実在を確認してから書く。トピックへの導線は «トピックMDX» 側の `/topics/...` で張る。
+  - 出典: #47 分散分析。multiple-comparison/experimental-design が `hypothesis-testing`(topic) を指して registry fail→`significance-level` に修正。
+
+## F 分布・t 分布の CDF は数値積分よりも正則化不完全ベータ関数が堅牢
+
+- F 分布の上側確率を fPdf のシンプソン積分 [0,x] で出すと、**x が大きい**（F が大きい well-separated ANOVA 等）と
+  密度のピーク（小さい x 付近）を粗い刻みで取りこぼし、CDF が大きく誤る（F=1000 で p≈0.32 など）。
+  - 対策: **F CDF = I_z(d1/2, d2/2)（z=d1·x/(d1·x+d2)）** の閉形式を使う。`regularizedIncompleteBeta`（Lentz 連分数）を
+    `lib/stats/anova.ts` に実装済み。t 分布・ベータ分布の CDF にも流用可（再利用候補）。
+  - 出典: #47 分散分析 fUpperTail の self-correction。
+
 ## MDX 本文で「`<` の直後に数字」を書くと JSX タグ開始と誤認されてビルドが落ちる
 
 - MDX は `<` を JSX 要素の開始と解釈する。`<1`・`<10` のように **不等号のつもりの `<` の直後が文字（数字含む）** だと
