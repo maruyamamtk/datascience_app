@@ -1,0 +1,136 @@
+---
+title: 重回帰分析
+summary: 説明変数が複数あるときの線形回帰。正規方程式で係数を求め、多重共線性で係数が «不安定» になる様子、R²と自由度調整済みR²の違い（過剰適合）を操作で体感する。
+status: published
+---
+
+import { MulticollinearityLab } from "@/components/topics/multiple-regression/MulticollinearityLab";
+import { StepwiseStepper } from "@/components/topics/multiple-regression/StepwiseStepper";
+import { MultiRegQuiz } from "@/components/topics/multiple-regression/MultiRegQuiz";
+
+<Topic title="重回帰分析" summary="説明変数が複数あるときの線形回帰。正規方程式で係数を求め、多重共線性で係数が «不安定» になる様子、R²と自由度調整済みR²の違い（過剰適合）を操作で体感する。">
+
+<ReaderGuide>
+
+- **初学者** → L0〜L1（正規方程式、多重共線性で係数が不安定になる、VIF）
+- **一通り使える人** → L2（R²と自由度調整済みR²・変数選択・L1/L2正則化・残差分析・GLS）
+- **「完全に理解した」人** → L3 以降（選択後推測・高次元回帰は到達途上）
+
+前提: [単回帰](/topics/simple-regression)の<Term id="least-squares">最小二乗法</Term>・<Term id="coefficient-of-determination">決定係数</Term>、[点推定の性質](/topics/point-estimation-properties)の<Term id="gauss-markov-theorem">ガウス・マルコフの定理</Term>。
+
+</ReaderGuide>
+
+<Level level={0} title="ブラックボックス（正規方程式と多重共線性）">
+  <Concept>
+
+説明変数が複数あるのが**<Term id="multiple-regression">重回帰</Term>** $y=\beta_0+\beta_1x_1+\cdots+\beta_px_p+\varepsilon$。
+各係数は «他の変数を一定にしたときの» その変数の効果（偏回帰係数）。最小二乗解は**正規方程式**で一気に求まる。
+
+<Math tex="\hat\beta=(X^\top X)^{-1}X^\top y" />
+
+注意すべきが**<Term id="multicollinearity">多重共線性</Term>**——説明変数どうしが強く相関すると、係数推定が **不安定** になる。
+
+  </Concept>
+  <Interact>
+
+下のラボで2つの説明変数の相関 $\rho$ を上げると、真の係数は $\beta_1=\beta_2=1$ のままなのに、推定値の «ぶれ»（±2SE のバー）が大きく広がり、
+**<Term id="variance-inflation-factor">VIF</Term>**$=1/(1-\rho^2)$ が膨らむ（操作→図→数式の強連動）。R² は高いままなのに係数が定まらない様子を確かめよう。
+
+<MulticollinearityLab />
+
+  </Interact>
+  <Exercise>
+
+確認: 「多重共線性があると R² が必ず下がる」——○か×か。
+（答: ×。予測（R²）は良いまま。崩れるのは «個々の係数の推定の安定性»（SE が膨らむ）。だから R² では多重共線性に気づけず、VIF で見る）
+
+  </Exercise>
+</Level>
+
+<Level level={1} title="古典的理解（R²と自由度調整済みR²）">
+  <Concept>
+
+説明変数を足すと **R² は必ず上がる**（下がらない）。だから «効く変数か» を R² だけでは判断できない。
+罰則を入れた**<Term id="adjusted-r-squared">自由度調整済み R²</Term>**は、効かない変数を足すと下がる。
+
+下のステッパーで変数を1つずつ投入し、R²（青）が単調に上がる一方、ノイズ変数で調整済み R²（赤）が下がる様子を追える。
+
+  </Concept>
+  <Derivation title="なぜ R² は変数を足すと必ず上がるのか">
+
+R²$=1-\mathrm{RSS}/\mathrm{TSS}$ で、TSS（全変動）はデータだけで決まり一定。
+説明変数を1つ加えると、最小二乗は «新しい変数を使わない»（係数0）という選択肢も含めて RSS を最小化するので、
+
+$$
+\mathrm{RSS}_{\text{追加後}}\le \mathrm{RSS}_{\text{追加前}}.
+$$
+
+RSS は減る一方なので R² は上がる一方（過剰適合を見抜けない）。これを補正するのが調整済み R²：
+
+$$
+\bar R^2=1-\frac{\mathrm{RSS}/(n-p-1)}{\mathrm{TSS}/(n-1)}.
+$$
+
+分母 $n-p-1$ が «説明変数の数 $p$» で罰則になっており、RSS の減りが小さい（効かない）変数を足すと $\bar R^2$ は下がる。
+
+  </Derivation>
+  <Interact>
+
+<StepwiseStepper />
+
+  </Interact>
+  <Exercise>
+
+<MultiRegQuiz />
+
+  </Exercise>
+</Level>
+
+<Level level={2} title="仮定体系（正則化・変数選択・残差分析・GLS）">
+  <Concept>
+
+重回帰を実務で使うための道具を整理する。
+
+- **正則化**: [L1（Lasso）](l1-regularization)は一部の係数を0にして自動変数選択、L2（Ridge）は全体を縮小し多重共線性に強い。«バイアスを入れて分散を下げる»。
+- **変数選択（Stepwise）**: 前進・後退で変数を出し入れ。ただし «同じデータで選択と推測» をすると p値・信頼区間が歪む（選択後推測）。
+- **残差分析**: 残差を予測値・各変数に対してプロットし、非線形・不等分散・外れ値を診断する（次トピック）。
+- **一般化最小二乗（GLS）**: 誤差が等分散・無相関でない（[ガウス・マルコフ](/topics/point-estimation-properties)の前提が崩れる）とき、共分散構造を織り込んで推定する。
+
+予測精度（R²）と解釈（係数の安定性）はトレードオフ。正則化はその橋渡し。
+
+  </Concept>
+  <Derivation title="Ridge はなぜ多重共線性に強いのか">
+
+L2正則化（Ridge）の解は $\hat\beta=(X^\top X+\lambda I)^{-1}X^\top y$。
+
+多重共線性があると $X^\top X$ がほぼ特異（小さい固有値）で逆行列が不安定になるが、$\lambda I$ を足すと固有値が $\lambda$ だけ底上げされ、行列が **安定して逆転** できる。
+そのぶん係数は0方向に縮む（バイアス）が、分散が大きく下がるので MSE は小さくなりうる。
+これが «多重共線性で暴れる係数» を Ridge が抑える仕組み。$\lambda\to0$ で通常の最小二乗、$\lambda$ 大で強い縮小。
+
+  </Derivation>
+  <Exercise>
+
+確認: 「L1正則化（Lasso）は一部の係数をちょうど0にするので、変数選択の働きを持つ」——○か×か。
+（答: ○。L1罰則 λΣ|βⱼ| はスパースな解を生み、効かない変数の係数を0にする。L2（Ridge）は0にはせず全体を縮める）
+
+  </Exercise>
+</Level>
+
+<Level level={3} title="高次元回帰・スパース推定" status="planned">
+  説明変数が標本数より多い高次元での回帰、Lasso の理論（スパース性・選択一致性）、elastic net。
+</Level>
+
+<Level level={4} title="選択後推測（post-selection inference）" status="planned">
+  変数選択後の妥当な p値・信頼区間、データ分割・selective inference（前提: 検定法の導出）。
+</Level>
+
+<Level level={5} title="一般化線形モデルへの拡張" status="planned">
+  応答が非正規（二値・カウント）の場合の一般化線形モデル（ロジスティック・ポアソン回帰,
+  質的回帰トピック）。
+</Level>
+
+<Level level={6} title="フロンティア" status="planned">
+  «解釈できる» 高次元・非線形モデルの推測（因果機械学習・二重機械学習）は研究が活発（到達途上）。
+</Level>
+
+</Topic>

@@ -1,0 +1,16 @@
+---
+title: 自由度調整済み決定係数
+definition: 説明変数の数で R² に罰則を加えた指標。効かない変数を足すと下がる。R²が単調増加で過剰適合を見抜けないのを補正する。
+aliases: [adjusted R-squared, 自由度調整済みR², 調整済み決定係数]
+seeAlso: [coefficient-of-determination, multiple-regression]
+---
+
+# 自由度調整済み決定係数
+
+$$
+\bar R^2=1-\frac{\mathrm{RSS}/(n-p-1)}{\mathrm{TSS}/(n-1)}
+$$
+
+- [決定係数](coefficient-of-determination) R² は説明変数を足すと **必ず上がる**（過剰適合を見抜けない）。
+- 調整済み R² は «説明変数の数 $p$» で罰則を入れ、効かない変数を足すと **下がる**。
+- モデル比較・変数選択の指標。情報量規準（AIC・BIC）も同じ «当てはまり vs 複雑さ» の発想。
