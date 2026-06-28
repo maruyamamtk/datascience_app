@@ -377,3 +377,19 @@ MVP 5トピック完了後、SPEC §3 のチェックリスト全項目（A〜S,
 - **変更概要**: «要約はどこまで情報を保つか» を体感する4層実装。SufficiencyLab はベルヌーイのコイン列（0/1トグル）→ 成功数 T（十分統計量）・尤度曲線 L(p)=pᵀ(1−p)ⁿ⁻ᵀ・MLE p̂=T/n（TermController）が同時更新。「並べ替え（T不変）」ボタンで «順序を変えても T が同じなら尤度も p̂ も不変» を実証＝十分性の核心。OrderStatStepper は標本を昇順に整列し x₍₁₎（最小）→中央値→x₍ₙ₎（最大）を1つずつ取り出すコマ送り。ネイマンの分解定理（L=h(x)g(T,θ)）と標本平均・標本分散の独立性（コクラン）→t分布の正当性を導出で網羅。
 - **検証結果**: Vitest **366 passed**（+12: sufficiency 8 / frames 4、registry リンク切れゼロ）。tsc / lint（警告0）/ build（/topics/statistics-sufficiency・新用語4ページ出力）成功。`pnpm start` + Playwright 実機確認: 初期 T=6/n=10/p̂=0.6、並べ替えで T=6・p̂=0.6 不変（十分性）、コイン反転で T=5・p̂=0.5（データ変更で追従）、順序統計量ステッパーが [7,2,9,4,2,6,1,8]→[1,2,2,4,6,7,8,9] に整列、コンソールエラー0件。
 - **設計判断**: 抽象的な «十分性» を «並べ替えても尤度が動かない» という操作可能な現象に落として体感させた。標本平均と標本分散の独立性を前トピック（標本分布）の t 分布導出と接続し、推定・検定の正当性の土台として位置づけた。frame は OrderStatStepper のみ使用（SufficiencyLab は frame 不使用）で競合なし。
+
+### コンテンツ拡充 #36 — [D-2] 推定法（最尤法・モーメント法・最小二乗法）
+
+優先度 10/82。前提=統計量と十分性。3つの推定流儀と勾配上昇でMLEへ登る過程。
+
+- [x] 計算層 `lib/stats/estimation.ts`（exponentialLogLikelihood/Mle/Score / logLikCurve / gradientAscentSteps / uniformMomentEstimate / uniformMaxMle / residualSumOfSquares、sample.mean 再利用）+ Vitest（10）
+- [x] 状態層 `lib/store/estimation-methods.ts`（controls {lambda}・固定標本 ESTIMATION_SAMPLE）
+- [x] 描画層 `components/topics/estimation-methods/`（MleLab=λ→対数尤度曲線上の現在地・勾配・MLE頂上の強連動 / GradientAscentStepper=勾配上昇で頂上(MLE)へ1ステップずつ登るコマ送り / EstimationQuiz）+ frames.ts + Vitest（4）
+- [x] 用語ノード4件（likelihood-function / maximum-likelihood / method-of-moments / linear-model）+ 既存 least-squares 再利用
+- [x] MDX `content/topics/estimation-methods.mdx`（L0-L2 充実：最尤法→勾配上昇＋指数のλ̂=1/x̄導出→モーメント法/最小二乗＝正規誤差の最尤の導出/線形模型、L3-L6 planned）
+- [x] `/topics` 一覧へ反映（status: published）
+
+#### レビュー: 推定法トピック（2026-06-28）
+- **変更概要**: «母数をどう決めるか» の3流儀を4層実装。MleLab は指数分布の率 λ スライダー→対数尤度曲線上の現在地・勾配（スコア）・MLE頂上 λ̂=1/x̄（TermController）が同時更新。GradientAscentStepper は勾配上昇法で出発点から頂上（勾配0=MLE）へ1ステップずつ登る過程をコマ送り（アルゴリズム図鑑スタイル）。モーメント法（一様U[0,θ]の2x̄ vs 最尤max）・最小二乗＝正規誤差の最尤を導出で網羅し、線形模型・回帰へ接続。
+- **検証結果**: Vitest **380 passed**（+14: estimation 10 / frames 4、registry リンク切れゼロ）。tsc / lint（警告0）/ build（/topics/estimation-methods・新用語4ページ出力）成功。`pnpm start` + Playwright 実機確認: 初期 λ=0.3/logL=−13.35/λ̂=0.65、λ→0.65 で logL=−11.51（上昇）・勾配−0.09（≈0）、勾配上昇ステッパー末尾で λ=0.645=λ̂・勾配0、コンソールエラー0件。
+- **設計判断 / つまずき**: 抽象的な «尤度最大化» を «曲線を登る» 操作に落とした。勾配上昇の学習率は安定領域 η<2/n を超えると発散（η=0.5>2/8で発散）→テスト・部品とも η=0.2 に設定、lessons.md に教訓追記。モーメント法は «2x̄ が最大観測を覆えない» 反例で «推定法で答えが変わる» ことを実感させた。最小二乗＝正規誤差の最尤の導出で前トピック（単回帰）と接続。

@@ -1,0 +1,18 @@
+---
+title: 尤度関数
+definition: 観測データを固定し、母数 θ の関数として見た «データの起こりやすさ» L(θ)=f(x₁,…,xₙ|θ)。確率と «変数と固定» が逆。
+aliases: [likelihood function, 尤度, likelihood]
+seeAlso: [maximum-likelihood, sufficient-statistic]
+---
+
+# 尤度関数
+
+確率密度（or 確率関数）を «データを固定し母数 θ の関数» として見たもの。
+
+$$
+L(\theta)=\prod_i f(x_i\mid\theta)
+$$
+
+- 確率は «θ を固定して x の関数»、尤度は «x を固定して θ の関数»。値は同じでも見る向きが逆。
+- 積より和が扱いやすいので対数尤度 $\log L(\theta)=\sum_i\log f(x_i\mid\theta)$ を使う。
+- これを最大化するのが[最尤法](maximum-likelihood)。[十分統計量](sufficient-statistic)を通してしか θ に依存しない。

@@ -1,0 +1,16 @@
+---
+title: 線形模型
+definition: 応答 y を説明変数の線形結合＋誤差で表すモデル y=Xβ+ε。最小二乗（正規誤差なら最尤）で係数 β を推定する。回帰・分散分析の共通枠組み。
+aliases: [linear model, 線形モデル, 一般線形モデル]
+seeAlso: [least-squares, maximum-likelihood, regression-coefficient]
+---
+
+# 線形模型
+
+$$
+\mathbf{y}=X\boldsymbol\beta+\boldsymbol\varepsilon
+$$
+
+- 応答 $\mathbf y$ を説明変数の行列 $X$ と係数 $\boldsymbol\beta$ の線形結合＋誤差で表す。単回帰・重回帰・分散分析を統一的に扱う枠組み。
+- [最小二乗法](least-squares)で $\hat{\boldsymbol\beta}=(X^\top X)^{-1}X^\top\mathbf y$（正規方程式）。誤差が正規なら[最尤法](maximum-likelihood)と一致。
+- 多くの統計手法の «共通言語»。一般化線形モデル（GLM）はこれをリンク関数で非線形応答へ拡張したもの。

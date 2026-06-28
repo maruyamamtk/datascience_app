@@ -1,0 +1,18 @@
+---
+title: 最尤法
+definition: 観測データが最も起こりやすくなる母数を選ぶ推定法。対数尤度 log L(θ) を最大化する θ̂ が最尤推定量。勾配 0 が条件。
+aliases: [maximum likelihood, MLE, 最尤推定]
+seeAlso: [likelihood-function, method-of-moments, least-squares]
+---
+
+# 最尤法（MLE）
+
+[尤度関数](likelihood-function) $L(\theta)$ を最大化する母数を選ぶ。
+
+$$
+\hat\theta=\arg\max_\theta \log L(\theta),\qquad \frac{d}{d\theta}\log L(\hat\theta)=0
+$$
+
+- 「このデータが最も出やすくなる θ は？」を選ぶ。指数分布なら $\hat\lambda=1/\bar x$、ベルヌーイなら $\hat p=T/n$。
+- 大標本で一致性・漸近正規性・有効性（クラメール–ラオ下限を達成）を持つ «良い» 推定法。
+- 正規誤差の下では[最小二乗法](least-squares)と一致する。[モーメント法](method-of-moments)より効率が良いことが多い。
