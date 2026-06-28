@@ -425,3 +425,19 @@ MVP 5トピック完了後、SPEC §3 のチェックリスト全項目（A〜S,
 - **変更概要**: «大標本で最尤推定量はどんな分布か» を4層実装。AsymptoticLab は Exp(λ=1.5) から サイズ n を2500回抽出し λ̂=1/x̄ の標本分布ヒストグラム（青）と漸近正規 N(λ,λ²/n)（赤曲線）を重ね、数式の漸近分散 λ²/n（TermController）・フィッシャー情報量 I(λ)=1/λ²・漸近SD=実測SD が n に同時連動。小標本では右に歪み、n を増やすと正規に重なる＝漸近正規性。AsymptoticStepper は n=5→400 でコマ送り。I(λ)=1/λ² の導出（スコアの分散）・最尤=KL最小化の導出・デルタ法・ジャックナイフ・KL非対称を網羅。
 - **検証結果**: Vitest **404 passed**（+13: asymptotics 9 / frames 4、registry リンク切れゼロ）。tsc / lint（警告0、実装中に useMemo 依存警告を解消）/ build（/topics/asymptotic-properties・新用語4ページ出力）成功。`pnpm start` + Playwright 実機確認: n=10 で漸近分散0.225・I(λ)=0.444、n=200 で漸近分散0.011・漸近SD=実測SD=0.106（漸近正規性を実証）、ステッパー n=400 で SD=0.075一致、コンソールエラー0件。
 - **設計判断 / つまずき**: «漸近分散がフィッシャー情報量の逆数» を «実測SDと理論SDが一致する» 可視化で実証。AsymptoticLab の normalPath を当初 useMemo にしたら toX/toYcount 依存で lint 警告→ 軽量な毎描画計算に変更。KL を最尤と接続（最尤＝経験分布とモデルの KL 最小化）し、次の情報量規準（AIC/BIC, J領域）への伏線にした。frame は AsymptoticStepper のみ使用で競合なし。これで推定ブロック（D-1〜D-4＋既存 D-5 信頼区間）が完成。
+
+### コンテンツ拡充 #39 — [E-2] 検定法の導出（ネイマン・ピアソン）
+
+優先度 13/82（Tier2 検定の導出）。前提=仮説検定・点推定の性質。最強力検定と3検定の関係を体感。
+
+- [x] 計算層 `lib/stats/test-derivation.ts`（normalTestErrors / npThreshold / threeTestStatistics / normalLogLikMu、normalPdf・standardNormalCdf 再利用）+ Vitest（7）
+- [x] 状態層 `lib/store/test-derivation.ts`（controls {c}・2単純仮説 NP_CONFIG）
+- [x] 描画層 `components/topics/test-derivation/`（NeymanPearsonLab=閾値c→H0/H1分布のα/検出力の面積＆数式の強連動＋α=5%NP閾値ボタン / ThreeTestsStepper=対数尤度曲線上でワルド/スコア/尤度比の幾何をコマ送り / TestDerivQuiz）+ frames.ts + Vitest（3）
+- [x] 用語ノード5件（neyman-pearson-lemma / likelihood-ratio-test / wald-test / score-test / exact-test）相互リンク
+- [x] MDX `content/topics/test-derivation.mdx`（L0-L2 充実：α/検出力トレードオフ→NP定理＋尤度比>k=x̄>cの導出→3検定の関係＋2次近似で漸近等価の導出/正確検定、L3-L6 planned）
+- [x] `/topics` 一覧へ反映（status: published）
+
+#### レビュー: 検定法の導出トピック（2026-06-28）
+- **変更概要**: «検定をどう作るか» を4層実装。NeymanPearsonLab は2単純仮説 H0:μ=0 vs H1:μ=1.2（σ既知, n=20）で閾値 c スライダー→H0(灰)/H1(青)の分布上に α(赤面積)/検出力(青面積)＋数式（TermController）が同時連動。「α=5%NP閾値に合わせる」で最強力検定の境界へジャンプ。ThreeTestsStepper は対数尤度曲線上でワルド(水平距離)/スコア(μ0の傾き)/尤度比(高さの差)を1つずつ図示し、正規モデルで3つとも z² に一致することを実証。NP定理（尤度比>k=x̄>c）・3検定の2次近似による漸近等価を導出で網羅。
+- **検証結果**: Vitest **414 passed**（+10: test-derivation 7 / frames 3、registry リンク切れゼロ）。tsc / lint（警告0）/ build（/topics/test-derivation・新用語5ページ出力）成功。`pnpm start` + Playwright 実機確認: c=0.37 で α=0.049/検出力≈1、c=1.0 で α→0/検出力0.814（トレードオフ）、3検定ステッパーで Wald=Score=LRT=7.2=z²、コンソールエラー0件。
+- **設計判断**: 抽象的なNP定理を «αと検出力の面積のトレードオフ» と «尤度比>k=x̄>c の導出» で具体化。3検定の «同じ隔たりを別角度で測る» を対数尤度の幾何（横/傾き/高さ）で可視化し、2次近似で等価になる理屈を導出。正確検定は小標本での厳密計算として概念＋用語で反映。frame は ThreeTestsStepper のみ使用で競合なし。これで検定の «作り方» の理論が揃った（次は E-3 正規分布に関する検定）。

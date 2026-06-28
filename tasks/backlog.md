@@ -26,6 +26,7 @@
 - ✅ D-2 推定法 `estimation-methods`（#36）
 - ✅ D-3 点推定の性質 `point-estimation-properties`（#37）
 - ✅ D-4 推定量の漸近的性質 `asymptotic-properties`（#38）
+- ✅ E-2 検定法の導出 `test-derivation`（#39）
 
 ## キュー（優先順）
 
@@ -43,7 +44,7 @@
 | 10 | #36 | D-2 | 推定法（最尤法・モーメント法・最小二乗法） | estimation-methods | statistics-sufficiency | ✅ done |
 | 11 | #37 | D-3 | 点推定の性質 | point-estimation-properties | estimation-methods | ✅ done |
 | 12 | #38 | D-4 | 推定量の漸近的性質 | asymptotic-properties | point-estimation-properties | ✅ done |
-| 13 | #39 | E-2 | 検定法の導出（ネイマン・ピアソン） | test-derivation | hypothesis-testing, point-estimation-properties | pending |
+| 13 | #39 | E-2 | 検定法の導出（ネイマン・ピアソン） | test-derivation | hypothesis-testing, point-estimation-properties | ✅ done |
 | 14 | #40 | E-3 | 正規分布に関する検定（t検定・2標本） | normal-tests | test-derivation, sampling-distributions | pending |
 | 15 | #41 | E-4 | 一般の分布に関する検定（適合度検定） | goodness-of-fit-tests | normal-tests | pending |
 | 16 | #42 | E-5 | ノンパラメトリック法 | nonparametric-tests | goodness-of-fit-tests | pending |

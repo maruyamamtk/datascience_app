@@ -1,0 +1,16 @@
+---
+title: スコア検定
+definition: H0 のもとでの対数尤度の «傾き»（スコア）の大きさで測る検定。MLE を計算せず H0 だけで済むのが利点。ラグランジュ乗数検定とも。
+aliases: [score test, ラグランジュ乗数検定, Rao score test, LM検定]
+seeAlso: [likelihood-ratio-test, wald-test, fisher-information]
+---
+
+# スコア検定
+
+$$
+S=\frac{U(\theta_0)^2}{I(\theta_0)}\ \xrightarrow{d}\ \chi^2,\qquad U(\theta)=\frac{\partial}{\partial\theta}\log L
+$$
+
+- $H_0$ での対数尤度の勾配（スコア $U$）の大きさを[フィッシャー情報量](fisher-information)で標準化。
+- **MLE を計算しなくてよい**（H0 だけで済む）のが利点。計量経済の «ラグランジュ乗数検定» と同じ。
+- [ワルド型検定](wald-test)・[尤度比検定](likelihood-ratio-test)と漸近的に等価。
