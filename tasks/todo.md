@@ -569,3 +569,19 @@ MVP 5トピック完了後、SPEC §3 のチェックリスト全項目（A〜S,
 - **変更概要**: 3群以上の平均差をF検定するANOVAを4層実装。AnovaLab は群平均の隔たり separation スライダー→3群の色分け点・総平均/群平均線・SS級間/級内・F・p（TermController）が同時連動、隔たりを増やすと級間変動が増えFが跳ね上がる（級内=誤差は不変）様子を可視化。VarianceDecompStepper は 全変動→級内→級間→F比 の分解を棒でコマ送り。全変動が直交分解する導出（交差項が消える）・多重比較の誤り膨張（1−0.95⁶≈26%）の導出を網羅。
 - **検証結果**: Vitest **521 passed**（+12: anova 8 / frames 4、registry リンク切れゼロ）。tsc / lint（警告0）/ build成功。`pnpm start` + Playwright 実機確認: separation=1 で F=5.19/p=0.019（差あり）、separation=0 で F=0.47/p=0.637（SS級内27.4不変・SS級間19→1.7）、分解ステッパー④F比でラボと一致、コンソールエラー0件。
 - **設計判断 / つまずき**: **F分布CDFのバグを修正** — fPdfのシンプソン積分が大Fでピークを取りこぼし不正確→正則化不完全ベータ関数 I_z(d1/2,d2/2) の閉形式に置換（堅牢・t/ベータにも再利用可）、lessons追記。**用語リンクのバグも修正** — multiple-comparison/experimental-design が hypothesis-testing(トピックslug) を指して registry fail→significance-level(用語slug)に修正、lessons追記。級内変動が separation で不変な設計で «群間の差 vs 群内の誤差» の対比を明確化。次は G-2 標本調査法へ。
+
+### コンテンツ拡充 #48 — [G-2] 標本調査法
+
+優先度 22/82。前提=推定法。単純無作為 vs 層化抽出・分散低減・有限母集団修正。
+
+- [x] 計算層 `lib/stats/sampling-survey.ts`（populationMean/populationVariance(層内+層間分解)/srsVariance(FPC)/proportionalAllocation/neymanAllocation/stratifiedVariance/drawSrsMean）+ Vitest（8）
+- [x] 状態層 `lib/store/sampling-survey.ts`（controls {n, method}・固定3層母集団）
+- [x] 描画層 `components/topics/sampling-survey/`（SamplingSurveyLab=n・抽出法→層構成・各法の標準誤差比較・配分の強連動 / VarianceReductionStepper=SRS→比例→ネイマンのSE低減コマ送り / SurveyQuiz）+ frames.ts + Vitest（3）
+- [x] 用語ノード5件（simple-random-sampling / stratified-sampling / neyman-allocation / finite-population-correction / cluster-sampling）相互リンク
+- [x] MDX `content/topics/sampling-survey.mdx`（L0-L2 充実：無作為抽出と層化→母分散分解で層化が効く・ネイマン配分が最適である導出→クラスター/FPC＋有限母集団修正の導出、L3-L6 planned）
+- [x] `/topics` 一覧へ反映（status: published）
+
+#### レビュー: 標本調査法トピック（2026-06-29）
+- **変更概要**: «どう標本を取れば精度が上がるか» を4層実装。SamplingSurveyLab は標本サイズ n スライダー＋抽出法トグル（SRS/比例/ネイマン）→3層の構成バー・各層への配分 n_h・3法の標準誤差比較バー・SE（TermController）が同時連動。VarianceReductionStepper は SRS→比例→ネイマンと SE が下がる過程をコマ送り。母分散=層内+層間の分解で層化が層間を除いて効くこと・ネイマン配分が分散最小（ラグランジュ）である導出・有限母集団修正の導出を網羅。
+- **検証結果**: Vitest **532 passed**（+11: sampling-survey 8 / frames 3、registry リンク切れゼロ）。tsc / lint（警告0）/ build成功。`pnpm start` + Playwright 実機確認: SRS で SE=1.161（比100%）、ネイマン配分で SE=0.253（**比22%**＝層間の差が大きく層化が劇的に効く）、分散低減ステッパー③でラボと一致、コンソールエラー0件。
+- **設計判断**: 層平均を大きく離した3層（10/20/50）で «層化の威力» を体感的に見せた（SE が SRS の1/5に）。母分散の層内+層間分解を可視化の軸に据え、ネイマン配分の最適性を制約付き最小化で導出。frame は VarianceReductionStepper のみ使用で競合なし。**これで G群（分散分析・標本調査）完成**。次は H群（多変量解析）主成分分析へ。

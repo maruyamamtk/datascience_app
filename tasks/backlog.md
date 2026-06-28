@@ -35,6 +35,7 @@
 - ✅ F-4 質的回帰（ロジスティック回帰） `qualitative-regression`（#45）
 - ✅ F-5 一般化線形モデルと発展 `generalized-linear-models`（#46）
 - ✅ G-1 分散分析・実験計画法 `analysis-of-variance`（#47）
+- ✅ G-2 標本調査法 `sampling-survey`（#48）
 
 ## キュー（優先順）
 
@@ -61,7 +62,7 @@
 | 19 | #45 | F-4 | 質的回帰（ロジスティック回帰） | qualitative-regression | multiple-regression | ✅ done |
 | 20 | #46 | F-5 | 一般化線形モデルと発展 | generalized-linear-models | qualitative-regression | ✅ done |
 | 21 | #47 | G-1 | 分散分析・実験計画法 | analysis-of-variance | normal-tests | ✅ done |
-| 22 | #48 | G-2 | 標本調査法 | sampling-survey | estimation-methods | pending |
+| 22 | #48 | G-2 | 標本調査法 | sampling-survey | estimation-methods | ✅ done |
 | 23 | #49 | H-1 | 主成分分析 | principal-component-analysis | multiple-regression | pending |
 | 24 | #50 | H-2 | 判別分析 | discriminant-analysis | principal-component-analysis | pending |
 | 25 | #51 | H-3 | クラスター分析 | cluster-analysis | principal-component-analysis | pending |
