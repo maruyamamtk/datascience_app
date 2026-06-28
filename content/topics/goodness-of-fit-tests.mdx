@@ -1,0 +1,130 @@
+---
+title: 一般の分布に関する検定（適合度検定）
+summary: 「観測したカテゴリ別の度数は、想定した分布と整合するか」をカイ二乗適合度検定で判断する。χ²=Σ(O−E)²/E がどう積み上がり p 値になるかを操作で体感する。
+status: published
+---
+
+import { GoodnessOfFitLab } from "@/components/topics/goodness-of-fit-tests/GoodnessOfFitLab";
+import { ChiSquareStepper } from "@/components/topics/goodness-of-fit-tests/ChiSquareStepper";
+import { GofQuiz } from "@/components/topics/goodness-of-fit-tests/GofQuiz";
+
+<Topic title="一般の分布に関する検定（適合度検定）" summary="「観測したカテゴリ別の度数は、想定した分布と整合するか」をカイ二乗適合度検定で判断する。χ²=Σ(O−E)²/E がどう積み上がり p 値になるかを操作で体感する。">
+
+<ReaderGuide>
+
+- **初学者** → L0〜L1（カイ二乗適合度検定、χ²の積み上げ、何が偏りを示すか）
+- **一通り使える人** → L2（自由度とパラメータ推定、独立性検定、二項・ポアソンへの適合、正確検定）
+- **「完全に理解した」人** → L3 以降（尤度比型の適合度・高次元の度数は到達途上）
+
+前提: [標本分布](/topics/sampling-distributions)の<Term id="chi-square-distribution">カイ二乗分布</Term>、[離散型確率分布](/topics/discrete-distributions)の<Term id="poisson-distribution">ポアソン分布</Term>。
+
+</ReaderGuide>
+
+<Level level={0} title="ブラックボックス（カイ二乗適合度検定）">
+  <Concept>
+
+「このサイコロは歪んでいないか（各目が一様か）」のように、**観測度数**が**想定した分布**と整合するかを調べるのが**<Term id="goodness-of-fit-test">適合度検定</Term>**。
+
+<Math tex="\chi^2=\sum_i\dfrac{(O_i-E_i)^2}{E_i}" />
+
+各カテゴリの «期待からのずれ» を期待度数 $E$ で割って二乗し、足し上げる。これを[カイ二乗分布](/topics/sampling-distributions)と比べる。
+
+  </Concept>
+  <Interact>
+
+下のラボで各目の観測度数を増減すると、観測（青）と期待（赤線）の差から χ²・p 値が変わり、数式が同時に追従する（操作→図→数式の強連動）。
+どれかの目を極端に増やすと χ² が跳ね上がり «一様と言えない» に変わる。
+
+<GoodnessOfFitLab />
+
+  </Interact>
+  <Exercise>
+
+確認: 「χ² は (観測−期待) をそのまま足すのではなく、期待 E で割ってから足す」——○か×か。
+（答: ○。$\chi^2=\sum(O-E)^2/E$。E で割って «相対的なずれ» にするのが肝。同じ差でも期待度数が小さいセルほど χ² への寄与が大きい）
+
+  </Exercise>
+</Level>
+
+<Level level={1} title="古典的理解（χ²の積み上げと自由度）">
+  <Concept>
+
+χ² は «各セルの寄与 $(O-E)^2/E$ の総和»。下のステッパーで目ごとに 1 つずつ加算され、合計が χ² になる過程を追える。
+
+自由度は **カテゴリ数 − 1**（度数の合計が固定されるため、1 つ自由を失う）。
+
+  </Concept>
+  <Derivation title="なぜ (O−E)²/E がカイ二乗に近づくのか（正規近似）">
+
+各セルの観測度数 $O_i$ は、二項分布 $\mathrm{Bin}(n, p_i)$ に近く、$n$ が大きいと正規近似 $O_i\approx N(E_i, E_i(1-p_i))$。
+標準化した $\dfrac{O_i-E_i}{\sqrt{E_i}}$ はほぼ標準正規で、その**二乗の和**が[カイ二乗](/topics/sampling-distributions)になる。
+
+度数の合計が $n$ で固定という1つの制約があるため、独立な «正規の二乗» は カテゴリ数 − 1 個ぶん。よって自由度は $k-1$。
+分母が $E_i(1-p_i)$ でなく $E_i$ なのは近似だが、$p_i$ が小さければ十分よく、$\sum (O_i-E_i)^2/E_i$ が自由度 $k-1$ のカイ二乗に従う。
+
+  </Derivation>
+  <Interact>
+
+<ChiSquareStepper />
+
+  </Interact>
+  <Exercise>
+
+<GofQuiz />
+
+  </Exercise>
+</Level>
+
+<Level level={2} title="仮定体系（パラメータ推定・独立性・正確検定）">
+  <Concept>
+
+適合度検定を一般の分布・状況へ広げる。
+
+- **パラメータ推定で自由度が減る**: ポアソン分布への適合で平均 $\lambda$ をデータから推定したら、自由度は カテゴリ数 − 1 − 1。既知分布なら引かない。
+- **独立性検定（分割表）**: 2 つの分類が独立かを **<Term id="chi-square-test">カイ二乗検定</Term>** で。期待度数 = 行和 × 列和 / 総和、自由度 (行−1)(列−1)。
+- **期待度数が小さいとき**: カイ二乗近似が崩れる（目安は各セル5以上）。セルをまとめるか、[正確検定](/topics/test-derivation)（フィッシャーの正確検定）を使う。
+
+«(観測−期待)²/期待 を足してカイ二乗で判断» という骨格は、度数データの検定で共通。
+
+  </Concept>
+  <Derivation title="独立性検定の期待度数（なぜ 行和×列和/総和 か）">
+
+分割表で «行（属性 A）と列（属性 B）が独立» なら、$P(A=i, B=j)=P(A=i)P(B=j)$。
+周辺確率を周辺度数で推定すると $\hat P(A=i)=\dfrac{r_i}{n}$、$\hat P(B=j)=\dfrac{c_j}{n}$（$r_i,c_j$ は行和・列和）。
+よって独立を仮定した期待度数は
+
+$$
+E_{ij}=n\cdot\hat P(A=i)\hat P(B=j)=n\cdot\frac{r_i}{n}\cdot\frac{c_j}{n}=\frac{r_i\,c_j}{n}.
+$$
+
+行・列の周辺確率を推定したぶん自由度が減り、$(行-1)(列-1)$ になる。観測がこの期待から大きくずれれば «独立でない（関連がある）»。
+
+  </Derivation>
+  <Exercise>
+
+確認: 「期待度数が 1 や 2 と小さいセルがあっても、カイ二乗近似は問題なく使える」——○か×か。
+（答: ×。期待度数が小さいと近似が崩れる（目安は各セル5以上）。セルをまとめるか、フィッシャーの正確検定など厳密法を使う）
+
+  </Exercise>
+</Level>
+
+<Level level={3} title="尤度比型の適合度（G検定）" status="planned">
+  ピアソンのカイ二乗の代わりに尤度比統計量 G=2Σ O·log(O/E) を使う G 検定、両者の漸近的等価（前提:
+  検定法の導出）。
+</Level>
+
+<Level level={4} title="連続分布への適合度" status="planned">
+  コルモゴロフ–スミルノフ検定・アンダーソン–ダーリング検定など、連続分布への当てはまりを CDF
+  で測る方法。
+</Level>
+
+<Level level={5} title="高次元・スパースな分割表" status="planned">
+  多重分割表・スパースな度数での検定、対数線形モデルによるモデルベースの分析（分割表トピックへ）。
+</Level>
+
+<Level level={6} title="フロンティア" status="planned">
+  «モデルが正しいか» の検定（適合度）と «どのモデルが良いか»
+  の選択（情報量規準）の橋渡しは研究が続く（到達途上）。
+</Level>
+
+</Topic>
