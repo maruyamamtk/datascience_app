@@ -34,6 +34,7 @@
 - ✅ F-3 回帰診断 `regression-diagnostics`（#44）
 - ✅ F-4 質的回帰（ロジスティック回帰） `qualitative-regression`（#45）
 - ✅ F-5 一般化線形モデルと発展 `generalized-linear-models`（#46）
+- ✅ G-1 分散分析・実験計画法 `analysis-of-variance`（#47）
 
 ## キュー（優先順）
 
@@ -59,7 +60,7 @@
 | 18 | #44 | F-3 | 回帰診断 | regression-diagnostics | multiple-regression | ✅ done |
 | 19 | #45 | F-4 | 質的回帰（ロジスティック回帰） | qualitative-regression | multiple-regression | ✅ done |
 | 20 | #46 | F-5 | 一般化線形モデルと発展 | generalized-linear-models | qualitative-regression | ✅ done |
-| 21 | #47 | G-1 | 分散分析・実験計画法 | analysis-of-variance | normal-tests | pending |
+| 21 | #47 | G-1 | 分散分析・実験計画法 | analysis-of-variance | normal-tests | ✅ done |
 | 22 | #48 | G-2 | 標本調査法 | sampling-survey | estimation-methods | pending |
 | 23 | #49 | H-1 | 主成分分析 | principal-component-analysis | multiple-regression | pending |
 | 24 | #50 | H-2 | 判別分析 | discriminant-analysis | principal-component-analysis | pending |

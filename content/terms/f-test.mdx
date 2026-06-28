@@ -1,0 +1,18 @@
+---
+title: F検定
+definition: 2つの分散（平均平方）の比 F が F 分布に従うことを使う検定。分散分析の «群間/群内» の比や、2標本の等分散性の検定に使う。
+aliases: [F-test, F検定, 分散比検定]
+seeAlso: [analysis-of-variance, f-distribution]
+---
+
+# F検定
+
+2つの分散の比を統計量にする検定。
+
+$$
+F=\frac{\text{MS}_1}{\text{MS}_2}\sim F_{d_1,d_2}
+$$
+
+- [分散分析](analysis-of-variance)では $F=\text{MS}_{\text{級間}}/\text{MS}_{\text{級内}}$。群の差が誤差に比べ大きいほど F 大。
+- 2標本の **等分散性** の検定にも使う（分散の比が1から離れるか）。
+- 統計量は[F分布](f-distribution)に従い、上側確率が p 値。帰無仮説が正しければ F は1付近。

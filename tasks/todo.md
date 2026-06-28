@@ -553,3 +553,19 @@ MVP 5トピック完了後、SPEC §3 のチェックリスト全項目（A〜S,
 - **変更概要**: 線形/ロジスティック/ポアソン回帰を統一するGLMを4層実装。PoissonRegressionLab は b0・b1 スライダー→指数の平均曲線 λ=exp(b0+b1x)・デビアンス・対数尤度（TermController）が同時連動、件数データに曲線を当てはめる。GlmFamilyStepper は同じ線形予測子 η を各リンクの逆関数（恒等→ロジット→対数）で平均μに写す3族ギャラリーをコマ送り＝«統一構造»を可視化。なぜリンク関数が必要か（μの範囲制約を線形予測子−∞〜∞に合わせる）・デビアンスが残差平方和の一般化である導出を網羅。
 - **検証結果**: Vitest **509 passed**（+13: glm 9 / frames 4、registry リンク切れゼロ）。tsc / lint（警告0）/ build成功。`pnpm start` + Playwright 実機確認: b0=0,b1=0.3 で D=217.8、b1=0.6（真値）で D=61.1・対数尤度-172.3→-93.9（大幅改善）、GLM族ステッパーが正規(恒等)→二項(ロジット)→ポアソン(対数)を循環表示、コンソールエラー0件。
 - **設計判断 / つまずき**: GLMの抽象を «同じ η を別のリンクで別の曲線にする» 族ギャラリーで具体化（最重要の統一視点）。ポアソン乱数は Knuth のアルゴリズムで決定的生成。ステッパーの連続クリックは1 evaluate内だと stale state を読む既知挙動を再確認（setTimeout/別 evaluate で正常）。frame は GlmFamilyStepper のみ使用で競合なし。**これで F群（回帰 F-1〜F-5）完成**。次は G群（多変量解析）へ。
+
+### コンテンツ拡充 #47 — [G-1] 分散分析・実験計画法
+
+優先度 21/82（G群 多変量・実験計画の起点）。前提=正規分布の検定。全変動分解とF検定。
+
+- [x] 計算層 `lib/stats/anova.ts`（oneWayAnova(全変動=級間+級内分解・F)/fUpperTail/regularizedIncompleteBeta(連分数)）+ Vitest（8）
+- [x] 状態層 `lib/store/analysis-of-variance.ts`（controls {separation}・固定群内ノイズ）
+- [x] 描画層 `components/topics/analysis-of-variance/`（AnovaLab=隔たり→3群の点・SS級間/級内・F・pの強連動 / VarianceDecompStepper=全変動→級内→級間→F比の分解コマ送り / AnovaQuiz）+ frames.ts + Vitest（4）
+- [x] 用語ノード4件（analysis-of-variance / f-test / multiple-comparison / experimental-design）相互リンク
+- [x] MDX `content/topics/analysis-of-variance.mdx`（L0-L2 充実：群間vs群内→全変動が直交分解する導出→二元配置/多重比較/実験計画＋多重比較の誤り膨張の導出、L3-L6 planned）
+- [x] `/topics` 一覧へ反映（status: published）
+
+#### レビュー: 分散分析トピック（2026-06-29）
+- **変更概要**: 3群以上の平均差をF検定するANOVAを4層実装。AnovaLab は群平均の隔たり separation スライダー→3群の色分け点・総平均/群平均線・SS級間/級内・F・p（TermController）が同時連動、隔たりを増やすと級間変動が増えFが跳ね上がる（級内=誤差は不変）様子を可視化。VarianceDecompStepper は 全変動→級内→級間→F比 の分解を棒でコマ送り。全変動が直交分解する導出（交差項が消える）・多重比較の誤り膨張（1−0.95⁶≈26%）の導出を網羅。
+- **検証結果**: Vitest **521 passed**（+12: anova 8 / frames 4、registry リンク切れゼロ）。tsc / lint（警告0）/ build成功。`pnpm start` + Playwright 実機確認: separation=1 で F=5.19/p=0.019（差あり）、separation=0 で F=0.47/p=0.637（SS級内27.4不変・SS級間19→1.7）、分解ステッパー④F比でラボと一致、コンソールエラー0件。
+- **設計判断 / つまずき**: **F分布CDFのバグを修正** — fPdfのシンプソン積分が大Fでピークを取りこぼし不正確→正則化不完全ベータ関数 I_z(d1/2,d2/2) の閉形式に置換（堅牢・t/ベータにも再利用可）、lessons追記。**用語リンクのバグも修正** — multiple-comparison/experimental-design が hypothesis-testing(トピックslug) を指して registry fail→significance-level(用語slug)に修正、lessons追記。級内変動が separation で不変な設計で «群間の差 vs 群内の誤差» の対比を明確化。次は G-2 標本調査法へ。

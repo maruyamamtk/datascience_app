@@ -1,0 +1,18 @@
+---
+title: 分散分析
+definition: 3群以上の平均差を «群間の差» と «群内のばらつき» の比で検定する手法（ANOVA）。全変動=級間変動+級内変動 と分解し F 統計量で判断。
+aliases: [analysis of variance, ANOVA, 分散分析, 一元配置, 二元配置]
+seeAlso: [f-test, multiple-comparison, experimental-design]
+---
+
+# 分散分析（ANOVA）
+
+3群以上の平均に差があるかを、分散の比で検定する。t 検定の3群以上への一般化。
+
+$$
+\text{SS}_{\text{total}}=\text{SS}_{\text{級間}}+\text{SS}_{\text{級内}}
+$$
+
+- **全変動**を «群間の差（級間）» と «群内の誤差（級内）» に分解する。
+- [F検定](f-test) $F=\text{MS}_{\text{級間}}/\text{MS}_{\text{級内}}$ で «群の差が誤差に比べ大きいか» を判断。
+- 要因が1つなら一元配置、2つなら二元配置。有意なら[多重比較](multiple-comparison)で «どの群か» を調べる。

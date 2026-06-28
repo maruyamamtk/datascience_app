@@ -1,0 +1,141 @@
+---
+title: 分散分析・実験計画法
+summary: 3群以上の平均差を «群間の差» と «群内のばらつき» の比（F）で検定する。全変動=級間+級内 の分解を操作で体感し、多重比較・実験計画法（無作為化・反復・ブロック化）まで押さえる。
+status: published
+---
+
+import { AnovaLab } from "@/components/topics/analysis-of-variance/AnovaLab";
+import { VarianceDecompStepper } from "@/components/topics/analysis-of-variance/VarianceDecompStepper";
+import { AnovaQuiz } from "@/components/topics/analysis-of-variance/AnovaQuiz";
+
+<Topic title="分散分析・実験計画法" summary="3群以上の平均差を «群間の差» と «群内のばらつき» の比（F）で検定する。全変動=級間+級内 の分解を操作で体感し、多重比較・実験計画法（無作為化・反復・ブロック化）まで押さえる。">
+
+<ReaderGuide>
+
+- **初学者** → L0〜L1（群間/群内の変動、F 統計量、全変動の分解）
+- **一通り使える人** → L2（二元配置・交互作用・多重比較・実験計画法の3原則）
+- **「完全に理解した」人** → L3 以降（混合モデル・分散成分の推定は到達途上）
+
+前提: [正規分布に関する検定](/topics/normal-tests)の<Term id="t-test">t検定</Term>、[標本分布](/topics/sampling-distributions)の<Term id="f-distribution">F分布</Term>。
+
+</ReaderGuide>
+
+<Level level={0} title="ブラックボックス（群間 vs 群内）">
+  <Concept>
+
+3群以上の平均に差があるかを調べるのが**<Term id="analysis-of-variance">分散分析</Term>**（ANOVA）。
+ポイントは «群の差» を «群の中の偶然のばらつき» と **比べる** こと。
+
+<Math tex="F=\dfrac{\text{MS}_{\text{級間}}}{\text{MS}_{\text{級内}}}" />
+
+群間の差（級間）が群内の誤差（級内）に比べて大きいほど F が大きく、«差がありそう» と判断する。
+
+  </Concept>
+  <Interact>
+
+下のラボで群平均の «隔たり» を大きくすると、級間変動 SS級間・**<Term id="f-test">F</Term>**・p 値が変わり、数式が同時に追従する（操作→図→数式の強連動）。
+群内のばらつき（誤差）は隔たりで変わらないので、隔たりを増やすほど F が跳ね上がるのが見える。
+
+<AnovaLab />
+
+  </Interact>
+  <Exercise>
+
+確認: 「分散分析は «分散» の名のとおり、群の分散が等しいかを調べる検定である」——○か×か。
+（答: ×。名前は分散分析だが、見ているのは «平均の差»。群間の差を群内のばらつきと比べて、平均に差があるかを判断する）
+
+  </Exercise>
+</Level>
+
+<Level level={1} title="古典的理解（全変動の分解）">
+  <Concept>
+
+分散分析の核心は **全変動が級間と級内にちょうど分かれる** こと。
+
+<Math tex="\text{SS}_{\text{total}}=\text{SS}_{\text{級間}}+\text{SS}_{\text{級内}}" />
+
+下のステッパーで «全変動 → 級内（群内の誤差）→ 級間（群の差）→ F比» と分解を追える。
+
+  </Concept>
+  <Derivation title="なぜ全変動が級間＋級内に分かれるのか">
+
+各値 $y_{ij}$（群 $j$ の $i$ 番目）の総平均 $\bar y$ からのずれを、群平均 $\bar y_j$ を経由して2つに分ける：
+
+$$
+y_{ij}-\bar y=(y_{ij}-\bar y_j)+(\bar y_j-\bar y).
+$$
+
+両辺を二乗して全体で和を取ると、交差項 $\sum_{ij}(y_{ij}-\bar y_j)(\bar y_j-\bar y)$ は
+各群で $\sum_i(y_{ij}-\bar y_j)=0$ なので **消える**。よって
+
+$$
+\underbrace{\sum_{ij}(y_{ij}-\bar y)^2}_{\text{全変動}}=\underbrace{\sum_{ij}(y_{ij}-\bar y_j)^2}_{\text{級内}}+\underbrace{\sum_j n_j(\bar y_j-\bar y)^2}_{\text{級間}}.
+$$
+
+«群内の誤差» と «群の位置の違い» が直交して足し合わさる。これがピタゴラス的な直交分解で、分散分析の幾何学的な土台。
+
+  </Derivation>
+  <Interact>
+
+<VarianceDecompStepper />
+
+  </Interact>
+  <Exercise>
+
+<AnovaQuiz />
+
+  </Exercise>
+</Level>
+
+<Level level={2} title="仮定体系（二元配置・多重比較・実験計画）">
+  <Concept>
+
+分散分析を広げる道具を整理する。
+
+- **二元配置**: 要因が2つ（例: 肥料×品種）。各要因の主効果に加え、**交互作用**（組合せ特有の効果）を検出できる。
+- **<Term id="multiple-comparison">多重比較</Term>**: ANOVA で «有意» でも «どの群か» は分からない。総当たり t 検定は誤りが膨らむので、テューキー法・ボンフェローニで調整。
+- **<Term id="experimental-design">実験計画法</Term>**: フィッシャーの3原則＝無作為化・反復・局所管理（ブロック化）。乱塊法・直交計画で効率よく効果を測る。
+- **前提**: 各群が正規・等分散・独立。崩れるとクラスカル–ウォリス等のノンパラへ。
+
+分散を «要因ごとの変動» に分けて比べる——この考えが実験データ全般を貫く。
+
+  </Concept>
+  <Derivation title="なぜ多重比較で調整が要るのか（誤りの膨張）">
+
+有意水準 $\alpha=0.05$ の検定を独立に $m$ 回行うと、«どれか1つでも誤って有意になる» 確率は
+
+$$
+1-(1-\alpha)^m.
+$$
+
+4群の総当たりは $\binom{4}{2}=6$ 回の検定で、$1-(0.95)^6\approx0.26$——本当は差がなくても **26%** で «どこか有意» が出てしまう。
+
+これを抑えるのが多重比較。**ボンフェローニ**は各検定の水準を $\alpha/m$ に厳しくし、全体の誤り率を $\alpha$ 以下に保つ。
+テューキー法は全対比較に特化してより検出力が高い。«検定を繰り返すほど偽陽性が増える» 問題への対処が必須になる。
+
+  </Derivation>
+  <Exercise>
+
+確認: 「4群の総当たり（6回）の t 検定を α=0.05 でそのまま行うと、本当は差がなくても «どこかで有意» が出る確率は 5% を大きく超える」——○か×か。
+（答: ○。1−0.95⁶≈26%。検定を繰り返すと第1種の誤りが膨らむので、多重比較で調整する）
+
+  </Exercise>
+</Level>
+
+<Level level={3} title="混合効果・分散成分" status="planned">
+  ランダム効果・混合モデル、分散成分の推定（REML）、反復測定の分散分析（前提: 一般化線形モデル）。
+</Level>
+
+<Level level={4} title="共分散分析・多変量分散分析" status="planned">
+  共変量を調整する共分散分析（ANCOVA）、複数の応答を同時に扱う多変量分散分析（MANOVA）。
+</Level>
+
+<Level level={5} title="最適計画・応答曲面" status="planned">
+  D 最適計画など最適実験計画、応答曲面法による条件最適化（多変量解析トピックへ）。
+</Level>
+
+<Level level={6} title="フロンティア" status="planned">
+  オンライン実験（A/Bテスト）の逐次設計・因果推論との接続は実務で研究が活発（到達途上）。
+</Level>
+
+</Topic>
