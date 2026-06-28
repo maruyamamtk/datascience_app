@@ -1,0 +1,17 @@
+---
+title: ウェルチのt検定
+definition: 2群の分散が等しいと仮定せずに平均差を検定する t 検定。分散をプールせず、自由度を Welch–Satterthwaite 近似で補正する。
+aliases: [Welch's t-test, ウェルチ検定, 不等分散のt検定]
+seeAlso: [two-sample-t-test, t-test]
+---
+
+# ウェルチのt検定
+
+2群の分散が大きく異なるとき、分散をプールしない[2標本t検定](two-sample-t-test)。
+
+$$
+t=\frac{\bar x_1-\bar x_2}{\sqrt{s_1^2/n_1+s_2^2/n_2}}
+$$
+
+- 自由度は Welch–Satterthwaite 近似で補正（一般に非整数）。
+- 等分散の仮定が怪しいときの **既定の選択**（多くの統計ソフトの初期設定）。等分散なら従来の t 検定とほぼ一致する。

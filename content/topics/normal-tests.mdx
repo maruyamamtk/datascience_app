@@ -1,0 +1,130 @@
+---
+title: 正規分布に関する検定（t検定・2標本）
+summary: 「2群の平均差は偶然か」を判断する t 検定を、平均差・ばらつき・標本数から t と p 値が決まる過程で体感する。母分散・母相関の検定も押さえる。
+status: published
+---
+
+import { TwoSampleTLab } from "@/components/topics/normal-tests/TwoSampleTLab";
+import { TtestStepper } from "@/components/topics/normal-tests/TtestStepper";
+import { NormalTestQuiz } from "@/components/topics/normal-tests/NormalTestQuiz";
+
+<Topic title="正規分布に関する検定（t検定・2標本）" summary="「2群の平均差は偶然か」を判断する t 検定を、平均差・ばらつき・標本数から t と p 値が決まる過程で体感する。母分散・母相関の検定も押さえる。">
+
+<ReaderGuide>
+
+- **初学者** → L0〜L1（2標本 t 検定、平均差→t→p の手順、何が有意性を決めるか）
+- **一通り使える人** → L2（等分散 vs ウェルチ、母分散のカイ二乗検定、母相関の検定）
+- **「完全に理解した」人** → L3 以降（多重比較・分散分析への一般化は分散分析トピックへ）
+
+前提: [検定法の導出](/topics/test-derivation)の<Term id="test-statistic">検定統計量</Term>・<Term id="p-value">p値</Term>、[標本分布](/topics/sampling-distributions)の<Term id="t-distribution">t分布</Term>。
+
+</ReaderGuide>
+
+<Level level={0} title="ブラックボックス（2標本 t 検定）">
+  <Concept>
+
+「A 群と B 群の平均差は本物か、それとも偶然か」を判断するのが**<Term id="two-sample-t-test">2標本t検定</Term>**。
+平均差そのものでは決められない——ばらつきと標本数で «標準化» する。
+
+<Math tex="t=\dfrac{\bar x_1-\bar x_2}{s_p\sqrt{1/n_1+1/n_2}}" />
+
+この $t$ を自由度つきの[t分布](/topics/sampling-distributions)と比べ、p 値で判断する。
+
+  </Concept>
+  <Interact>
+
+下のラボで平均差・標準偏差・$n$ を動かすと、$t$ 統計量・p 値・棄却域（赤い裾）が変わり、数式が同時に追従する（操作→図→数式の強連動）。
+観測 $t$ が赤い裾に入れば «差あり»。何が有意性を決めるか確かめよう。
+
+<TwoSampleTLab />
+
+  </Interact>
+  <Exercise>
+
+確認: 「平均差が同じでも、標本数 $n$ を増やすと t は大きくなり有意になりやすい」——○か×か。
+（答: ○。$t=\Delta/\mathrm{SE}$ で SE は $\sqrt n$ に反比例して縮むので、同じ差でも $n$ が大きいと t が大きくなる）
+
+  </Exercise>
+</Level>
+
+<Level level={1} title="古典的理解（平均差 → t → p の手順）">
+  <Concept>
+
+t 検定は «効果（平均差）を、ばらつきと標本数で標準化する» 手続き。下のステッパーで
+平均差 → プール標準偏差 → 標準誤差 → t → p の 5 ステップを 1 つずつ追える。
+
+  </Concept>
+  <Derivation title="なぜ t=Δ/SE が t 分布に従うのか">
+
+2群が正規 $N(\mu_i,\sigma^2)$（等分散）から独立に得られるとき、平均差 $\bar x_1-\bar x_2$ は
+
+$$
+\bar x_1-\bar x_2\sim N\!\left(\mu_1-\mu_2,\ \sigma^2\Big(\tfrac1{n_1}+\tfrac1{n_2}\Big)\right).
+$$
+
+$\sigma$ を知っていれば標準化は正規だが、未知なのでプール標本標準偏差 $s_p$ で置き換える。
+分子（正規）を、独立な $\sqrt{\chi^2_{df}/df}$（$s_p/\sigma$）で割った形になり、定義どおり**自由度 $n_1+n_2-2$ の t 分布**に従う（[標本分布](/topics/sampling-distributions)の t の構成）。
+$H_0:\mu_1=\mu_2$ のもとで $t=\Delta/\mathrm{SE}$ がこの t 分布に従うので、裾の確率（p 値）で判断できる。
+
+  </Derivation>
+  <Interact>
+
+<TtestStepper />
+
+  </Interact>
+  <Exercise>
+
+<NormalTestQuiz />
+
+  </Exercise>
+</Level>
+
+<Level level={2} title="仮定体系（等分散 vs ウェルチ・母分散・母相関）">
+  <Concept>
+
+正規分布まわりの検定を整理する。
+
+- **等分散 t 検定**: 2群の分散が等しい前提でプール。**<Term id="welch-t-test">ウェルチのt検定</Term>**は等分散を仮定せず自由度を補正——分散が大きく違うときの既定の選択。
+- **母分散の検定**: $(n-1)s^2/\sigma_0^2$ が[カイ二乗](/topics/sampling-distributions)に従うことを使う（H0: $\sigma^2=\sigma_0^2$）。2群の分散比は F 分布。
+- **<Term id="correlation-test">無相関検定</Term>**: $t=r\sqrt{(n-2)/(1-r^2)}$、自由度 $n-2$（H0: $\rho=0$）。
+
+どれも «統計量を作り、対応する標本分布の裾で判断する» という共通の骨格。
+
+  </Concept>
+  <Derivation title="無相関検定 t=r√((n−2)/(1−r²)) の意味">
+
+標本相関 $r$ は $-1$〜$1$ に収まり、そのままでは正規でない。$H_0:\rho=0$ のもとで変換 $t=r\sqrt{(n-2)/(1-r^2)}$ を作ると、これが自由度 $n-2$ の t 分布に従う。
+
+- $|r|$ が大きいほど $t$ が大きい（相関が強い）。
+- 同じ $r$ でも $n$ が大きいほど $\sqrt{n-2}$ で $t$ が大きく、**有意になりやすい**。
+
+だから «大標本では小さな相関でも有意» になる。有意性（偶然でないか）と相関の «強さ»（$r$ の絶対値）は別物として両方見る必要がある。
+
+  </Derivation>
+  <Exercise>
+
+確認: 「2群の分散が大きく異なるとき、プールした t 検定よりウェルチの t 検定が適切」——○か×か。
+（答: ○。等分散が崩れるとプール分散が不適切。ウェルチは分散をプールせず自由度を補正するので頑健。多くのソフトの既定）
+
+  </Exercise>
+</Level>
+
+<Level level={3} title="多群への一般化（分散分析）" status="planned">
+  3群以上の平均比較を t 検定の繰り返しでなく一括で行う分散分析（F
+  検定）、多重比較の問題（分散分析トピックで詳述）。
+</Level>
+
+<Level level={4} title="ノンパラメトリック代替" status="planned">
+  正規性が疑わしいときのウィルコクソン順位和・並べ替え検定（ノンパラメトリック法トピックへ）。
+</Level>
+
+<Level level={5} title="多変量・高次元の平均検定" status="planned">
+  ホテリングの T²、高次元での平均ベクトルの検定とその破れ。
+</Level>
+
+<Level level={6} title="フロンティア" status="planned">
+  «有意性の濫用»（p
+  ハッキング・再現性）への対処、効果量・信頼区間中心の報告は実務で議論が続く（到達途上）。
+</Level>
+
+</Topic>

@@ -1,0 +1,18 @@
+---
+title: 2標本t検定
+definition: 2群の平均差が偶然かを検定する。等分散仮定では t=(x̄1−x̄2)/(sp√(1/n1+1/n2))、自由度 n1+n2−2。
+aliases: [two-sample t-test, 二標本t検定, 独立2群のt検定]
+seeAlso: [t-test, welch-t-test, t-distribution]
+---
+
+# 2標本t検定
+
+独立な2群の平均差 $\bar x_1-\bar x_2$ が偶然かを判断する。
+
+$$
+t=\frac{\bar x_1-\bar x_2}{s_p\sqrt{1/n_1+1/n_2}},\quad s_p^2=\frac{(n_1-1)s_1^2+(n_2-1)s_2^2}{n_1+n_2-2}
+$$
+
+- 等分散を仮定して2群の分散をまとめた[プール標準偏差](t-test) $s_p$ を使う。自由度 $n_1+n_2-2$。
+- 平均差が大きい・ばらつきが小さい・n が大きいほど有意になりやすい。
+- 等分散が崩れるときは[ウェルチのt検定](welch-t-test)を使う。

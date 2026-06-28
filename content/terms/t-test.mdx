@@ -1,0 +1,18 @@
+---
+title: t検定
+definition: 母標準偏差が未知のとき、平均（差）が偶然かを t 統計量で判断する検定。t=(推定値−H0)/標準誤差 を自由度つき t 分布と比べる。
+aliases: [t-test, ティー検定, 一標本t検定]
+seeAlso: [t-distribution, two-sample-t-test, test-statistic]
+---
+
+# t検定
+
+母標準偏差 σ が未知のとき、平均に関する検定統計量を[t分布](t-distribution)で評価する。
+
+$$
+t=\frac{\bar x-\mu_0}{s/\sqrt n}\quad(\text{自由度}\ n-1)
+$$
+
+- σ を標本標準偏差 $s$ で置き換えるため、統計量は t 分布に従う（z ではない）。
+- 1標本（平均=μ0）・対応のある2標本（差の平均=0）・[2標本](two-sample-t-test)（2群の平均差）で使う。
+- $n$ が大きいと $t\approx z$。小標本では t の裾の重さが効く。
