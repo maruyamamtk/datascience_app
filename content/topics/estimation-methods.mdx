@@ -1,0 +1,130 @@
+---
+title: 推定法（最尤法・モーメント法・最小二乗法）
+summary: データから母数をどう決めるか。最尤法（尤度の最大化）・モーメント法（モーメントの一致）・最小二乗法（残差の最小化）の3流儀を操作で体感し、つながりを掴む。
+status: published
+---
+
+import { MleLab } from "@/components/topics/estimation-methods/MleLab";
+import { GradientAscentStepper } from "@/components/topics/estimation-methods/GradientAscentStepper";
+import { EstimationQuiz } from "@/components/topics/estimation-methods/EstimationQuiz";
+
+<Topic title="推定法（最尤法・モーメント法・最小二乗法）" summary="データから母数をどう決めるか。最尤法（尤度の最大化）・モーメント法（モーメントの一致）・最小二乗法（残差の最小化）の3流儀を操作で体感し、つながりを掴む。">
+
+<ReaderGuide>
+
+- **初学者** → L0〜L1（最尤法＝尤度の最大化、勾配上昇で頂上を探す）
+- **一通り使える人** → L2（モーメント法・最小二乗法、最小二乗＝正規誤差の最尤、線形模型）
+- **「完全に理解した」人** → L3 以降（推定量の効率・漸近論は次トピック以降）
+
+前提: [統計量と十分性](/topics/statistics-sufficiency)の<Term id="likelihood-function">尤度</Term>、[単回帰](/topics/simple-regression)の<Term id="least-squares">最小二乗法</Term>。
+
+</ReaderGuide>
+
+<Level level={0} title="ブラックボックス（最尤法：尤度を最大化する）">
+  <Concept>
+
+母数をデータから決める最も基本的な流儀が**<Term id="maximum-likelihood">最尤法</Term>**。
+「観測したデータが最も起こりやすくなる母数」を選ぶ。
+
+指数分布の率 $\lambda$ なら、<Term id="likelihood-function">対数尤度</Term> $\log L(\lambda)=n\log\lambda-\lambda\sum x_i$ を最大化する
+$\hat\lambda=1/\bar x$（標本平均の逆数）が最尤推定量。
+
+  </Concept>
+  <Interact>
+
+下のラボで $\lambda$ を動かすと、対数尤度の «現在地» と勾配が変わり、数式の値が同時に追従する（操作→図→数式の強連動）。
+勾配が 0 になる «頂上» が最尤推定量 $\hat\lambda$ と一致することを確かめよう。
+
+<MleLab />
+
+  </Interact>
+  <Exercise>
+
+確認: 「最尤推定量では、対数尤度の勾配（傾き）が 0 になる」——○か×か。
+（答: ○。頂上では傾きが 0。$\hat\lambda$ はこの «勾配 0» を解いて得られる。スライダーで勾配が 0 になる点を探そう）
+
+  </Exercise>
+</Level>
+
+<Level level={1} title="古典的理解（勾配上昇で頂上へ登る）">
+  <Concept>
+
+頂上を解析的に解けないモデルでは、**勾配上昇法**で «傾きの向きに少しずつ登って» 最尤推定量に近づく。
+
+<Math tex="\lambda_{t+1}=\lambda_t+\eta\,\frac{d}{d\lambda}\log L(\lambda_t)" />
+
+勾配が正なら $\lambda$ を増やし、負なら減らす。勾配が 0 になったら頂上＝最尤推定量。
+
+  </Concept>
+  <Derivation title="指数分布の最尤推定量 λ̂=1/x̄ を導く">
+
+対数尤度 $\log L(\lambda)=n\log\lambda-\lambda\sum x_i$ を $\lambda$ で微分して 0 と置く：
+
+$$
+\frac{d}{d\lambda}\log L=\frac{n}{\lambda}-\sum x_i=0\ \Longrightarrow\ \hat\lambda=\frac{n}{\sum x_i}=\frac{1}{\bar x}.
+$$
+
+二階微分 $-n/\lambda^2<0$ なので確かに最大。下のステッパーは、この «勾配 0» を勾配上昇法で数値的に探す過程を見せる。
+
+  </Derivation>
+  <Interact>
+
+<GradientAscentStepper />
+
+  </Interact>
+  <Exercise>
+
+<EstimationQuiz />
+
+  </Exercise>
+</Level>
+
+<Level level={2} title="仮定体系（モーメント法・最小二乗・線形模型）">
+  <Concept>
+
+推定法は最尤法だけではない。代表的な 3 流儀を押さえる。
+
+- **<Term id="maximum-likelihood">最尤法</Term>**: 尤度を最大化。効率が良いが計算が重いことも。
+- **<Term id="method-of-moments">モーメント法</Term>**: «標本モーメント＝理論モーメント» を解く。簡単だが効率は劣りがち。
+- **<Term id="least-squares">最小二乗法</Term>**: 残差平方和を最小化。**正規誤差なら最尤法と一致**する。
+
+最小二乗は[線形模型](/topics/simple-regression) $y=X\beta+\varepsilon$ の係数推定に使い、これが回帰・分散分析の共通枠組み（**<Term id="linear-model">線形模型</Term>**）。
+
+  </Concept>
+  <Derivation title="最小二乗＝正規誤差の最尤（なぜ一致するか）">
+
+誤差が正規 $\varepsilon_i\sim N(0,\sigma^2)$ のとき、$y_i=\mu_i+\varepsilon_i$ の対数尤度は
+
+$$
+\log L=-\frac{n}{2}\log(2\pi\sigma^2)-\frac{1}{2\sigma^2}\sum_i (y_i-\mu_i)^2.
+$$
+
+$\mu_i$（＝モデルの予測）について最大化すると、$\sigma^2$ に依らず $\sum_i(y_i-\mu_i)^2$ の**最小化**に帰着する。
+これがまさに[最小二乗法](least-squares)。だから «正規誤差を仮定した最尤＝最小二乗» で、回帰の正当性を支える。
+
+  </Derivation>
+  <Exercise>
+
+確認: 「誤差が正規分布のとき、最小二乗法による推定は最尤推定と一致する」——○か×か。
+（答: ○。対数尤度の最大化が残差平方和の最小化に帰着する。最小二乗は «正規誤差の最尤» という位置づけ）
+
+  </Exercise>
+</Level>
+
+<Level level={3} title="EMアルゴリズム・欠測下の最尤" status="planned">
+  潜在変数・欠測があるときの最尤（EM アルゴリズム）、混合モデルの推定（前提: 欠測値）。
+</Level>
+
+<Level level={4} title="正則化つき推定（MAP・罰則付き最尤）" status="planned">
+  事前分布／罰則を加えた推定（Ridge=ガウス事前、Lasso=ラプラス事前）と MAP 推定、最尤との関係。
+</Level>
+
+<Level level={5} title="高次元・M推定とロバスト推定" status="planned">
+  一般の損失を最小化する M 推定、ロバストな推定（Huber 損失）、高次元での正則化の必要性。
+</Level>
+
+<Level level={6} title="フロンティア" status="planned">
+  複雑モデル（深層学習）の «尤度» 最適化の理論的性質（非凸最適化）は研究が続く領域（到達途上）。
+</Level>
+
+</Topic>

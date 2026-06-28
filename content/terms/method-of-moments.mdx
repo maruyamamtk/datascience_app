@@ -1,0 +1,14 @@
+---
+title: モーメント法
+definition: 標本モーメント（標本平均・標本分散など）を理論モーメントに一致させて母数を解く推定法。計算が簡単だが最尤法より効率が劣ることが多い。
+aliases: [method of moments, モーメント法, 積率法]
+seeAlso: [maximum-likelihood, moment]
+---
+
+# モーメント法
+
+低次の[モーメント](moment)を «標本＝理論» と置いて母数を解く。
+
+- 例: 平均だけのモデルなら $\bar x=E[X]=\theta$ を解く。一様 $U[0,\theta]$ なら $\bar x=\theta/2$ から $\hat\theta=2\bar x$。
+- 連立方程式を解くだけで計算が簡単。一致推定量になる。
+- ただし[最尤法](maximum-likelihood)より効率（分散の小ささ）が劣ることが多い。一様分布では $2\bar x$ が最大の観測を覆えないこともあり、最尤の $\max x_i$ の方が筋が良い。
