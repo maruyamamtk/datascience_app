@@ -1,0 +1,14 @@
+---
+title: 十分統計量
+definition: 母数 θ に関する情報をすべて保つ統計量 T。T を知れば、生データの残りは θ の推定に何の情報も足さない。ネイマンの分解で判定する。
+aliases: [sufficient statistic, 十分統計量, sufficiency]
+seeAlso: [statistic, neyman-factorization-theorem, sample-mean]
+---
+
+# 十分統計量
+
+母数 $\theta$ について «データが持つ情報をすべて保つ» [統計量](statistic) $T$。
+
+- 形式的には、$T$ を与えたときのデータの条件付き分布が $\theta$ に依らない。
+- 例: コイン $n$ 回投げの成功確率 $p$ では、成功数 $T=\sum x_i$ が十分。順番は推定に効かない。
+- [ネイマンの分解定理](neyman-factorization-theorem)で «尤度が $T$ を通してしか $\theta$ に依存しない» ことを確かめれば判定できる。データを $T$ に要約しても損がない。

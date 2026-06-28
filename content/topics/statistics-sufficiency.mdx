@@ -1,0 +1,132 @@
+---
+title: 統計量と十分性
+summary: データを «要約» する統計量はどこまで情報を保てるか。十分統計量とネイマンの分解、順序統計量、標本平均と標本分散の独立性を操作で体感する。
+status: published
+---
+
+import { SufficiencyLab } from "@/components/topics/statistics-sufficiency/SufficiencyLab";
+import { OrderStatStepper } from "@/components/topics/statistics-sufficiency/OrderStatStepper";
+import { SufficiencyQuiz } from "@/components/topics/statistics-sufficiency/SufficiencyQuiz";
+
+<Topic title="統計量と十分性" summary="データを «要約» する統計量はどこまで情報を保てるか。十分統計量とネイマンの分解、順序統計量、標本平均と標本分散の独立性を操作で体感する。">
+
+<ReaderGuide>
+
+- **初学者** → L0〜L1（統計量とは、十分統計量＝情報を保つ要約、尤度が T を通してしか効かない）
+- **一通り使える人** → L2（ネイマンの分解、順序統計量、標本平均と標本分散の独立性）
+- **「完全に理解した」人** → L3 以降（完備十分統計量・ラオ-ブラックウェルは到達途上）
+
+前提: [標本分布](/topics/sampling-distributions)の<Term id="degrees-of-freedom">自由度</Term>、[分布の特性値](/topics/distribution-characteristics)の<Term id="sample-mean">標本平均</Term>。
+
+</ReaderGuide>
+
+<Level level={0} title="ブラックボックス（統計量と十分性）">
+  <Concept>
+
+**<Term id="statistic">統計量</Term>**はデータから計算する量（母数を含まない）。標本平均・最大値などが該当。
+中でも**<Term id="sufficient-statistic">十分統計量</Term>**は «母数の情報をすべて保つ» 要約で、それさえ知れば生データの残りは推定に役立たない。
+
+コイン $n$ 回投げで成功確率 $p$ を推定するとき、十分統計量は**成功数 $T=\sum x_i$**。
+«どの順で出たか» は $p$ の推定に何も足さない。
+
+  </Concept>
+  <Interact>
+
+下のラボでコインを切り替えると、成功数 $T$・最尤推定量 $\hat p=T/n$・尤度曲線が同時に動く（操作→図→数式の強連動）。
+「並べ替え（T 不変）」を押すと、順番が変わっても $T$ が同じなら尤度も $\hat p$ も**全く変わらない**——これが十分性。
+
+<SufficiencyLab />
+
+  </Interact>
+  <Exercise>
+
+確認: 「成功数 $T$ が同じでも、出た順番が違えば $p$ の最尤推定値は変わる」——○か×か。
+（答: ×。尤度は $T$ と $n$ だけで決まるので、並べ替えても $\hat p=T/n$ は不変。これが «十分» の意味）
+
+  </Exercise>
+</Level>
+
+<Level level={1} title="古典的理解（ネイマンの分解で十分性を判定）">
+  <Concept>
+
+十分かどうかは**<Term id="neyman-factorization-theorem">ネイマンの分解定理</Term>**で判定する。
+尤度が «データだけの因子» と «統計量 $T$ と母数 $\theta$ を通した因子» に分かれれば $T$ は十分。
+
+<Math tex="L(\theta)=h(x)\cdot g\bigl(T(x),\theta\bigr)" />
+
+  </Concept>
+  <Derivation title="ベルヌーイで成功数 T が十分であることの確認">
+
+ベルヌーイ列 $x_1,\dots,x_n$（各 0/1）の尤度は
+
+$$
+L(p)=\prod_i p^{x_i}(1-p)^{1-x_i}=p^{\sum x_i}(1-p)^{n-\sum x_i}=p^{T}(1-p)^{n-T}.
+$$
+
+これは $h(x)=1$、$g(T,p)=p^{T}(1-p)^{n-T}$ と分解できる。$p$ はデータに $T=\sum x_i$ を **通してしか** 効かない。
+よってネイマンの分解定理より $T$ は十分統計量。最尤推定量は $\hat p=T/n$（尤度を最大化）。
+
+  </Derivation>
+  <Interact>
+
+順序統計量（並べると見える要約）も確かめよう。下のステッパーは標本を昇順に並べ、最小・中央値・最大を取り出す。
+
+<OrderStatStepper />
+
+  </Interact>
+  <Exercise>
+
+<SufficiencyQuiz />
+
+  </Exercise>
+</Level>
+
+<Level level={2} title="仮定体系（順序統計量・標本平均と標本分散の独立性）">
+  <Concept>
+
+統計量にはいくつかの «型» がある。
+
+- **<Term id="order-statistic">順序統計量</Term>** $x_{(1)}\le\cdots\le x_{(n)}$: 並べた位置で決まる。中央値・四分位・極値の土台で外れ値に強い。
+- **十分統計量**: 母数の情報を保つ要約（正規分布なら $(\sum x_i, \sum x_i^2)$、同値に $(\bar x, s^2)$ が十分）。
+
+そして正規母集団では重要な独立性が成り立つ——**標本平均 $\bar X$ と標本分散 $s^2$ は独立**。
+
+  </Concept>
+  <Derivation title="なぜ x̄ と s² の独立性が大切か（t 分布との関係）">
+
+正規母集団 $N(\mu,\sigma^2)$ では、$\bar X\sim N(\mu,\sigma^2/n)$ と $(n-1)s^2/\sigma^2\sim\chi^2_{n-1}$ が**独立**（コクランの定理）。
+この独立性のおかげで、t 統計量を «独立な正規 ÷ √(カイ二乗/自由度)» と書ける：
+
+$$
+T=\frac{\bar X-\mu}{s/\sqrt n}=\frac{(\bar X-\mu)/(\sigma/\sqrt n)}{\sqrt{\chi^2_{n-1}/(n-1)}}\sim t_{n-1}.
+$$
+
+独立でなければ «正規 ÷ √カイ二乗» が[t分布](/topics/sampling-distributions)になる保証がない。十分統計量 $(\bar x, s^2)$ の構造が、検定・区間推定の正当性を支えている。
+
+  </Derivation>
+  <Exercise>
+
+確認: 「正規母集団では、標本平均 $\bar X$ と標本分散 $s^2$ は独立である」——○か×か。
+（答: ○。コクランの定理。これが t 統計量を «独立な正規 ÷ √(カイ二乗/自由度)» と書ける根拠で、t 検定の土台）
+
+  </Exercise>
+</Level>
+
+<Level level={3} title="完備十分統計量・ラオ-ブラックウェル" status="planned">
+  完備性、ラオ–ブラックウェルの定理（十分統計量で条件付けると推定量が改善）、レーマン–シェッフェで
+  一様最小分散不偏推定量（前提: 点推定の性質）。
+</Level>
+
+<Level level={4} title="指数型分布族と十分統計量" status="planned">
+  指数型分布族では自然な十分統計量が «最小十分» になる仕組み、共役事前分布との関係。
+</Level>
+
+<Level level={5} title="高次元・ノンパラメトリックの要約" status="planned">
+  パラメトリックでない設定での «情報の要約»、近似十分統計量、要約統計量に基づく推論（ABC）。
+</Level>
+
+<Level level={6} title="フロンティア" status="planned">
+  複雑なモデル（ニューラルネット等）における «十分な要約» の理論は研究が続く領域（到達途上）。
+</Level>
+
+</Topic>
