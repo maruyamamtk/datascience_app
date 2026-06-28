@@ -1,0 +1,14 @@
+---
+title: 単純無作為抽出
+definition: 母集団のすべての個体が等しい確率で選ばれるよう無作為に標本を取る方法（SRS）。最も基本的な確率抽出。偏りがないが、層化に比べ分散は大きめ。
+aliases: [simple random sampling, SRS, 単純無作為抽出]
+seeAlso: [stratified-sampling, finite-population-correction, standard-error]
+---
+
+# 単純無作為抽出（SRS）
+
+母集団の全個体が等確率で選ばれる、最も基本的な確率抽出。
+
+- 標本平均は母平均の不偏推定量。分散は $\dfrac{\sigma^2}{n}\left(1-\dfrac{n}{N}\right)$（[有限母集団修正](finite-population-correction)つき）。
+- 母分散 $\sigma^2$ は «層内 + 層間» を全部含むので、[層化抽出](stratified-sampling)より[標準誤差](standard-error)は大きめ。
+- 全個体のリスト（抽出枠）が必要。大規模調査ではクラスター抽出・多段抽出と組み合わせる。

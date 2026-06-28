@@ -1,0 +1,14 @@
+---
+title: 層化抽出
+definition: 母集団を層（部分集団）に分け、各層から無作為抽出する方法。層間の差を推定誤差から除けるので、単純無作為抽出より精度が高い。
+aliases: [stratified sampling, 層化抽出, 層別抽出]
+seeAlso: [simple-random-sampling, neyman-allocation, standard-error]
+---
+
+# 層化抽出
+
+母集団を «層»（年齢・地域など均質な部分集団）に分け、各層から抽出する。
+
+- 各層内のばらつきだけが推定誤差に効き、**層間の差** は除かれる（母分散=層内+層間のうち層内だけ）。
+- だから[単純無作為抽出](simple-random-sampling)より[標準誤差](standard-error)が小さい。層が均質なほど効果大。
+- 配分: **比例配分**（層サイズ比 $N_h/N$）と[ネイマン配分](neyman-allocation)（$N_h\sigma_h$ 比, 最適）。

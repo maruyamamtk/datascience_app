@@ -1,0 +1,140 @@
+---
+title: 標本調査法
+summary: 母集団からどう標本を取れば少ない労力で正確に母平均を推定できるか。単純無作為抽出と層化抽出を比べ、層化が «層間の差» を除いて精度を上げる仕組み・ネイマン配分・有限母集団修正を操作で体感する。
+status: published
+---
+
+import { SamplingSurveyLab } from "@/components/topics/sampling-survey/SamplingSurveyLab";
+import { VarianceReductionStepper } from "@/components/topics/sampling-survey/VarianceReductionStepper";
+import { SurveyQuiz } from "@/components/topics/sampling-survey/SurveyQuiz";
+
+<Topic title="標本調査法" summary="母集団からどう標本を取れば少ない労力で正確に母平均を推定できるか。単純無作為抽出と層化抽出を比べ、層化が «層間の差» を除いて精度を上げる仕組み・ネイマン配分・有限母集団修正を操作で体感する。">
+
+<ReaderGuide>
+
+- **初学者** → L0〜L1（単純無作為抽出と層化抽出、なぜ層化で精度が上がるか）
+- **一通り使える人** → L2（比例配分・ネイマン配分・クラスター抽出・有限母集団修正）
+- **「完全に理解した」人** → L3 以降（複雑な標本設計・非標本誤差は到達途上）
+
+前提: [推定法](/topics/estimation-methods)の<Term id="standard-error">標準誤差</Term>、[大数の法則と正規近似](/topics/law-of-large-numbers)。
+
+</ReaderGuide>
+
+<Level level={0} title="ブラックボックス（無作為抽出と層化）">
+  <Concept>
+
+母集団全員を調べる（全数調査）のは大変。一部を抽出して母平均を推定するのが**標本調査**。
+基本は**<Term id="simple-random-sampling">単純無作為抽出</Term>**（全員が等確率）。だがもっと賢い取り方がある——**<Term id="stratified-sampling">層化抽出</Term>**。
+
+母集団を «層»（地域・年齢など）に分け、各層から取ると、**層間の差** を推定誤差から除けるので精度が上がる。
+
+  </Concept>
+  <Interact>
+
+下のラボで抽出法（単純無作為／層化・比例／層化・ネイマン）と標本サイズ $n$ を変えると、各法の**<Term id="standard-error">標準誤差</Term>**・層への配分が変わり、数式が同時に追従する（操作→図→数式の強連動）。
+同じ $n$ でも層化のほうが SE が小さいこと、$n$ を増やすと全法で SE が下がることを確かめよう。
+
+<SamplingSurveyLab />
+
+  </Interact>
+  <Exercise>
+
+確認: 「層化抽出が単純無作為抽出より精度が高いのは、標本数が増えるからである」——○か×か。
+（答: ×。標本数は同じ。層化は «層間の差» を推定誤差から除くので、同じ n でも標準誤差が小さくなる）
+
+  </Exercise>
+</Level>
+
+<Level level={1} title="古典的理解（分散低減のからくり）">
+  <Concept>
+
+層化が効く理由は **母分散の分解** にある。
+
+<Math tex="\sigma^2_{\text{母}}=\underbrace{\sigma^2_{\text{層内}}}_{\text{層の中}}+\underbrace{\sigma^2_{\text{層間}}}_{\text{層どうしの差}}" />
+
+単純無作為抽出はこの全部を背負うが、層化は各層から取るので **層内のばらつきだけ** になる。
+下のステッパーで SRS → 層化（比例）→ 層化（ネイマン）と標準誤差が下がる過程を追える。
+
+  </Concept>
+  <Derivation title="ネイマン配分はなぜ最適なのか（分散の最小化）">
+
+層化推定量の分散は（有限母集団修正を略すと）
+
+$$
+\operatorname{Var}=\sum_h W_h^2\frac{\sigma_h^2}{n_h},\qquad W_h=\frac{N_h}{N}.
+$$
+
+総標本数 $\sum_h n_h=n$ の制約のもとでこれを最小化する。ラグランジュ未定乗数 $\lambda$ で
+
+$$
+\frac{\partial}{\partial n_h}\left(\sum_h \frac{W_h^2\sigma_h^2}{n_h}+\lambda\sum_h n_h\right)=-\frac{W_h^2\sigma_h^2}{n_h^2}+\lambda=0
+\ \Rightarrow\ n_h\propto W_h\sigma_h\propto N_h\sigma_h.
+$$
+
+つまり «層サイズ × 層内SD» に比例して配るのが最適＝**ネイマン配分**。
+ばらつきの大きい層を厚くサンプリングすると、同じ総数でも全体の分散が最小になる。層内 SD が全層で等しければ比例配分（$N_h$ のみ）に一致する。
+
+  </Derivation>
+  <Interact>
+
+<VarianceReductionStepper />
+
+  </Interact>
+  <Exercise>
+
+<SurveyQuiz />
+
+  </Exercise>
+</Level>
+
+<Level level={2} title="仮定体系（配分・クラスター・有限母集団修正）">
+  <Concept>
+
+実務の標本設計の道具を整理する。
+
+- **比例配分 vs <Term id="neyman-allocation">ネイマン配分</Term>**: 比例は層サイズ比、ネイマンは $N_h\sigma_h$ 比（最適）。コストを入れた最適配分も。
+- **<Term id="cluster-sampling">クラスター抽出・多段抽出</Term>**: 集落単位で抽出。全個体リスト不要でコスト減。ただし設計効果で分散は増えがち（層化と逆）。
+- **<Term id="finite-population-correction">有限母集団修正</Term>** $1-n/N$: 非復元抽出で標本割合が大きいほど分散が縮む。全数調査で0。
+- **非標本誤差**: 無回答・測定誤差・抽出枠の不備など。標本誤差（分散）だけでなくこれらの管理も重要。
+
+«どう取るか（設計）» が «どれだけ取るか（n）» と同じくらい精度を左右する——これが標本調査法の核心。
+
+  </Concept>
+  <Derivation title="有限母集団修正はどこから来るのか">
+
+母集団 $N$ 個から非復元で $n$ 個取る単純無作為抽出を考える。
+標本平均 $\bar y$ の分散は、復元抽出なら $\sigma^2/n$ だが、非復元では同じ個体を二度取らないぶん «取るほど母集団を知る» 効果が入る：
+
+$$
+\operatorname{Var}(\bar y)=\frac{S^2}{n}\cdot\frac{N-n}{N-1}\approx\frac{\sigma^2}{n}\left(1-\frac{n}{N}\right).
+$$
+
+$\dfrac{N-n}{N-1}$ が有限母集団修正。$n=N$ なら «全部見た» ので分散0、$n\ll N$ なら $\approx1$ で復元抽出と同じ。
+だから母集団が標本に比べて巨大なときは修正を気にしなくてよい。
+
+  </Derivation>
+  <Exercise>
+
+確認: 「有限母集団修正 1−n/N は、全数調査（n=N）のとき 0 になり、推定の分散が0になることを表す」——○か×か。
+（答: ○。全員を調べれば標本平均は母平均そのものなので誤差0。n が N に近づくほど分散が縮む）
+
+  </Exercise>
+</Level>
+
+<Level level={3} title="複雑な標本設計" status="planned">
+  多段層化クラスター抽出、不等確率抽出（PPS）、設計効果と有効標本サイズ（前提: 推定の分散）。
+</Level>
+
+<Level level={4} title="ウェイティングと推定" status="planned">
+  抽出ウェイト・無回答調整・キャリブレーション推定、ホービッツ–トンプソン推定量。
+</Level>
+
+<Level level={5} title="非標本誤差・調査設計" status="planned">
+  無回答バイアス・測定誤差・モード効果など «標本誤差以外» の誤差の管理と調査全体の品質。
+</Level>
+
+<Level level={6} title="フロンティア" status="planned">
+  ビッグデータ・非確率標本（Web パネル等）からの推測、確率標本との統合は研究が活発（到達途上）。
+</Level>
+
+</Topic>

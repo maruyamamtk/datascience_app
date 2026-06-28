@@ -1,0 +1,18 @@
+---
+title: 有限母集団修正
+definition: 非復元抽出で標本平均の分散にかかる係数 1−n/N。標本が母集団の大きな割合を占めるほど分散が縮む。n=N（全数調査）で0。
+aliases: [finite population correction, FPC, 有限母集団修正]
+seeAlso: [simple-random-sampling, standard-error]
+---
+
+# 有限母集団修正（FPC）
+
+有限母集団から **非復元** で抽出するとき、標本平均の分散にかかる係数。
+
+$$
+\operatorname{Var}(\bar y)=\frac{\sigma^2}{n}\left(1-\frac{n}{N}\right)
+$$
+
+- $1-\dfrac{n}{N}$ が修正項。標本が母集団を多く占める（$n\to N$）ほど分散が縮み、**全数調査で0**。
+- 母集団が標本に比べ十分大きい（$n/N$ が小さい）と $\approx1$ で無視できる。
+- 復元抽出や «無限母集団» の近似では現れない。[単純無作為抽出](simple-random-sampling)の[標準誤差](standard-error)に効く。
