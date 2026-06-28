@@ -1,0 +1,16 @@
+---
+title: 対数オッズ
+definition: オッズの対数 logit(p)=log(p/(1−p))。確率を −∞〜∞ に引き伸ばす変換（ロジット）。ロジスティック回帰はこれを線形にする。
+aliases: [log-odds, ロジット, logit, 対数オッズ]
+seeAlso: [odds-ratio, logistic-regression]
+---
+
+# 対数オッズ（ロジット）
+
+$$
+\mathrm{logit}(p)=\log\frac{p}{1-p}
+$$
+
+- 確率 $p\in[0,1]$ を $-\infty\sim\infty$ に引き伸ばす変換。$p=0.5$ で 0。シグモイドの逆関数。
+- [ロジスティック回帰](logistic-regression)は «対数オッズが説明変数の線形» $\mathrm{logit}(p)=b_0+b_1x$ と仮定する。
+- 係数 $b_1$ は «対数オッズの変化率»。指数を取ると[オッズ比](odds-ratio) $e^{b_1}$。

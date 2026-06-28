@@ -1,0 +1,18 @@
+---
+title: ロジスティック回帰
+definition: 2値の応答（0/1）の確率を P=σ(b0+b1x) でモデル化する回帰。対数オッズを線形にし、係数は最尤法で推定。予測が必ず0〜1に収まる。
+aliases: [logistic regression, ロジスティック回帰]
+seeAlso: [odds-ratio, log-odds, probit-analysis]
+---
+
+# ロジスティック回帰
+
+2値の結果の確率を、線形予測子をシグモイドで写してモデル化する。
+
+$$
+P(y{=}1\mid x)=\sigma(b_0+b_1 x)=\frac{1}{1+e^{-(b_0+b_1 x)}}
+$$
+
+- 予測が必ず $0\sim1$ に収まる（直線回帰は0未満/1超になりうる）。同値に[対数オッズ](log-odds)が線形 $\mathrm{logit}(p)=b_0+b_1x$。
+- 係数 $b_1$ の[オッズ比](odds-ratio) $e^{b_1}$ で «効きの強さ» を解釈。係数は[最尤法](maximum-likelihood)で推定（閉形式なし）。
+- リンク関数を正規CDFにすると[プロビット分析](probit-analysis)。一般化線形モデルの代表例。
