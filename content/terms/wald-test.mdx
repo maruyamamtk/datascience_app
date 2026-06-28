@@ -1,0 +1,16 @@
+---
+title: ワルド型検定
+definition: 最尤推定量 θ̂ が H0 の値 θ0 から «どれだけ離れたか» を、推定の分散（フィッシャー情報量）で標準化して測る検定。(θ̂−θ0)²·I で z²。
+aliases: [Wald test, ワルド検定]
+seeAlso: [likelihood-ratio-test, score-test, fisher-information]
+---
+
+# ワルド型検定
+
+$$
+W=(\hat\theta-\theta_0)^2\,I(\hat\theta)\ \xrightarrow{d}\ \chi^2
+$$
+
+- [最尤推定量](maximum-likelihood) $\hat\theta$ の «H0 からの離れ» を[フィッシャー情報量](fisher-information)で標準化。MLE が必要。
+- 信頼区間 $\hat\theta\pm z\,\mathrm{SE}$ と表裏一体（Wald 型信頼区間）。
+- [尤度比検定](likelihood-ratio-test)・[スコア検定](score-test)と漸近的に等価。3つは «H0 からの隔たり» を別の角度で測る。

@@ -1,0 +1,19 @@
+---
+title: ネイマン・ピアソンの基本定理
+definition: 2つの単純仮説で、有意水準 α を固定したとき «尤度比 L(H1)/L(H0) > k» の棄却域が検出力を最大化する（最強力検定）という定理。
+aliases: [Neyman-Pearson lemma, ネイマン・ピアソンの補題, 最強力検定]
+seeAlso: [likelihood-ratio-test, power, significance-level]
+---
+
+# ネイマン・ピアソンの基本定理
+
+単純仮説 $H_0:\theta=\theta_0$ vs $H_1:\theta=\theta_1$ で、有意水準 $\alpha$ を固定したとき、
+
+$$
+\text{棄却域}=\left\{\frac{L(\theta_1)}{L(\theta_0)}>k\right\}
+$$
+
+が**[検出力](power)を最大化**する（最強力検定）。
+
+- «良い棄却域の作り方» を与える検定論の出発点。$k$ は $\alpha$ で決まる。
+- 正規の単純仮説では尤度比 $>k$ が «$\bar x>c$» の形になる。複合仮説へは[尤度比検定](likelihood-ratio-test)で一般化する。

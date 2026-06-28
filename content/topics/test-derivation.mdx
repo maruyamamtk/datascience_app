@@ -1,0 +1,137 @@
+---
+title: 検定法の導出（ネイマン・ピアソン）
+summary: 検定はどう «作る» のか。ネイマン・ピアソンの基本定理（尤度比検定が最強力）と、ワルド型・スコア・尤度比の3検定の関係を、棄却域と対数尤度の幾何で体感する。
+status: published
+---
+
+import { NeymanPearsonLab } from "@/components/topics/test-derivation/NeymanPearsonLab";
+import { ThreeTestsStepper } from "@/components/topics/test-derivation/ThreeTestsStepper";
+import { TestDerivQuiz } from "@/components/topics/test-derivation/TestDerivQuiz";
+
+<Topic title="検定法の導出（ネイマン・ピアソン）" summary="検定はどう «作る» のか。ネイマン・ピアソンの基本定理（尤度比検定が最強力）と、ワルド型・スコア・尤度比の3検定の関係を、棄却域と対数尤度の幾何で体感する。">
+
+<ReaderGuide>
+
+- **初学者** → L0〜L1（αと検出力のトレードオフ、ネイマン・ピアソンの最強力検定）
+- **一通り使える人** → L2（尤度比・ワルド型・スコアの3検定、正確検定）
+- **「完全に理解した」人** → L3 以降（一様最強力検定・不変検定は到達途上）
+
+前提: [仮説検定](/topics/hypothesis-testing)の<Term id="power">検出力</Term>・<Term id="significance-level">有意水準</Term>、[推定量の漸近的性質](/topics/asymptotic-properties)の<Term id="fisher-information">フィッシャー情報量</Term>。
+
+</ReaderGuide>
+
+<Level level={0} title="ブラックボックス（αと検出力のトレードオフ）">
+  <Concept>
+
+検定は «棄却域» をどこに引くかで決まる。2 つの単純仮説 $H_0:\mu=0$ vs $H_1:\mu=1.2$ で、$\bar x>c$ なら H0 を棄却するとき、
+
+- **<Term id="significance-level">有意水準</Term> $\alpha$**: H0 が正しいのに棄却する確率（偽陽性）。
+- **<Term id="power">検出力</Term>**: H1 が正しいとき正しく棄却する確率（真陽性）。
+
+閾値 $c$ を上げると両方下がる——トレードオフ。
+
+  </Concept>
+  <Interact>
+
+下のラボで閾値 $c$ を動かすと、H0（灰）と H1（青）の分布の上に α（赤）と検出力（青）の面積が変わり、
+数式の値が同時に追従する（操作→図→数式の強連動）。「α=5% のNP閾値に合わせる」で最強力検定の境界に飛べる。
+
+<NeymanPearsonLab />
+
+  </Interact>
+  <Exercise>
+
+確認: 「閾値 $c$ を上げて棄却域を狭めると、α は下がるが検出力は上がる」——○か×か。
+（答: ×。両方下がる。$\alpha$ と検出力はトレードオフ。同じ $\alpha$ で検出力を上げるには «棄却域の形» を最適化する＝尤度比検定）
+
+  </Exercise>
+</Level>
+
+<Level level={1} title="古典的理解（ネイマン・ピアソンの最強力検定）">
+  <Concept>
+
+«同じ $\alpha$ で検出力を最大にする棄却域» を与えるのが**<Term id="neyman-pearson-lemma">ネイマン・ピアソンの基本定理</Term>**。
+
+<Math tex="\text{棄却域}=\left\{\dfrac{L(H_1)}{L(H_0)}>k\right\}" />
+
+«尤度比が大きい» ところ（H1 の方がデータをよく説明する領域）から棄却していくのが最強力。
+
+  </Concept>
+  <Derivation title="正規の単純仮説で «尤度比>k» が «x̄>c» になる">
+
+$H_0:\mu=\mu_0$ vs $H_1:\mu=\mu_1$（$\mu_1>\mu_0$, σ既知）の尤度比は
+
+$$
+\frac{L(\mu_1)}{L(\mu_0)}=\exp\!\left(\frac{1}{\sigma^2}\sum_i x_i(\mu_1-\mu_0)-\frac{n(\mu_1^2-\mu_0^2)}{2\sigma^2}\right).
+$$
+
+$\mu_1-\mu_0>0$ なので、これが大きい $\iff$ $\sum_i x_i$（＝$\bar x$）が大きい。よって «尤度比 $>k$» は «$\bar x>c$» と同値。
+$c$ は $\alpha$ から $c=\mu_0+z_{1-\alpha}\,\sigma/\sqrt n$ で決まる。ネイマン・ピアソンが «$\bar x$ で切る» 検定を正当化する。
+
+  </Derivation>
+  <Interact>
+
+複合仮説では3つの検定がある。下のステッパーで、対数尤度曲線上で «H0 からの隔たり» を測る3つの角度を見よう。
+
+<ThreeTestsStepper />
+
+  </Interact>
+  <Exercise>
+
+<TestDerivQuiz />
+
+  </Exercise>
+</Level>
+
+<Level level={2} title="仮定体系（尤度比・ワルド型・スコア・正確検定）">
+  <Concept>
+
+一般のモデルでは «H0 からの隔たり» を測る 3 つの漸近検定がある。正規モデルでは厳密に一致、一般には漸近的に等価。
+
+- **<Term id="likelihood-ratio-test">尤度比検定</Term>**: 制約あり/なしの最大対数尤度の «高さの差» $-2\log\Lambda$。
+- **<Term id="wald-test">ワルド型検定</Term>**: MLE $\hat\theta$ の «H0 からの離れ» を情報量で標準化。
+- **<Term id="score-test">スコア検定</Term>**: H0 での対数尤度の «傾き»。MLE 不要が利点。
+
+そして漸近近似が怪しい小標本では、組合せで厳密に p 値を出す**<Term id="exact-test">正確検定</Term>**（フィッシャーの正確検定など）を使う。
+
+  </Concept>
+  <Derivation title="3検定はなぜ漸近的に等価か（2次近似）">
+
+対数尤度を MLE $\hat\theta$ のまわりで2次まで展開すると、放物線で近似できる：
+
+$$
+\log L(\theta)\approx \log L(\hat\theta)-\tfrac12 I(\hat\theta)(\theta-\hat\theta)^2.
+$$
+
+- **ワルド**は $(\hat\theta-\theta_0)^2 I$（横の離れ）、
+- **スコア**は $\theta_0$ での傾き²/$I$、
+- **尤度比** $-2\log\Lambda$ は $\theta_0$ と $\hat\theta$ の高さの差。
+
+放物線では «横の離れ²×曲率»＝«傾き²/曲率»＝«高さの差×2» がすべて一致するので、3 統計量は同じ値に収束する。正規モデルでは放物線が厳密なので最初から一致（$z^2$）。
+
+  </Derivation>
+  <Exercise>
+
+確認: 「スコア検定は最尤推定量（MLE）を計算しないと実行できない」——○か×か。
+（答: ×。スコア検定は H0 のもとでの対数尤度の傾きで測るので **MLE 不要**。これが利点。MLE が必要なのはワルド型）
+
+  </Exercise>
+</Level>
+
+<Level level={3} title="一様最強力検定・複合仮説" status="planned">
+  片側仮説での一様最強力検定（UMP）、単調尤度比、両側での不変性・不偏検定（前提: 解析）。
+</Level>
+
+<Level level={4} title="多重比較と検定の調整" status="planned">
+  複数検定での多重性、ボンフェローニ補正・FDR 制御、事後選択推測（分散分析トピックで詳述）。
+</Level>
+
+<Level level={5} title="高次元・ノンパラメトリック検定" status="planned">
+  高次元での検定（多数のパラメータ同時）、並べ替え検定・ブートストラップ検定（ノンパラメトリックトピックへ）。
+</Level>
+
+<Level level={6} title="フロンティア" status="planned">
+  複雑モデルでの妥当な検定・選択後推測（selective inference）は研究が活発な領域（到達途上）。
+</Level>
+
+</Topic>
