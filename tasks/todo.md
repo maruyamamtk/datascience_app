@@ -297,3 +297,19 @@ MVP 5トピック完了後、SPEC §3 のチェックリスト全項目（A〜S,
 - **変更概要**: X~N(μ,σ²) に Y=aX+b を施す4層実装。a・b・σ_X のスライダーが `useTransformStore`（SSOT）を更新→元X（破線）と変換後Y（実線）の密度曲線・数式 `E[aX+b]=μ_Y`・`Var[aX+b]=a²σ²=σ_Y²`（TermController）が同時連動。ヤコビアン 1/|a|（面積=確率を保つ高さ補正）をコールアウト＋導出（CDFを微分し連鎖律で1/aが出る）で説明。ConvolutionStepper は2サイコロの和を6×6グリッドの反対角線(i+j=s)強調＋和の分布（三角形）の積み上げでコマ送りし、畳み込み P(Z=k)=ΣP(X=i)P(Y=k−i) を可視化。線形結合の分散（独立で足し算・共分散項）も計算層＋L2で網羅。normalPdf を再利用。
 - **検証結果**: Vitest **292 passed**（+14: transform 10 / frames 4、registry リンク切れゼロ維持）。tsc / lint（警告0）/ build（/topics/variable-transformation・新用語4ページ出力）成功。`pnpm start` + Playwright 実機確認: 初期 a=2,b=1 で μ_Y=1・Var_Y=4、a 2→3 で Var_Y→9 が数式追従、畳み込みステッパーで P(Z=7)=16.7%（6通り/36）、コンソールエラー0件。
 - **設計判断**: 密度変換のヤコビアンは «横を伸ばすと面積保存で高さが縮む» を曲線の見た目＋導出で二重に提示。和の分布は «一様どうしの和でも中央が膨らむ＝CLTの芽» と次トピック（大数の法則・CLT）への伏線にした。ConvolutionStepper は frame 状態を useTransformStore に同居（TransformLab は frame 不使用なので競合なし）。
+
+### コンテンツ拡充 #31 — [C-1] 離散型確率分布（二項・ポアソン他）
+
+優先度 5/82。前提=確率分布と母関数。6分布族のエクスプローラ＋二項→ポアソン収束。
+
+- [x] 計算層 `lib/stats/discrete.ts`（poisson/geometric/negativeBinomial/discreteUniform PMF + DISCRETE_SPECS（族メタ：平均/分散/PMF/support）+ discretePmfVector、binomialPmf 再利用）+ Vitest（13）
+- [x] 状態層 `lib/store/discrete-distributions.ts`（controls {kind,n,p,lambda,r}・族切替で全パラメータ保持）
+- [x] 描画層 `components/topics/discrete-distributions/`（DiscreteExplorer=6族ボタン＋種別別スライダー→PMF棒＆平均/分散の数式強連動 / PoissonLimitStepper=np=λ固定でnを増やし二項→ポアソン収束をコマ送り（青棒vs赤点線） / DiscreteQuiz）+ frames.ts + Vitest（4）
+- [x] 用語ノード7件（bernoulli/binomial/poisson/geometric/negative-binomial/discrete-uniform/multinomial-distribution）相互リンク
+- [x] MDX `content/topics/discrete-distributions.mdx`（L0-L2 充実：何を数えるかで選ぶ→二項→ポアソン極限の導出→分布の地図＋多項分布、L3-L6 planned）
+- [x] `/topics` 一覧へ反映（status: published）
+
+#### レビュー: 離散型確率分布トピック（2026-06-28）
+- **変更概要**: 6分布を共通インターフェース DISCRETE_SPECS（label/mean/variance/pmf/support の関数群）で統一し、`useDiscreteStore` の controls.kind 切替で1つのラボが全族を扱う4層実装。族ボタン＋種別別スライダーが PMF棒・平均線・数式 E[X]=μ/Var[X]=σ²（TermController）を同時更新。PoissonLimitStepper は np=λ=4 固定で n を 2→1000 と増やし、二項（青棒）がポアソン（赤点線）に重なる過程をコマ送り＋最大差%で定量化（アルゴリズム図鑑スタイル）。二項→ポアソン極限は導出（3つの極限因子）でも提示。binomialPmf/combinations を再利用し重複回避。
+- **検証結果**: Vitest **309 passed**（+17: discrete 13 / frames 4、registry リンク切れゼロ維持）。tsc / lint（警告0）/ build（/topics/discrete-distributions・新用語7ページ出力）成功。`pnpm start` + Playwright 実機確認: 初期 二項 μ=4・σ²=2.4、ポアソン族に切替で Po(3) μ=σ²=3（平均=分散を確認）、PoissonLimitStepper を末尾(n=1000)まで送ると最大差0.04%、コンソールエラー0件。
+- **設計判断**: バラバラな分布カタログにせず «何を数えるか» と «分布の地図（ベルヌーイ→二項→ポアソン、幾何→負の二項）» で関係づけて選べるようにした。多項分布は2D可視化が重いため概念＋多項係数の導出で反映。PoissonLimitStepper の frame は useDiscreteStore に同居（DiscreteExplorer は frame 不使用で競合なし）。

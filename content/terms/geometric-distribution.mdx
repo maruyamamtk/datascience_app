@@ -1,0 +1,17 @@
+---
+title: 幾何分布
+definition: 初めて成功するまでの «失敗回数» $P(X=k)=(1-p)^k p$（$k\ge0$）。$E[X]=(1-p)/p$。無記憶性を持つ唯一の離散分布。
+aliases: [geometric distribution, Geo(p)]
+seeAlso: [negative-binomial-distribution, bernoulli-distribution]
+---
+
+# 幾何分布
+
+初成功までに何回失敗するか。
+
+$$
+P(X=k)=(1-p)^k p\quad(k=0,1,2,\dots)
+$$
+
+- $E[X]=(1-p)/p$、$\mathrm{Var}[X]=(1-p)/p^2$。右に裾を引く «待ち時間» 系。
+- **無記憶性**: «あと何回» の分布が過去に依らない。これを «r 回成功まで» に拡張すると[負の二項分布](negative-binomial-distribution)。

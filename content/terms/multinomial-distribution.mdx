@@ -1,0 +1,17 @@
+---
+title: 多項分布
+definition: 二項分布の多カテゴリ版。n 回の試行で各カテゴリ i が $x_i$ 回出る確率 $\frac{n!}{x_1!\cdots x_m!}p_1^{x_1}\cdots p_m^{x_m}$。
+aliases: [multinomial distribution, 多項分布]
+seeAlso: [binomial-distribution, joint-distribution]
+---
+
+# 多項分布
+
+[二項分布](binomial-distribution)を 3 つ以上のカテゴリに拡張したもの。
+
+$$
+P(X_1=x_1,\dots,X_m=x_m)=\frac{n!}{x_1!\cdots x_m!}\,p_1^{x_1}\cdots p_m^{x_m},\quad \sum_i x_i=n
+$$
+
+- 各カテゴリの周辺分布は二項 $\mathrm{Bin}(n,p_i)$。カテゴリ間は負に相関する（合計が $n$ で固定だから）。
+- サイコロを $n$ 回振った各目の回数、適合度検定の度数モデルなどに使う（[同時分布](joint-distribution)の代表例）。

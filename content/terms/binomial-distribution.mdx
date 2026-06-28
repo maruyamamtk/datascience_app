@@ -1,0 +1,17 @@
+---
+title: 二項分布
+definition: 独立なベルヌーイ試行を n 回行った成功数 $P(X=k)=\binom{n}{k}p^k(1-p)^{n-k}$。$E[X]=np$、$\mathrm{Var}[X]=np(1-p)$。
+aliases: [binomial distribution, Bin(n, p)]
+seeAlso: [bernoulli-distribution, poisson-distribution, probability-mass-function]
+---
+
+# 二項分布
+
+$n$ 回の独立な[ベルヌーイ試行](bernoulli-distribution)の成功数。
+
+$$
+P(X=k)=\binom{n}{k}p^k(1-p)^{n-k}
+$$
+
+- $E[X]=np$、$\mathrm{Var}[X]=np(1-p)$。
+- $n\to\infty,\ p\to0,\ np=\lambda$ 一定の極限は[ポアソン分布](poisson-distribution)。$n$ 大・$p$ 中なら正規近似。

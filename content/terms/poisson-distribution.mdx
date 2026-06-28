@@ -1,0 +1,17 @@
+---
+title: ポアソン分布
+definition: 一定時間・空間に «稀な事象» が独立に起こる回数 $P(X=k)=e^{-\lambda}\lambda^k/k!$。$E[X]=\mathrm{Var}[X]=\lambda$。
+aliases: [Poisson distribution, Po(λ)]
+seeAlso: [binomial-distribution, expected-value, variance]
+---
+
+# ポアソン分布
+
+単位時間あたり平均 $\lambda$ 回起こる稀な事象の回数。
+
+$$
+P(X=k)=\frac{e^{-\lambda}\lambda^k}{k!}
+$$
+
+- **平均=分散=λ** が大きな特徴。データで分散が平均より大きい（過分散）なら負の二項を検討。
+- [二項分布](binomial-distribution) Bin(n, λ/n) の $n\to\infty$ 極限。電話の着信・事故件数・放射性崩壊などのモデル。
