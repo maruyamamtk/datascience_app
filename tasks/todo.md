@@ -585,3 +585,19 @@ MVP 5トピック完了後、SPEC §3 のチェックリスト全項目（A〜S,
 - **変更概要**: «どう標本を取れば精度が上がるか» を4層実装。SamplingSurveyLab は標本サイズ n スライダー＋抽出法トグル（SRS/比例/ネイマン）→3層の構成バー・各層への配分 n_h・3法の標準誤差比較バー・SE（TermController）が同時連動。VarianceReductionStepper は SRS→比例→ネイマンと SE が下がる過程をコマ送り。母分散=層内+層間の分解で層化が層間を除いて効くこと・ネイマン配分が分散最小（ラグランジュ）である導出・有限母集団修正の導出を網羅。
 - **検証結果**: Vitest **532 passed**（+11: sampling-survey 8 / frames 3、registry リンク切れゼロ）。tsc / lint（警告0）/ build成功。`pnpm start` + Playwright 実機確認: SRS で SE=1.161（比100%）、ネイマン配分で SE=0.253（**比22%**＝層間の差が大きく層化が劇的に効く）、分散低減ステッパー③でラボと一致、コンソールエラー0件。
 - **設計判断**: 層平均を大きく離した3層（10/20/50）で «層化の威力» を体感的に見せた（SE が SRS の1/5に）。母分散の層内+層間分解を可視化の軸に据え、ネイマン配分の最適性を制約付き最小化で導出。frame は VarianceReductionStepper のみ使用で競合なし。**これで G群（分散分析・標本調査）完成**。次は H群（多変量解析）主成分分析へ。
+
+### コンテンツ拡充 #49 — [H-1] 主成分分析
+
+優先度 23/82（H群 多変量解析の起点）。前提=重回帰（共分散行列）。固有値分解で分散最大方向を求める。
+
+- [x] 計算層 `lib/stats/pca.ts`（covariance2/eigenDecomposition2(2×2解析解)/explainedVarianceRatio/projectToPC/generateCorrelatedData）+ Vitest（8）
+- [x] 状態層 `lib/store/principal-component-analysis.ts`（controls {corr}・固定2次元データ）
+- [x] 描画層 `components/topics/principal-component-analysis/`（PcaLab=相関→散布図・主成分軸(赤PC1/青PC2)・寄与率・λの強連動 / MaxVarianceStepper=軸を0→180°回し射影分散最大=第1主成分を探すコマ送り / PcaQuiz）+ frames.ts + Vitest（4）
+- [x] 用語ノード6件（principal-component / eigen-decomposition / explained-variance-ratio / dimensionality-reduction / covariance-matrix / covariance）相互リンク
+- [x] MDX `content/topics/principal-component-analysis.mdx`（L0-L2 充実：分散最大方向→分散最大が共分散行列の固有ベクトルである導出(ラグランジュ)→標準化/主成分得点/SVD/因子分析＋累積寄与率で次元決定の導出、L3-L6 planned）
+- [x] `/topics` 一覧へ反映（status: published）
+
+#### レビュー: 主成分分析トピック（2026-06-29）
+- **変更概要**: 次元圧縮の代表PCAを4層実装。PcaLab は2変数の相関 corr スライダー→散布図・主成分軸(赤PC1/青PC2、長さ=√固有値)・寄与率バー・λ1/λ2・第1主成分寄与率（TermController）が同時連動、相関を強めると第1主成分にデータが集中し寄与率が上がる様子を可視化。MaxVarianceStepper は軸を0→180°回して各角度の射影分散を測り最大=第1主成分を探すコマ送り（«分散最大方向探し»を体感）。分散最大方向が共分散行列の固有ベクトルである導出（u'Σuの制約付き最大化→Σu=λu）・累積寄与率で残す次元を決める導出を網羅。2×2共分散行列の固有値分解は解析解（tr±√(tr²−4det))/2で堅牢。
+- **検証結果**: Vitest **544 passed**（+12: pca 8 / frames 4、registry リンク切れゼロ）。tsc / lint（警告0）/ build成功。`pnpm start` + Playwright 実機確認: corr=0.8 で 寄与率94.4%（λ1=7.57/λ2=0.45）、corr=0 で 82.6%（λ2=0.45→1.41）、分散最大方向ステッパーが角度20°で射影分散7.57=λ1を最大特定（ラボと一致）、コンソールエラー0件。
+- **設計判断**: «PCA=分散最大の方向探し»を MaxVarianceStepper の軸回転で直接体感させ、ラボの固有値分解（一発で求まる）と対応づけた（最重要の直観）。固有ベクトルの符号の自由度は射影分散・寄与率に影響しないので問題なし。frame は MaxVarianceStepper のみ使用で競合なし。次は H-2 判別分析へ。

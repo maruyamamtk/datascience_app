@@ -1,0 +1,14 @@
+---
+title: 次元圧縮
+definition: 多次元データを、情報（分散）をできるだけ保ったまま少数の軸で表すこと。主成分分析が代表。可視化・ノイズ除去・前処理に使う。
+aliases: [dimensionality reduction, 次元削減, 次元圧縮]
+seeAlso: [principal-component, explained-variance-ratio]
+---
+
+# 次元圧縮
+
+多次元データを、分散（情報）をできるだけ保ちつつ少数の軸で表す。
+
+- [主成分分析](principal-component)は «分散最大の方向» を残して低次元に射影する代表的手法（線形）。
+- [寄与率](explained-variance-ratio)の高い主成分だけ残せば、情報をほとんど失わず次元を減らせる。
+- 用途: 2〜3次元への可視化、ノイズ除去、回帰・分類の前処理（多重共線性の緩和）。非線形なら t-SNE・UMAP・カーネルPCA。

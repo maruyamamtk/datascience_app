@@ -1,0 +1,18 @@
+---
+title: 共分散行列
+definition: 各変数の分散を対角に、変数間の共分散を非対角に並べた対称行列。多変量データのばらつきと相関の構造を表す。主成分分析の出発点。
+aliases: [covariance matrix, 分散共分散行列, 共分散行列]
+seeAlso: [covariance, eigen-decomposition, principal-component]
+---
+
+# 共分散行列
+
+多変量データの «ばらつきと相関の構造» を表す対称行列。
+
+$$
+\Sigma=\begin{pmatrix}\operatorname{Var}(X) & \operatorname{Cov}(X,Y)\\ \operatorname{Cov}(X,Y) & \operatorname{Var}(Y)\end{pmatrix}
+$$
+
+- 対角＝各変数の分散、非対角＝[共分散](covariance)（変数間の連動）。常に対称・半正定値。
+- [固有値分解](eigen-decomposition)すると[主成分](principal-component)が得られる。固有値＝主成分方向の分散。
+- 各変数を標準化すると相関行列になる。スケールの影響を除きたいときは相関行列で主成分分析する。
