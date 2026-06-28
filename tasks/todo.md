@@ -329,3 +329,19 @@ MVP 5トピック完了後、SPEC §3 のチェックリスト全項目（A〜S,
 - **変更概要**: 7連続分布を共通インターフェース CONTINUOUS_SPECS で統一した4層実装。ガンマ・ベータの正規化に lnGamma（Lanczos近似）を新設。族ボタン＋種別別スライダーが PDF曲線・平均線・数式 E[X]=μ/Var[X]=σ²（TermController）を同時更新。**コーシーは平均/分散が存在しないので mean/variance=NaN→「—」表示＋赤注記**（教育的正しさ）。GammaBuildStepper は θ固定で形状 k を 1→6 と増やし、右肩下がりの指数が釣鐘型のガンマへ近づく過程をコマ送り（指数の和＝ガンマ、CLTの芽）。指数→ガンマは母関数（(λ/(λ−t))^k）でも導出。正規分布は既存トピックに譲りスコープ重複を回避。
 - **検証結果**: Vitest **327 passed**（+18: continuous 14 / frames 4、registry リンク切れゼロ）。tsc / lint（警告0）/ build（/topics/continuous-distributions・新用語8ページ出力）成功。`pnpm start` + Playwright 実機確認: 初期 ガンマ μ=2・σ²=2、コーシーに切替で μ=σ²=「—」＋注記、GammaBuildStepper を k=6 まで送ると μ=6（指数6個の和）、コンソールエラー0件。
 - **設計判断 / つまずき**: ベータ分布の seeAlso に未作成の将来用語 `bayesian-basics`（#59）を入れて registry.test.ts が落ちた→除去。lessons.md に «将来トピックの用語へ先回りリンクしない» を追記。コーシーを入れることで «平均が常に存在するとは限らない/裾の重さ» という連続分布選びの本質を演習に組み込んだ。
+
+### コンテンツ拡充 #33 — [B-5] 大数の法則と正規近似
+
+優先度 7/82。前提=中心極限定理。標本平均の収束と二項→正規近似（連続修正）を体感。
+
+- [x] 計算層 `lib/stats/convergence.ts`（runningMeans / binomialNormalApproxCdf(連続修正) / binomialExactCdf / maxApproxError / deltaMethodVariance、normal・mass-functions 再利用）+ Vitest（8）
+- [x] 状態層 `lib/store/law-of-large-numbers.ts`（controls {distKind,revealed}・derived {mu,sigma,se}、distributions 再利用）
+- [x] 描画層 `components/topics/law-of-large-numbers/`（LlnLab=元分布選択＋n開示で累積平均がμへ収束する折れ線＋μ±SE帯＋数式|x̄−μ|の強連動 / NormalApproxStepper=nを増やし二項→正規（標準化軸固定・連続修正の最大誤差%）をコマ送り / LlnQuiz）+ frames.ts + Vitest（4）
+- [x] 用語ノード6件（law-of-large-numbers / convergence-in-probability / convergence-in-distribution / continuity-correction / delta-method / extreme-value-distribution）相互リンク
+- [x] MDX `content/topics/law-of-large-numbers.mdx`（L0-L2 充実：標本平均の収束→二項→正規近似＋LLN vs CLT の違いの導出→収束概念/連続修正/ポアソン近似/デルタ法、L3-L6 planned）
+- [x] `/topics` 一覧へ反映（status: published）
+
+#### レビュー: 大数の法則と正規近似トピック（2026-06-28）
+- **変更概要**: CLT の «兄弟» として4層実装。LlnLab は元分布（一様/指数/二項, μ=5）から500標本を決定的PRNGで生成、n開示スライダーで累積平均の折れ線が母平均μ（紫線）へ収束する様子＋μ±σ/√n帯（√nで収縮）を log横軸で描き、数式 x̄_n・|x̄_n−μ| が同時連動。NormalApproxStepper は p=0.4固定で n=5→150 と増やし、標準化軸(z=(k−μ)/σ)固定で二項（青棒）が標準正規（赤線）へ重なる過程＋CDF最大誤差%（連続修正あり）をコマ送り。連続修正・ポアソン近似・デルタ法・確率収束vs分布収束をL2＋計算層で網羅。
+- **検証結果**: Vitest **339 passed**（+12: convergence 8 / frames 4、registry リンク切れゼロ）。tsc / lint（警告0）/ build（/topics/law-of-large-numbers・新用語6ページ出力）成功。`pnpm start` + Playwright 実機確認: 指数分布 n=30 で x̄=5.9・差0.9 → n=500 で x̄=4.84・差0.16（収束）、NormalApproxStepper n=150 で μ=60・σ=6・CDF最大誤差0.22%、コンソールエラー0件。
+- **設計判断**: LLN と CLT の違い（収束先 vs 収束の形、確率収束 vs 分布収束）を導出で明示し «なぜ √n で割るか» を腑に落とす設計。正規近似ステッパーは軸を標準化して «形の収束» だけに注目させた（PoissonLimitと同型）。frame は NormalApproxStepper のみ使用（LlnLab は revealed を controls で持ち frame 不使用）で競合なし。

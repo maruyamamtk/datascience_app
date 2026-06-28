@@ -20,6 +20,7 @@
 - ✅ B-4 変数変換と線形結合 `variable-transformation`（#30）
 - ✅ C-1 離散型確率分布 `discrete-distributions`（#31）
 - ✅ C-2 連続型確率分布 `continuous-distributions`（#32）
+- ✅ B-5 大数の法則と正規近似 `law-of-large-numbers`（#33）
 
 ## キュー（優先順）
 
@@ -31,7 +32,7 @@
 | 4 | #30 | B-4 | 変数変換と確率変数の線形結合 | variable-transformation | probability-distributions-mgf | ✅ done |
 | 5 | #31 | C-1 | 離散型確率分布（二項・ポアソン他） | discrete-distributions | probability-distributions-mgf | ✅ done |
 | 6 | #32 | C-2 | 連続型確率分布（指数・ガンマ・ベータ他） | continuous-distributions | discrete-distributions, normal-distribution | ✅ done |
-| 7 | #33 | B-5 | 大数の法則と正規近似 | law-of-large-numbers | central-limit-theorem | pending |
+| 7 | #33 | B-5 | 大数の法則と正規近似 | law-of-large-numbers | central-limit-theorem | ✅ done |
 | 8 | #34 | C-3 | 標本分布（t・カイ二乗・F） | sampling-distributions | continuous-distributions | pending |
 | 9 | #35 | D-1 | 統計量と十分性 | statistics-sufficiency | sampling-distributions | pending |
 | 10 | #36 | D-2 | 推定法（最尤法・モーメント法・最小二乗法） | estimation-methods | statistics-sufficiency | pending |
