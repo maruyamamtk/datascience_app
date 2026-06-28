@@ -1,0 +1,138 @@
+---
+title: 標本分布（t・カイ二乗・F）
+summary: 検定や区間推定の «裏方» となる3分布。t（σ未知の平均）・カイ二乗（分散）・F（分散の比）が正規母集団からどう生まれるか、自由度で形がどう変わるかを操作で体感する。
+status: published
+---
+
+import { SamplingExplorer } from "@/components/topics/sampling-distributions/SamplingExplorer";
+import { TtoNormalStepper } from "@/components/topics/sampling-distributions/TtoNormalStepper";
+import { SamplingQuiz } from "@/components/topics/sampling-distributions/SamplingQuiz";
+
+<Topic title="標本分布（t・カイ二乗・F）" summary="検定や区間推定の «裏方» となる3分布。t（σ未知の平均）・カイ二乗（分散）・F（分散の比）が正規母集団からどう生まれるか、自由度で形がどう変わるかを操作で体感する。">
+
+<ReaderGuide>
+
+- **初学者** → L0〜L1（3分布が «何の統計量» の分布か、自由度と形の関係、t→正規）
+- **一通り使える人** → L2（カイ二乗・F の作られ方、t²=F、非心分布と検出力）
+- **「完全に理解した」人** → L3 以降（標本平均と標本分散の独立性の証明は到達途上）
+
+前提: [正規分布](/topics/normal-distribution)・[連続型確率分布](/topics/continuous-distributions)の<Term id="gamma-distribution">ガンマ分布</Term>、[信頼区間](/topics/confidence-interval)。
+
+</ReaderGuide>
+
+<Level level={0} title="ブラックボックス（3つの標本分布を見る）">
+  <Concept>
+
+検定や区間推定の «検定統計量» が従うのが標本分布。代表は 3 つ。
+
+- **<Term id="t-distribution">t 分布</Term>**: σ 未知のときの母平均の検定統計量。
+- **<Term id="chi-square-distribution">カイ二乗分布</Term>**: 標本分散・適合度検定の統計量。
+- **<Term id="f-distribution">F 分布</Term>**: 2 つの分散の比（分散分析）。
+
+どれも**<Term id="degrees-of-freedom">自由度</Term>**で形が決まる。
+
+  </Concept>
+  <Interact>
+
+下のエクスプローラで分布と自由度を切り替えると、密度曲線と平均（紫線）が変わり、
+数式 $E[X]=\mu$・$\mathrm{Var}[X]=\sigma^2$ の値が同時に追従する（操作→図→数式の強連動）。
+自由度を上げたときの «形» の変化を確かめよう。
+
+<SamplingExplorer />
+
+  </Interact>
+  <Exercise>
+
+確認: 「カイ二乗分布の平均は自由度 k に等しい」——○か×か。
+（答: ○。$E[\chi^2_k]=k$、$\mathrm{Var}=2k$。エクスプローラで k を変えて平均（紫線）が k に一致するのを確かめよう）
+
+  </Exercise>
+</Level>
+
+<Level level={1} title="古典的理解（t → 正規、自由度の意味）">
+  <Concept>
+
+t 分布は σ を標本標準偏差 $s$ で置き換えたときに現れる。$s$ がランダムに揺れるぶん**裾が重い**が、
+自由度 $\nu$（=$n-1$）を上げると標準正規に一致する。
+
+<Math tex="T=\dfrac{\bar X-\mu}{s/\sqrt n}\sim t_{n-1}\ \xrightarrow{\nu\to\infty}\ N(0,1)" />
+
+下のステッパーで $\nu$ を増やすと、裾の重い t が標準正規（赤点線）に重なっていく。
+
+  </Concept>
+  <Derivation title="なぜ σ未知だと t 分布になるのか（s のぶれ）">
+
+$\sigma$ 既知なら $(\bar X-\mu)/(\sigma/\sqrt n)\sim N(0,1)$。$\sigma$ を $s$ で置き換えると、
+
+$$
+T=\frac{\bar X-\mu}{s/\sqrt n}=\frac{(\bar X-\mu)/(\sigma/\sqrt n)}{s/\sigma}=\frac{Z}{\sqrt{\chi^2_{n-1}/(n-1)}}.
+$$
+
+分子は標準正規 $Z$、分母は «$s/\sigma$» で、$(n-1)s^2/\sigma^2\sim\chi^2_{n-1}$ から $\sqrt{\chi^2_{n-1}/(n-1)}$。
+この «独立な正規 ÷ √(カイ二乗/自由度)» が定義どおりの t 分布。$s$ が偶然小さいと比が大きく振れるので裾が重い。
+$n$ が大きいと $s\to\sigma$ で分母が 1 に近づき、t は正規に一致する。
+
+  </Derivation>
+  <Interact>
+
+<TtoNormalStepper />
+
+  </Interact>
+  <Exercise>
+
+<SamplingQuiz />
+
+  </Exercise>
+</Level>
+
+<Level level={2} title="仮定体系（作られ方・t²=F・非心分布）">
+  <Concept>
+
+3 分布は «正規からの作られ方» でつながっている。
+
+- **<Term id="chi-square-distribution">カイ二乗</Term>** $=Z_1^2+\cdots+Z_k^2$（標準正規の二乗和）。
+- **<Term id="t-distribution">t</Term>** $=Z/\sqrt{\chi^2_\nu/\nu}$（正規 ÷ √(カイ二乗/自由度)）。
+- **<Term id="f-distribution">F</Term>** $=(\chi^2_{d_1}/d_1)/(\chi^2_{d_2}/d_2)$（2 つの分散の比）。
+
+関係式 $t_\nu^2=F_{1,\nu}$（t の二乗は自由度 (1,ν) の F）も成り立つ。
+さらに対立仮説が正しいときは中心がずれた**<Term id="noncentral-distribution">非心分布</Term>**になり、これが検出力計算の基礎。
+
+  </Concept>
+  <Derivation title="カイ二乗が «二乗和» になる理由（標本分散とのつながり）">
+
+標準正規 $Z_i$ を $k$ 個独立に二乗して足した $\sum Z_i^2$ が自由度 $k$ のカイ二乗（定義）。
+正規標本 $X_i\sim N(\mu,\sigma^2)$ の標本分散は
+
+$$
+\frac{(n-1)s^2}{\sigma^2}=\sum_{i}\left(\frac{X_i-\bar X}{\sigma}\right)^2\sim\chi^2_{n-1}.
+$$
+
+平均を $\bar X$ で推定したぶん自由度が 1 減って $n-1$。これが «標本分散がカイ二乗に従う» 理由で、母分散の区間推定・検定の土台になる。
+
+  </Derivation>
+  <Exercise>
+
+確認: 「t 分布の二乗は F 分布になる（$t_\nu^2=F_{1,\nu}$）」——○か×か。
+（答: ○。t=正規/√(カイ二乗/ν) を二乗すると (Z²/1)/(χ²_ν/ν)＝自由度 (1,ν) の F。分散分析と t 検定がつながる）
+
+  </Exercise>
+</Level>
+
+<Level level={3} title="標本平均と標本分散の独立性" status="planned">
+  正規母集団では x̄ と s² が独立（コクランの定理）。これが t 分布の «独立な正規÷√カイ二乗» 構成の前提
+  （前提: 多変量正規・直交変換）。
+</Level>
+
+<Level level={4} title="非心分布と検出力の計算" status="planned">
+  非心 t・非心カイ二乗・非心 F の非心度と検出力曲線、サンプルサイズ設計の数理。
+</Level>
+
+<Level level={5} title="高次元での標本分散の挙動" status="planned">
+  変数数が標本数に近い高次元での標本共分散行列の固有値分布（Marchenko–Pastur 則）。
+</Level>
+
+<Level level={6} title="フロンティア" status="planned">
+  高次元・従属データでの «有効自由度» の定義と推測は研究が続く領域（到達途上）。
+</Level>
+
+</Topic>

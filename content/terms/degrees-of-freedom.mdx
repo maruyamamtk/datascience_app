@@ -1,0 +1,14 @@
+---
+title: 自由度
+definition: 統計量を計算するときに «自由に動ける» 値の数。標本分散では n 個のうち平均で1つ制約され n−1。t・カイ二乗・F 分布の形を決める。
+aliases: [degrees of freedom, df, 自由度]
+seeAlso: [t-distribution, chi-square-distribution, f-distribution]
+---
+
+# 自由度
+
+データのうち «独立に動ける» 成分の数。
+
+- 標本分散 $s^2=\frac{1}{n-1}\sum(x_i-\bar x)^2$ は、偏差の和が 0 という制約で 1 つ自由を失うため自由度 $n-1$。
+- [t分布](t-distribution)・[カイ二乗分布](chi-square-distribution)・[F分布](f-distribution)の «形» を決めるパラメータ。
+- 大きいほど «推定した標準偏差» が確からしく、t は正規へ近づく。回帰では「観測数 − 推定したパラメータ数」。

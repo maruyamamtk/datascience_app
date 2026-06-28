@@ -345,3 +345,19 @@ MVP 5トピック完了後、SPEC §3 のチェックリスト全項目（A〜S,
 - **変更概要**: CLT の «兄弟» として4層実装。LlnLab は元分布（一様/指数/二項, μ=5）から500標本を決定的PRNGで生成、n開示スライダーで累積平均の折れ線が母平均μ（紫線）へ収束する様子＋μ±σ/√n帯（√nで収縮）を log横軸で描き、数式 x̄_n・|x̄_n−μ| が同時連動。NormalApproxStepper は p=0.4固定で n=5→150 と増やし、標準化軸(z=(k−μ)/σ)固定で二項（青棒）が標準正規（赤線）へ重なる過程＋CDF最大誤差%（連続修正あり）をコマ送り。連続修正・ポアソン近似・デルタ法・確率収束vs分布収束をL2＋計算層で網羅。
 - **検証結果**: Vitest **339 passed**（+12: convergence 8 / frames 4、registry リンク切れゼロ）。tsc / lint（警告0）/ build（/topics/law-of-large-numbers・新用語6ページ出力）成功。`pnpm start` + Playwright 実機確認: 指数分布 n=30 で x̄=5.9・差0.9 → n=500 で x̄=4.84・差0.16（収束）、NormalApproxStepper n=150 で μ=60・σ=6・CDF最大誤差0.22%、コンソールエラー0件。
 - **設計判断**: LLN と CLT の違い（収束先 vs 収束の形、確率収束 vs 分布収束）を導出で明示し «なぜ √n で割るか» を腑に落とす設計。正規近似ステッパーは軸を標準化して «形の収束» だけに注目させた（PoissonLimitと同型）。frame は NormalApproxStepper のみ使用（LlnLab は revealed を controls で持ち frame 不使用）で競合なし。
+
+### コンテンツ拡充 #34 — [C-3] 標本分布（t・カイ二乗・F）
+
+優先度 8/82。前提=連続型確率分布。3標本分布のエクスプローラ＋t→正規収束。検定・区間推定の裏方。
+
+- [x] 計算層 `lib/stats/sampling-distributions.ts`（tPdf / chiSquarePdf(=gammaPdf(k/2,2)) / fPdf + SAMPLING_SPECS（平均/分散の存在条件込み）+ samplingCurve、continuous.lnGamma/gammaPdf・normalPdf 再利用）+ Vitest（11, 台形則で総和≈1）
+- [x] 状態層 `lib/store/sampling-distributions.ts`（controls {kind,df1,df2}）
+- [x] 描画層 `components/topics/sampling-distributions/`（SamplingExplorer=t/χ²/F切替＋自由度→PDF曲線＆平均/分散の数式強連動 / TtoNormalStepper=νを増やしt→標準正規の収束をコマ送り / SamplingQuiz）+ frames.ts + Vitest（4）
+- [x] 用語ノード5件（t-distribution / chi-square-distribution / f-distribution / degrees-of-freedom / noncentral-distribution）相互リンク
+- [x] MDX `content/topics/sampling-distributions.mdx`（L0-L2 充実：3分布の役割→t→正規＋σ未知でt分布になる導出→作られ方/t²=F/非心分布、L3-L6 planned）
+- [x] `/topics` 一覧へ反映（status: published）
+
+#### レビュー: 標本分布トピック（2026-06-28）
+- **変更概要**: t・カイ二乗・F を共通インターフェース SAMPLING_SPECS で統一した4層実装。カイ二乗は gammaPdf(k/2,2)、t/F は lnGamma で正規化（continuous.ts 再利用）。族ボタン＋自由度スライダーが PDF曲線・平均線・数式 E[X]=μ/Var[X]=σ²（モーメント存在条件込み）を同時更新。TtoNormalStepper は ν を 1→200 と増やし、裾の重い t が標準正規（赤点線）へ重なる過程を中心の差%でコマ送り。σ未知で t 分布になる理由（Z/√(χ²/ν)）・標本分散がカイ二乗・t²=F を導出で網羅。
+- **検証結果**: Vitest **354 passed**（+15: sampling 11 / frames 4、registry リンク切れゼロ）。tsc / lint（警告0）/ build（/topics/sampling-distributions・新用語5ページ出力）成功。`pnpm start` + Playwright 実機確認: t(ν=3) μ=0/σ²=3、χ²(k=3) に切替で μ=3/σ²=6、TtoNormalStepper ν=200で中心差0.0005、コンソールエラー0件。
+- **設計判断**: 3分布をバラバラに教えず «正規からの作られ方»（二乗和→χ²、正規÷√(χ²/ν)→t、χ²の比→F）で関係づけ、検定・区間推定（次フェーズ）の伏線にした。t 分布のテスト許容精度は ν=500・精度3 に調整（ν=200・精度3は0.0005差で落ちたため）。非心分布は検出力の基礎として概念＋power 用語リンクで反映。
