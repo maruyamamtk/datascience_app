@@ -38,6 +38,7 @@
 - ✅ G-2 標本調査法 `sampling-survey`（#48）
 - ✅ H-1 主成分分析 `principal-component-analysis`（#49）
 - ✅ H-2 判別分析 `discriminant-analysis`（#50）
+- ✅ H-3 クラスター分析 `cluster-analysis`（#51）
 
 ## キュー（優先順）
 
@@ -67,7 +68,7 @@
 | 22 | #48 | G-2 | 標本調査法 | sampling-survey | estimation-methods | ✅ done |
 | 23 | #49 | H-1 | 主成分分析 | principal-component-analysis | multiple-regression | ✅ done |
 | 24 | #50 | H-2 | 判別分析 | discriminant-analysis | principal-component-analysis | ✅ done |
-| 25 | #51 | H-3 | クラスター分析 | cluster-analysis | principal-component-analysis | pending |
+| 25 | #51 | H-3 | クラスター分析 | cluster-analysis | principal-component-analysis | ✅ done |
 | 26 | #52 | H-4 | 共分散構造分析・因子分析 | covariance-structure-analysis | principal-component-analysis | pending |
 | 27 | #53 | H-5 | その他の多変量解析 | multivariate-other | principal-component-analysis | pending |
 | 28 | #54 | H-6 | カーネル密度推定 | kernel-density-estimation | continuous-distributions | pending |

@@ -617,3 +617,19 @@ MVP 5トピック完了後、SPEC §3 のチェックリスト全項目（A〜S,
 - **変更概要**: 教師あり分類のLDAを4層実装。LdaLab は2クラスの隔たり separation スライダー→2クラス散布図・判別境界(緑、wに直交)・判別軸(紫)・混同行列・誤判別率（TermController）が同時連動、誤分類点を縁取りで表示。FisherAxisStepper は軸を0→180°回し各角度の分離度J=(群間隔たり)²/(群内分散)を測り最大=判別軸を探す＋下に1次元射影帯をコマ送り（PCAのMaxVarianceと対の構成で«分散最大 vs 分離最大»を対比）。判別軸がΣ_w⁻¹(μ1−μ2)である導出・LDAの直線境界がベイズ判別の2次項相殺から出る導出を網羅。pca.covariance2を再利用。
 - **検証結果**: Vitest **556 passed**（+12: discriminant 8 / frames 4、registry リンク切れゼロ）。tsc / lint（警告0、三項演算子の式文をif/elseに修正）/ build成功。`pnpm start` + Playwright 実機確認: separation=4 で 誤判別率3.3%（よく分離）、separation=0.6 で 35.8%（重なりあり）、判別軸ステッパーが角度10°で分離度6.84を最大特定、コンソールエラー0件。
 - **設計判断 / つまずき**: PCA（分散最大・教師なし）と LDA（分離最大・教師あり）を対の可視化（軸回転ステッパー）で並べ、多変量解析の2大次元削減の違いを際立たせた。prettierが `(a>=b)===(c>=d)` の括弧を除去したが `>=`>`===` の優先順位で論理不変（実機で誤分類判定の正しさ確認）。lint警告（三項式文）は if/else に修正。frame は FisherAxisStepper のみ使用で競合なし。次は H-3 クラスター分析へ。
+
+### コンテンツ拡充 #51 — [H-3] クラスター分析
+
+優先度 25/82。前提=主成分分析（次元圧縮）。k-meansとエルボー・階層クラスタリング。
+
+- [x] 計算層 `lib/stats/clustering.ts`（assignClusters/updateCentroids/withinClusterSumOfSquares/kmeansStep/kmeansIterate/initCentroids(k-means++)/singleLinkageMerges、pca.Point2 再利用）+ Vitest（10）
+- [x] 状態層 `lib/store/cluster-analysis.ts`（controls {k}・固定4塊データ・wcssByK）
+- [x] 描画層 `components/topics/cluster-analysis/`（ClusterLab=k→色分けクラスター・重心・WCSS・エルボー曲線の強連動 / KmeansStepper=割り当て→重心更新の収束を★重心でコマ送り / ClusterQuiz）+ frames.ts + Vitest（4）
+- [x] 用語ノード4件（cluster-analysis / k-means / within-cluster-sum-of-squares / hierarchical-clustering）相互リンク
+- [x] MDX `content/topics/cluster-analysis.mdx`（L0-L2 充実：k-means手順→なぜ必ず収束するかの導出（2操作がWCSS非増加）→初期値依存/階層/評価＋エルボーとシルエットでk決定の導出、L3-L6 planned）
+- [x] `/topics` 一覧へ反映（status: published）
+
+#### レビュー: クラスター分析トピック（2026-06-29）
+- **変更概要**: 教師なし学習のクラスタリングを4層実装。ClusterLab はクラスター数 k スライダー→色分けクラスター・重心(輪)・WCSS（TermController）・エルボー曲線（k=1..6のWCSS、現在kを強調）が同時連動、k=4が自然な分割（エルボー）であることを可視化。KmeansStepper は «割り当て→重心更新» の各ステップを★重心の移動と点の色変化でコマ送り（ロイドのアルゴリズムの収束）。k-meansが必ず収束する導出（割り当て・更新の両操作がWCSSを非増加）・エルボーとシルエットでkを選ぶ導出を網羅。pca.Point2を再利用、initCentroidsはk-means++風。
+- **検証結果**: Vitest **570 passed**（+14: clustering 10 / frames 4、registry リンク切れゼロ）。tsc / lint（警告0）/ build成功。`pnpm start` + Playwright 実機確認: k=4 で WCSS=52.5（1ステップ収束）、k=2 で WCSS=450.9（6ステップ・k=2と4の大差でエルボーがk=4を示す）、k-meansステッパーがk=4でステップ1・WCSS52.5収束（ラボと一致）、コンソールエラー0件。
+- **設計判断**: PCA（次元圧縮）・判別分析（教師あり分類）に続き «教師なし分類» を据え、H群の多変量解析を «分散最大／分離最大／まとまり最大» の3視点で揃えた。WCSS by k のエルボー曲線をラボに併置し «k選択» を体感させた。CLUSTER_COLORS を ClusterLab から export し Stepper と共有。frame は KmeansStepper のみ使用で競合なし。次は H-4 共分散構造分析・因子分析へ。

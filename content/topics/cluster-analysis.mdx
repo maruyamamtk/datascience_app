@@ -1,0 +1,131 @@
+---
+title: クラスター分析
+summary: ラベルなしのデータを、近いものどうしまとめてグループに分ける教師なし学習。k-means の «割り当て→重心更新» の収束・群内平方和とエルボー・階層クラスタリングを操作で体感する。
+status: published
+---
+
+import { ClusterLab } from "@/components/topics/cluster-analysis/ClusterLab";
+import { KmeansStepper } from "@/components/topics/cluster-analysis/KmeansStepper";
+import { ClusterQuiz } from "@/components/topics/cluster-analysis/ClusterQuiz";
+
+<Topic title="クラスター分析" summary="ラベルなしのデータを、近いものどうしまとめてグループに分ける教師なし学習。k-means の «割り当て→重心更新» の収束・群内平方和とエルボー・階層クラスタリングを操作で体感する。">
+
+<ReaderGuide>
+
+- **初学者** → L0〜L1（k-means の手順と収束、群内平方和とエルボーで k を選ぶ）
+- **一通り使える人** → L2（初期値依存・k-means++・階層クラスタリング・連結基準・シルエット）
+- **「完全に理解した」人** → L3 以降（混合分布・密度ベース・スペクトラルは到達途上）
+
+前提: [主成分分析](/topics/principal-component-analysis)の<Term id="dimensionality-reduction">次元圧縮</Term>、[判別分析](/topics/discriminant-analysis)（こちらは教師あり）との対比。
+
+</ReaderGuide>
+
+<Level level={0} title="ブラックボックス（k-means）">
+  <Concept>
+
+正解ラベルなしのデータを «似たものどうし» に分けるのが**<Term id="cluster-analysis">クラスター分析</Term>**（教師なし学習）。
+代表が**<Term id="k-means">k-means</Term>**——k 個の «重心» を置き、各点を最寄りの重心に割り当て、重心を平均へ動かす、を繰り返す。
+
+判別分析が «既知の群へ分類»（教師あり）なのに対し、クラスター分析は «群そのものをデータから見つける»（教師なし）。
+
+  </Concept>
+  <Interact>
+
+下のラボでクラスター数 $k$ を変えると、色分けされたクラスター・重心・**<Term id="within-cluster-sum-of-squares">群内平方和（WCSS）</Term>**・エルボー曲線が変わり、数式が同時に追従する（操作→図→数式の強連動）。
+$k$ を増やすと WCSS は必ず下がるが、«肘（エルボー）» の $k=4$ が自然な分割であることを確かめよう。
+
+<ClusterLab />
+
+  </Interact>
+  <Exercise>
+
+確認: 「クラスター分析は、あらかじめ与えられた正解ラベルにデータを分類する」——○か×か。
+（答: ×。それは判別分析（教師あり）。クラスター分析はラベルなしで «群そのもの» をデータの近さから見つける教師なし学習）
+
+  </Exercise>
+</Level>
+
+<Level level={1} title="古典的理解（割り当てと重心更新の収束）">
+  <Concept>
+
+k-means は2つの操作を交互に繰り返す **ロイドのアルゴリズム**。
+
+1. **割り当て**: 各点を最寄りの重心のクラスターへ。
+2. **更新**: 各重心をクラスター内の点の平均へ。
+
+下のステッパーで «割り当て→重心更新» を1コマずつ進め、重心が動き WCSS が減って収束する様子を追える。
+
+  </Concept>
+  <Derivation title="なぜ k-means は必ず収束するのか">
+
+k-means は目的関数 WCSS $=\sum_k\sum_{x\in C_k}\lVert x-\mu_k\rVert^2$ を最小化する。2つの操作はどちらもこれを **増やさない**：
+
+- **割り当てステップ**: 各点をより近い重心に移すので、その点の寄与 $\lVert x-\mu\rVert^2$ は減る（か同じ）。
+- **更新ステップ**: クラスター $C_k$ を固定したとき $\sum_{x\in C_k}\lVert x-\mu\rVert^2$ を最小にする $\mu$ は **平均** $\bar x$。だから重心を平均へ動かすと WCSS は減る（か同じ）。
+
+WCSS は単調非増加で下に有界（0以上）。割り当ては有限通りなので、有限回で «どちらの操作でも変化しない» 状態＝収束に達する。
+ただし WCSS の **局所** 最小に落ちるだけで、大域最適は保証されない（初期値依存）。
+
+  </Derivation>
+  <Interact>
+
+<KmeansStepper />
+
+  </Interact>
+  <Exercise>
+
+<ClusterQuiz />
+
+  </Exercise>
+</Level>
+
+<Level level={2} title="仮定体系（初期値・階層クラスタリング・評価）">
+  <Concept>
+
+クラスタリングの実務の論点を整理する。
+
+- **初期値依存・k-means++**: 局所解に落ちるので、複数初期値で試し最良を採る。k-means++ は «遠い点を選びやすく» して良い初期値に。
+- **<Term id="hierarchical-clustering">階層クラスタリング</Term>**: 近いものから順に併合しデンドログラムを作る。木を切れば任意の k。**連結基準**（単・完全・群平均・Ward）で形が変わる。
+- **k の選び方**: WCSS のエルボー、シルエット係数（クラスター内の近さ vs 他クラスターとの遠さ）、ギャップ統計量。
+- **距離・スケール**: ユークリッド距離が基本。変数のスケールが違うと標準化が必要。形が球状でないと k-means は苦手（密度ベースの DBSCAN 等）。
+
+«近さ» の定義（距離）と «まとまり» の基準しだいで結果が変わる——教師なしゆえの難しさと自由さがある。
+
+  </Concept>
+  <Derivation title="エルボーとシルエットで k をどう決めるか">
+
+WCSS は $k$ を増やすと単調に減り、$k=$ データ数で0。だから «WCSS最小» では決められない。
+そこで2つの見方を使う：
+
+- **エルボー**: $k$ に対する WCSS の «減り方» が急に緩む肘の $k$。それ以上分けても «あまり締まらない» 境目。
+- **シルエット係数**: 各点について «同じクラスター内の平均距離 $a$» と «最も近い別クラスターへの平均距離 $b$» から $s=\dfrac{b-a}{\max(a,b)}$。
+  1に近いほどよく分かれ、0付近は境界、負は誤った割り当て。全点の平均が大きい $k$ を選ぶ。
+
+エルボーは «締まり» の改善が頭打ちになる点、シルエットは «分離» の良さを直接測る。両者を合わせて自然な $k$ を決める。
+
+  </Derivation>
+  <Exercise>
+
+確認: 「k-means は初期重心によって異なる結果（局所解）になりうるので、複数の初期値で試すのがよい」——○か×か。
+（答: ○。k-means は WCSS の局所最小化。初期値が悪いと劣った解に収束する。複数初期値や k-means++ で対処する）
+
+  </Exercise>
+</Level>
+
+<Level level={3} title="混合分布モデル（GMM）" status="planned">
+  確率的なソフト割り当てをするガウス混合モデルと EM アルゴリズム、k-means との関係（前提: 最尤法）。
+</Level>
+
+<Level level={4} title="密度ベース・スペクトラル" status="planned">
+  非球状クラスターを捉える DBSCAN・スペクトラルクラスタリング、グラフラプラシアン。
+</Level>
+
+<Level level={5} title="評価と高次元" status="planned">
+  シルエット・ギャップ統計量・外部評価指標、高次元での距離の崩れと次元圧縮（PCA）との併用。
+</Level>
+
+<Level level={6} title="フロンティア" status="planned">
+  深層表現に基づくクラスタリング・自己教師あり学習との接続は研究が活発（到達途上）。
+</Level>
+
+</Topic>
