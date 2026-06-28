@@ -1,0 +1,18 @@
+---
+title: プロビット分析
+definition: 2値回帰でリンク関数に標準正規の累積分布関数 Φ を使う方法。P=Φ(b0+b1x)。ロジスティック回帰とリンク関数が違うだけで結果は概ね似る。
+aliases: [probit analysis, プロビット回帰, probit]
+seeAlso: [logistic-regression, standard-normal-distribution]
+---
+
+# プロビット分析
+
+2値の応答を、線形予測子を **正規 CDF** で確率に写してモデル化する。
+
+$$
+P(y{=}1\mid x)=\Phi(b_0+b_1 x)
+$$
+
+- [ロジスティック回帰](logistic-regression)と «線形予測子を確率に写す» 点は同じで、リンク関数が[標準正規](standard-normal-distribution)の $\Phi$ かロジット（シグモイド）かの違い。
+- 実用上は両者の結果がよく似る。ロジットは[オッズ比](odds-ratio)の解釈が容易なので広く使われる。
+- «潜在変数が閾値を超えたら1» という生成的な解釈と相性が良い。

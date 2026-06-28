@@ -1,0 +1,132 @@
+---
+title: 質的回帰（ロジスティック回帰）
+summary: 応答が «2値»（合格/不合格・購入/非購入）のときの回帰。シグモイドで確率を0〜1に収め、対数オッズを線形にする。係数のオッズ比・最尤当てはめを操作で体感する。
+status: published
+---
+
+import { LogisticLab } from "@/components/topics/qualitative-regression/LogisticLab";
+import { LogitFitStepper } from "@/components/topics/qualitative-regression/LogitFitStepper";
+import { LogitQuiz } from "@/components/topics/qualitative-regression/LogitQuiz";
+
+<Topic title="質的回帰（ロジスティック回帰）" summary="応答が «2値»（合格/不合格・購入/非購入）のときの回帰。シグモイドで確率を0〜1に収め、対数オッズを線形にする。係数のオッズ比・最尤当てはめを操作で体感する。">
+
+<ReaderGuide>
+
+- **初学者** → L0〜L1（シグモイド・なぜ直線でなくロジスティックか、係数を最尤で当てはめる）
+- **一通り使える人** → L2（対数オッズとオッズ比・プロビット・多クラス・一般化線形モデル）
+- **「完全に理解した」人** → L3 以降（正則化ロジスティック・分離の問題は到達途上）
+
+前提: [重回帰](/topics/multiple-regression)の<Term id="multiple-regression">重回帰</Term>、[推定法](/topics/estimation-methods)の<Term id="maximum-likelihood">最尤法</Term>。
+
+</ReaderGuide>
+
+<Level level={0} title="ブラックボックス（シグモイドで確率を予測）">
+  <Concept>
+
+応答が «2値»（0/1）のとき、直線回帰だと予測確率が0未満や1超になってしまう。
+**<Term id="logistic-regression">ロジスティック回帰</Term>**は線形 $b_0+b_1x$ を**シグモイド** $\sigma$ で 0〜1 の確率に写す。
+
+<Math tex="P(y{=}1\mid x)=\sigma(b_0+b_1 x)=\dfrac{1}{1+e^{-(b_0+b_1 x)}}" />
+
+S字の «高さ» が確率。$b_1$ で急峻さ（効きの強さ）、$b_0$ で左右の位置が決まる。
+
+  </Concept>
+  <Interact>
+
+下のラボで $b_0$・$b_1$ を動かすと、シグモイド曲線・決定境界（P=0.5）・**<Term id="odds-ratio">オッズ比</Term>** $e^{b_1}$・対数尤度が変わり、数式が同時に追従する（操作→図→数式の強連動）。
+データ点（緑=1/赤=0）に S 字が馴染むよう係数を調整し、対数尤度を最大にしてみよう。
+
+<LogisticLab />
+
+  </Interact>
+  <Exercise>
+
+確認: 「ロジスティック回帰の予測確率は、x を大きくすれば 1 を超えることがある」——○か×か。
+（答: ×。シグモイドが必ず 0〜1 に収める。x→∞ で 1 に漸近するが超えない。これが直線回帰に対する利点）
+
+  </Exercise>
+</Level>
+
+<Level level={1} title="古典的理解（最尤で当てはめる）">
+  <Concept>
+
+ロジスティック回帰には最小二乗の閉形式がない。代わりに**<Term id="maximum-likelihood">最尤法</Term>**——«観測した0/1が最も起こりやすくなる» 係数を、勾配上昇やニュートン法で数値的に探す。
+
+下のステッパーで $(b_0,b_1)=(0,0)$ から勾配の向きに登り、シグモイドがデータに馴染んでいく様子を追える。
+
+  </Concept>
+  <Derivation title="なぜ対数オッズが線形なのか（ロジットリンク）">
+
+シグモイド $p=\sigma(z)=\dfrac{1}{1+e^{-z}}$ を $z$ について解く（逆関数）。
+
+$$
+p(1+e^{-z})=1\ \Rightarrow\ e^{-z}=\frac{1-p}{p}\ \Rightarrow\ z=\log\frac{p}{1-p}=\mathrm{logit}(p).
+$$
+
+つまり $z=b_0+b_1x$ は**<Term id="log-odds">対数オッズ</Term>** $\log\frac{p}{1-p}$ そのもの。
+ロジスティック回帰は «対数オッズが説明変数の線形» というモデル。だから $b_1$ は対数オッズの変化率で、指数を取った $e^{b_1}$ が[オッズ比](odds-ratio)＝«$x$ が1増えるとオッズが何倍か» になる。
+
+  </Derivation>
+  <Interact>
+
+<LogitFitStepper />
+
+  </Interact>
+  <Exercise>
+
+<LogitQuiz />
+
+  </Exercise>
+</Level>
+
+<Level level={2} title="仮定体系（オッズ比・プロビット・GLM）">
+  <Concept>
+
+質的回帰を一般化・解釈する道具を整理する。
+
+- **<Term id="odds-ratio">オッズ比</Term>** $e^{b_1}$: «$x$ が1増えるとオッズが何倍か»。1で効果なし。確率の比（リスク比）とは別。
+- **<Term id="probit-analysis">プロビット分析</Term>**: リンク関数を正規CDF $\Phi$ にした2値回帰。結果はロジスティックと概ね似る。
+- **多クラス**: 3 値以上は多項ロジット（softmax）。順序つきカテゴリは順序ロジット。
+- **一般化線形モデル（GLM）**: «線形予測子 + リンク関数 + 指数型分布族» の統一枠組み。ロジスティック・プロビット・ポアソン回帰の共通の屋根。
+
+直線回帰（連続応答）の «次の一歩» が、リンク関数で応答の型に合わせる GLM。
+
+  </Concept>
+  <Derivation title="オッズ比の解釈（なぜ «確率の倍率» でないか）">
+
+$x$ から $x+1$ への変化で、対数オッズは $b_1$ 増える：
+
+$$
+\log\frac{p_{x+1}}{1-p_{x+1}}-\log\frac{p_x}{1-p_x}=b_1\ \Rightarrow\ \frac{\text{オッズ}_{x+1}}{\text{オッズ}_x}=e^{b_1}.
+$$
+
+«オッズの倍率» は $x$ によらず一定（$e^{b_1}$）だが、«確率の倍率» は一定でない。
+$p$ が小さいときは確率もほぼ $e^{b_1}$ 倍に増えるが、$p$ が1に近いと頭打ちで «倍率» は1に近づく。
+だから効果は «オッズ比» で一定に表すのが自然で、確率の変化は $x$ の水準で変わる。
+
+  </Derivation>
+  <Exercise>
+
+確認: 「プロビット分析とロジスティック回帰は、確率へのリンク関数（正規CDF か ロジット）が違うだけで、結果は概ね似る」——○か×か。
+（答: ○。どちらも «線形予測子を確率に写す» 2値回帰。リンクが Φ かシグモイドかの違いで、実用上の結論はよく一致する）
+
+  </Exercise>
+</Level>
+
+<Level level={3} title="正則化ロジスティック・分離" status="planned">
+  L1/L2 正則化つきロジスティック回帰、完全分離（係数が発散）の問題と対処（前提: 重回帰の正則化）。
+</Level>
+
+<Level level={4} title="一般化線形モデルの体系" status="planned">
+  指数型分布族・リンク関数・IRLS による統一推定、ポアソン回帰・負の二項回帰（一般化トピックへ）。
+</Level>
+
+<Level level={5} title="高次元・多クラスの分類" status="planned">
+  多項ロジット・softmax、高次元での正則化、判別分析・SVM との関係（多変量解析トピックへ）。
+</Level>
+
+<Level level={6} title="フロンティア" status="planned">
+  «確率を正しく較正する» 予測（calibration）や深層学習の確率出力の信頼性は研究が続く（到達途上）。
+</Level>
+
+</Topic>

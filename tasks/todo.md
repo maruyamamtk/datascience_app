@@ -521,3 +521,19 @@ MVP 5トピック完了後、SPEC §3 のチェックリスト全項目（A〜S,
 - **変更概要**: «回帰の前提が崩れていないか» を残差で診る4層実装。InfluenceLab は可動点(x,y)スライダー→散布図＋回帰直線（青=点込み/緑破線=点を除く）・てこ比 h=1/n+(x−x̄)²/Sxx・標準化残差（TermController）が同時連動、高てこ比×外れの «影響点» が直線を引っ張る様子を青vs緑線で可視化。ResidualPatternStepper は良い当てはめ/非線形(U字)/不等分散(ラッパ)/外れ値 の残差プロット模様を4図鑑でコマ送り。標準化残差が分散σ²(1−h)を補正する理由・残差を予測値にプロットする理由を導出で網羅。
 - **検証結果**: Vitest **483 passed**（+12: regression-diagnostics 8 / frames 4、registry リンク切れゼロ）。tsc / lint（警告0）/ build（/topics/regression-diagnostics・新用語4ページ出力）成功。`pnpm start` + Playwright 実機確認: 初期 点(9,9) で h=0.38・標準化残差≈0・傾き0.99（除外時0.99=影響なし）、点を(9,20)へ動かすと標準化残差2.6(>2外れ値)・傾き0.99→1.72（除外時0.99=1点が直線を引っ張る影響点）、残差パターン4図鑑が動作、コンソールエラー0件。
 - **設計判断**: «外れ値の危険度＝てこ比×外れ» を «点込み青線 vs 点なし緑破線» の差で実感させた（最重要ポイント）。残差プロットの «模様» で前提の種類を見分ける図鑑をコマ送りに。標準化残差がてこ比補正を含む理由（Var(eᵢ)=σ²(1−hᵢ)）を導出で明示。frame は ResidualPatternStepper のみ使用で競合なし。次は F-4 質的回帰（ロジスティック）へ。
+
+### コンテンツ拡充 #45 — [F-4] 質的回帰（ロジスティック回帰）
+
+優先度 19/82。前提=重回帰・推定法。2値応答の確率をシグモイドでモデル化。
+
+- [x] 計算層 `lib/stats/logistic.ts`（sigmoid(数値安定)/logit/logisticPredict/oddsRatio/logLikelihood/gradientStep/fitLogistic/generateBinaryData）+ Vitest（9）
+- [x] 状態層 `lib/store/qualitative-regression.ts`（controls {b0,b1}・固定2値データ）
+- [x] 描画層 `components/topics/qualitative-regression/`（LogisticLab=b0/b1→シグモイド曲線・決定境界・オッズ比・対数尤度の強連動 / LogitFitStepper=勾配上昇で(0,0)から最尤へ登りシグモイドが馴染むコマ送り / LogitQuiz）+ frames.ts + Vitest（4）
+- [x] 用語ノード4件（logistic-regression / odds-ratio / log-odds / probit-analysis）相互リンク
+- [x] MDX `content/topics/qualitative-regression.mdx`（L0-L2 充実：シグモイドで確率予測→対数オッズが線形になる導出(ロジットリンク)→オッズ比/プロビット/GLM＋オッズ比が確率の倍率でない導出、L3-L6 planned）
+- [x] `/topics` 一覧へ反映（status: published）
+
+#### レビュー: 質的回帰トピック（2026-06-28）
+- **変更概要**: 2値応答の回帰を4層実装。LogisticLab は b0・b1 スライダー→シグモイド曲線・決定境界(P=0.5)・オッズ比 e^b1・対数尤度（TermController）が同時連動、データ点(緑1/赤0)にS字を当てはめる。LogitFitStepper は勾配上昇で(0,0)から最尤へ登りシグモイドがデータに馴染む過程をコマ送り。シグモイドの逆関数=対数オッズが線形(ロジットリンク)の導出・オッズ比が«確率の倍率»でない導出を網羅。sigmoid は大|z|で exp 発散しないよう数値安定化。
+- **検証結果**: Vitest **496 passed**（+13: logistic 9 / frames 4、registry リンク切れゼロ）。tsc / lint（警告0）/ build成功。`pnpm start` + Playwright 実機確認: b0=-1,b1=0.6 で OR=1.82・決定境界1.67・対数尤度-26.2、b1=1.5 で OR=4.48・対数尤度-20.6（真値方向で改善）、当てはめステッパー反復400で b0=-2.46/b1=1.92・対数尤度-17.9（真値-2,1.5へ収束）、コンソールエラー0件。
+- **設計判断 / つまずき**: **MDX build バグを修正** — odds-ratio.mdx の「<1 で起こりにくい」の `<1` が JSX タグ開始と誤認され build 失敗（テストは緑）。言葉に直し lessons.md に追記。«対数オッズが線形» というロジスティックの本質を逆関数の導出で示し、オッズ比が x によらず一定（確率の倍率は一定でない）点を強調。frame は LogitFitStepper のみ使用で競合なし。次は F-5 一般化線形モデルで回帰ブロック完成。
