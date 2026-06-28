@@ -1,0 +1,17 @@
+---
+title: 対数正規分布
+definition: 対数を取ると正規分布になる正の連続分布。掛け算的に変動する量（所得・株価・粒径）に現れ、右に大きく裾を引く。
+aliases: [lognormal distribution, 対数正規, log-normal]
+seeAlso: [standard-normal-distribution, probability-density-function]
+---
+
+# 対数正規分布
+
+$\log X \sim N(\mu,\sigma^2)$ となる正の確率変数 $X$ の分布。
+
+$$
+f(x)=\frac{1}{x\sigma\sqrt{2\pi}}\exp\!\left(-\frac{(\log x-\mu)^2}{2\sigma^2}\right)\quad(x>0)
+$$
+
+- 独立な «倍率» の積（=log の和）が正規に近づくため、掛け算的に増える量に現れる（中心極限定理の積版）。
+- 常に正で右に裾を引く。平均 $e^{\mu+\sigma^2/2}$。所得分布・株価・故障時間などのモデル。

@@ -313,3 +313,19 @@ MVP 5トピック完了後、SPEC §3 のチェックリスト全項目（A〜S,
 - **変更概要**: 6分布を共通インターフェース DISCRETE_SPECS（label/mean/variance/pmf/support の関数群）で統一し、`useDiscreteStore` の controls.kind 切替で1つのラボが全族を扱う4層実装。族ボタン＋種別別スライダーが PMF棒・平均線・数式 E[X]=μ/Var[X]=σ²（TermController）を同時更新。PoissonLimitStepper は np=λ=4 固定で n を 2→1000 と増やし、二項（青棒）がポアソン（赤点線）に重なる過程をコマ送り＋最大差%で定量化（アルゴリズム図鑑スタイル）。二項→ポアソン極限は導出（3つの極限因子）でも提示。binomialPmf/combinations を再利用し重複回避。
 - **検証結果**: Vitest **309 passed**（+17: discrete 13 / frames 4、registry リンク切れゼロ維持）。tsc / lint（警告0）/ build（/topics/discrete-distributions・新用語7ページ出力）成功。`pnpm start` + Playwright 実機確認: 初期 二項 μ=4・σ²=2.4、ポアソン族に切替で Po(3) μ=σ²=3（平均=分散を確認）、PoissonLimitStepper を末尾(n=1000)まで送ると最大差0.04%、コンソールエラー0件。
 - **設計判断**: バラバラな分布カタログにせず «何を数えるか» と «分布の地図（ベルヌーイ→二項→ポアソン、幾何→負の二項）» で関係づけて選べるようにした。多項分布は2D可視化が重いため概念＋多項係数の導出で反映。PoissonLimitStepper の frame は useDiscreteStore に同居（DiscreteExplorer は frame 不使用で競合なし）。
+
+### コンテンツ拡充 #32 — [C-2] 連続型確率分布（指数・ガンマ・ベータ他）
+
+優先度 6/82。前提=離散型確率分布・正規分布。7分布族のエクスプローラ＋指数→ガンマ構築。
+
+- [x] 計算層 `lib/stats/continuous.ts`（lnGamma(Lanczos)/gammaFn + uniform/exponential/gamma/beta/cauchy/lognormal/halfNormal の PDF + CONTINUOUS_SPECS（平均/分散/PDF/range）+ continuousCurve）+ Vitest（14, 台形則で各PDF総和≈1も検証）
+- [x] 状態層 `lib/store/continuous-distributions.ts`（controls {kind,lambda,k,theta,mu,sigma}）
+- [x] 描画層 `components/topics/continuous-distributions/`（ContinuousExplorer=7族ボタン＋種別別スライダー→PDF曲線＆平均/分散の数式強連動（コーシーは—表示） / GammaBuildStepper=指数をk個足してガンマになる過程をコマ送り / ContinuousQuiz）+ frames.ts + Vitest（4）
+- [x] 用語ノード8件（exponential/gamma/beta/cauchy/lognormal/half-normal/continuous-uniform/multivariate-normal-distribution）相互リンク
+- [x] MDX `content/topics/continuous-distributions.mdx`（L0-L2 充実：何を表すかで選ぶ→指数→ガンマ構築の母関数導出→割合/掛け算/多変量/裾の重さ、L3-L6 planned）
+- [x] `/topics` 一覧へ反映（status: published）
+
+#### レビュー: 連続型確率分布トピック（2026-06-28）
+- **変更概要**: 7連続分布を共通インターフェース CONTINUOUS_SPECS で統一した4層実装。ガンマ・ベータの正規化に lnGamma（Lanczos近似）を新設。族ボタン＋種別別スライダーが PDF曲線・平均線・数式 E[X]=μ/Var[X]=σ²（TermController）を同時更新。**コーシーは平均/分散が存在しないので mean/variance=NaN→「—」表示＋赤注記**（教育的正しさ）。GammaBuildStepper は θ固定で形状 k を 1→6 と増やし、右肩下がりの指数が釣鐘型のガンマへ近づく過程をコマ送り（指数の和＝ガンマ、CLTの芽）。指数→ガンマは母関数（(λ/(λ−t))^k）でも導出。正規分布は既存トピックに譲りスコープ重複を回避。
+- **検証結果**: Vitest **327 passed**（+18: continuous 14 / frames 4、registry リンク切れゼロ）。tsc / lint（警告0）/ build（/topics/continuous-distributions・新用語8ページ出力）成功。`pnpm start` + Playwright 実機確認: 初期 ガンマ μ=2・σ²=2、コーシーに切替で μ=σ²=「—」＋注記、GammaBuildStepper を k=6 まで送ると μ=6（指数6個の和）、コンソールエラー0件。
+- **設計判断 / つまずき**: ベータ分布の seeAlso に未作成の将来用語 `bayesian-basics`（#59）を入れて registry.test.ts が落ちた→除去。lessons.md に «将来トピックの用語へ先回りリンクしない» を追記。コーシーを入れることで «平均が常に存在するとは限らない/裾の重さ» という連続分布選びの本質を演習に組み込んだ。

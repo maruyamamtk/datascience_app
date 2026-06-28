@@ -1,0 +1,139 @@
+---
+title: 連続型確率分布（指数・ガンマ・ベータ他）
+summary: 連続一様・指数・ガンマ・ベータ・対数正規・半正規・コーシーを «待ち時間・割合・裾の重さ» で選び分ける。パラメータを動かして形と平均・分散を体感し、指数→ガンマの構築も見る。
+status: published
+---
+
+import { ContinuousExplorer } from "@/components/topics/continuous-distributions/ContinuousExplorer";
+import { GammaBuildStepper } from "@/components/topics/continuous-distributions/GammaBuildStepper";
+import { ContinuousQuiz } from "@/components/topics/continuous-distributions/ContinuousQuiz";
+
+<Topic title="連続型確率分布（指数・ガンマ・ベータ他）" summary="連続一様・指数・ガンマ・ベータ・対数正規・半正規・コーシーを «待ち時間・割合・裾の重さ» で選び分ける。パラメータを動かして形と平均・分散を体感し、指数→ガンマの構築も見る。">
+
+<ReaderGuide>
+
+- **初学者** → L0〜L1（各分布が «何を表すか»、パラメータと形・平均・分散の対応）
+- **一通り使える人** → L2（分布どうしのつながり：指数→ガンマ、ベータと共役、対数正規、多変量正規）
+- **「完全に理解した」人** → L3 以降（指数型分布族・裾の重さの理論は到達途上）
+
+前提: [離散型確率分布](/topics/discrete-distributions)・[正規分布](/topics/normal-distribution)の<Term id="probability-density-function">確率密度関数</Term>、[分布の特性値](/topics/distribution-characteristics)の<Term id="expected-value">期待値</Term>・<Term id="variance">分散</Term>。
+
+</ReaderGuide>
+
+<Level level={0} title="ブラックボックス（分布族を選んで形を見る）">
+  <Concept>
+
+連続分布は «何を表すか» で選ぶ。
+
+- **<Term id="continuous-uniform-distribution">連続一様</Term>**: 区間内どこも等確率。
+- **<Term id="exponential-distribution">指数</Term>**: 無記憶な待ち時間。
+- **<Term id="gamma-distribution">ガンマ</Term>**: 指数を足した «累積の待ち時間»。
+- **<Term id="beta-distribution">ベータ</Term>**: 0〜1 の割合・確率。
+- **<Term id="lognormal-distribution">対数正規</Term>**: 掛け算的に増える量（所得・株価）。
+- **<Term id="half-normal-distribution">半正規</Term>**: 正規の絶対値（距離・大きさ）。
+- **<Term id="cauchy-distribution">コーシー</Term>**: 裾が極端に重く平均すら存在しない。
+
+それぞれパラメータが «形» と «平均・分散» を決める。
+
+  </Concept>
+  <Interact>
+
+下のエクスプローラで分布族を切り替え、パラメータを動かすと、確率密度関数の曲線と平均（紫線）が変わり、
+数式 $E[X]=\mu$・$\mathrm{Var}[X]=\sigma^2$ の値が同時に追従する（操作→図→数式の強連動）。コーシーでは平均・分散が «—» になる。
+
+<ContinuousExplorer />
+
+  </Interact>
+  <Exercise>
+
+確認: 「どんな連続分布でも平均と分散は必ず存在する」——○か×か。
+（答: ×。コーシー分布は裾が重すぎて平均も分散も存在しない。エクスプローラでコーシーを選ぶと «—» になる）
+
+  </Exercise>
+</Level>
+
+<Level level={1} title="古典的理解（指数 → ガンマの構築）">
+  <Concept>
+
+連続分布も «つながって» いる。代表が指数 → ガンマ。
+
+独立な指数分布 $\mathrm{Exp}(1/\theta)$ を $k$ 個足した和が $\mathrm{Gamma}(k,\theta)$。
+$k=1$ は指数（右肩下がり）、$k$ を増やすと «山» ができて釣鐘型に近づく。
+
+<Math tex="\underbrace{\mathrm{Exp}+\mathrm{Exp}+\cdots+\mathrm{Exp}}_{k\ \text{個}}=\mathrm{Gamma}(k,\theta),\quad \mu=k\theta" />
+
+  </Concept>
+  <Derivation title="なぜ指数の和がガンマになるか（母関数）">
+
+指数分布 $\mathrm{Exp}(\lambda)$ のモーメント母関数は $M(t)=\dfrac{\lambda}{\lambda-t}$（$t<\lambda$）。
+独立な和の母関数は積になる（[畳み込み](convolution)が積に化ける）ので、$k$ 個の和は
+
+$$
+M_{\text{和}}(t)=\left(\frac{\lambda}{\lambda-t}\right)^{k}.
+$$
+
+これはまさに $\mathrm{Gamma}(k, 1/\lambda)$ の母関数。よって «指数を $k$ 個足す = ガンマ»。
+$k$ が大きいほど中心極限定理で釣鐘型に近づく。
+
+  </Derivation>
+  <Interact>
+
+<GammaBuildStepper />
+
+  </Interact>
+  <Exercise>
+
+<ContinuousQuiz />
+
+  </Exercise>
+</Level>
+
+<Level level={2} title="仮定体系（割合・掛け算・多変量・裾の重さ）">
+  <Concept>
+
+«形の理由» で分布を選べるようにする。
+
+- **<Term id="beta-distribution">ベータ</Term>** は台 $[0,1]$ なので割合・確率に。[二項分布](/topics/discrete-distributions)の共役事前分布で、ベイズ更新が容易。
+- **<Term id="lognormal-distribution">対数正規</Term>** は «掛け算的» な量（log の和が正規）。所得・株価のように右に大きく裾を引く。
+- **<Term id="multivariate-normal-distribution">多変量正規</Term>** は正規の多次元版。平均ベクトルと共分散行列 $\Sigma$ で定まり、等高線は楕円。回帰・主成分分析の土台。
+- **<Term id="cauchy-distribution">コーシー</Term>** は裾が重く平均すら存在しない。標本平均が安定せず中心極限定理も成り立たない。
+
+選ぶ基準は «台（範囲）» と «裾の重さ»。同じ釣鐘型でも、正規・対数正規・コーシーで «外れやすさ» が桁違いに違う。
+
+  </Concept>
+  <Derivation title="対数正規はなぜ右に裾を引くか（log の世界）">
+
+$\log X\sim N(\mu,\sigma^2)$ とする。$Y=\log X$ が左右対称（正規）でも、指数を取り戻すと $X=e^Y$ で
+
+- $Y$ の «プラス側» は $e^Y$ で大きく引き伸ばされ、
+- $Y$ の «マイナス側» は $e^Y$ で 0 に押し込まれる。
+
+この非対称な引き伸ばしで、$X$ は常に正・右に長い裾を持つ。独立な «倍率» の積（=log の和）が正規に近づくため、掛け算的な量に自然に現れる。
+
+  </Derivation>
+  <Exercise>
+
+確認: 「ベータ分布は 0〜1 の範囲しか取らないので、割合や確率のモデルに向く」——○か×か。
+（答: ○。台が $[0,1]$。二項分布の共役事前分布として «成功/失敗を観測した» 形でベイズ更新できる）
+
+  </Exercise>
+</Level>
+
+<Level level={3} title="指数型分布族としての統一" status="planned">
+  指数・ガンマ・ベータ・正規などを統一的に扱う指数型分布族の形、十分統計量・共役事前分布との関係
+  （前提: 推定法・ベイズ）。
+</Level>
+
+<Level level={4} title="重い裾の分布と極値理論" status="planned">
+  べき則・パレート分布、裾指数、極値分布（一般化極値分布）と «外れ値» の理論。
+</Level>
+
+<Level level={5} title="高次元の連続分布" status="planned">
+  多変量正規を超えるコピュラによる依存構造、高次元での確率質量の集中、ガウス過程。
+</Level>
+
+<Level level={6} title="フロンティア" status="planned">
+  複雑な高次元連続分布を表現・サンプリングする生成モデル（拡散モデル・正規化フロー）は研究が活発な領域（到達途上）。
+</Level>
+
+</Topic>
