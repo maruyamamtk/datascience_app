@@ -1,0 +1,137 @@
+---
+title: 回帰診断
+summary: 回帰の前提（線形・等分散・正規・無相関）が崩れていないかを残差で診る。残差プロットの«模様»・てこ比・影響点・Q–Qプロット・ダービン–ワトソン比を操作で体感する。
+status: published
+---
+
+import { InfluenceLab } from "@/components/topics/regression-diagnostics/InfluenceLab";
+import { ResidualPatternStepper } from "@/components/topics/regression-diagnostics/ResidualPatternStepper";
+import { DiagQuiz } from "@/components/topics/regression-diagnostics/DiagQuiz";
+
+<Topic title="回帰診断" summary="回帰の前提（線形・等分散・正規・無相関）が崩れていないかを残差で診る。残差プロットの«模様»・てこ比・影響点・Q–Qプロット・ダービン–ワトソン比を操作で体感する。">
+
+<ReaderGuide>
+
+- **初学者** → L0〜L1（てこ比と影響点、残差プロットの模様で前提の崩れを読む）
+- **一通り使える人** → L2（標準化残差・クックの距離・Q–Qプロット・ダービン–ワトソン比）
+- **「完全に理解した」人** → L3 以降（頑健回帰・診断の理論は到達途上）
+
+前提: [単回帰](/topics/simple-regression)の<Term id="residual">残差</Term>・<Term id="least-squares">最小二乗法</Term>、[重回帰](/topics/multiple-regression)の<Term id="multiple-regression">重回帰</Term>。
+
+</ReaderGuide>
+
+<Level level={0} title="ブラックボックス（てこ比と影響点）">
+  <Concept>
+
+回帰は «当てはめて終わり» ではなく、前提が崩れていないかを**残差**で診断する。
+まず押さえるのが**<Term id="leverage">てこ比</Term>**——説明変数 $x$ が平均から遠い点ほど、回帰直線を «引っ張る» 力が強い。
+
+<Math tex="h_i=\dfrac1n+\dfrac{(x_i-\bar x)^2}{S_{xx}}" />
+
+てこ比が高い点が外れていると**影響点**になり、たった1点で回帰直線を大きく動かす。
+
+  </Concept>
+  <Interact>
+
+下のラボで赤い点を動かすと、てこ比 $h$・標準化残差・回帰直線（青＝点込み / 緑破線＝点を除く）が変わり、数式が同時に追従する（操作→図→数式の強連動）。
+$x$ を端に置き $y$ を大きく外すと、1点で傾きが変わる «影響点» が見える。
+
+<InfluenceLab />
+
+  </Interact>
+  <Exercise>
+
+確認: 「外れ値でも、てこ比が低い（x が中央付近）なら回帰直線への影響は小さい」——○か×か。
+（答: ○。影響は «てこ比 × 外れ» の積。x が中央なら引っ張る力が弱く、y が外れても傾きはあまり動かない。x が端＋外れが最も危険）
+
+  </Exercise>
+</Level>
+
+<Level level={1} title="古典的理解（残差プロットの模様を読む）">
+  <Concept>
+
+残差プロット（横=予測値, 縦=残差）の **«模様»** で、回帰の前提の崩れを読み取る。
+
+- **良い当てはめ**: 0 の周りに均一・ランダム（模様なし）。
+- **非線形**: U字など曲線パターン → 直線で捉えきれない。
+- **不等分散**: 予測値とともに残差の幅が広がる（ラッパ型）。
+- **外れ値**: 1点だけ大きく外れる。
+
+下のステッパーで4つのパターンを切り替え、«何が崩れているか» を見分けよう。
+
+  </Concept>
+  <Derivation title="なぜ残差を «予測値に対して» プロットするのか">
+
+良い当てはめでは、残差 $e_i=y_i-\hat y_i$ は予測値 $\hat y_i$ と **無相関**（最小二乗の正規方程式から $\sum e_i=0$、$\sum \hat y_i e_i=0$）。
+だから «残差 vs 予測値» に系統的な模様が出たら、それは «直線モデルが拾いきれなかった構造» のサイン：
+
+- 残差が予測値の関数のように曲がる → 平均構造が非線形（リンク・変数変換が必要）。
+- 残差の «ばらつき» が予測値で変わる → 分散が一定でない（等分散の崩れ）。
+
+模様の «種類» が崩れた前提を教えてくれる。だから残差プロットは回帰診断の出発点になる。
+
+  </Derivation>
+  <Interact>
+
+<ResidualPatternStepper />
+
+  </Interact>
+  <Exercise>
+
+<DiagQuiz />
+
+  </Exercise>
+</Level>
+
+<Level level={2} title="仮定体系（標準化残差・Q–Qプロット・系列相関）">
+  <Concept>
+
+数値での診断指標を押さえる。
+
+- **標準化残差** $e_i/(s\sqrt{1-h_i})$: てこ比で補正した残差。**|値|>2** で外れ値の目安。
+- **クックの距離**: «その点を抜いたら係数がどれだけ動くか» で影響点を測る（てこ比×残差の合成）。
+- **<Term id="qq-plot">Q–Qプロット</Term>**: 残差の分位点を理論正規分位点と比べ、**正規性** を診る（直線に乗れば正規）。
+- **<Term id="durbin-watson">ダービン–ワトソン比</Term>**: 残差の**<Term id="serial-correlation">系列相関</Term>**を診る（≈2で無相関）。時系列回帰で重要。
+
+«残差をいろいろな軸で見る» ことで、線形・等分散・正規・無相関の4前提を一つずつ確認する。
+
+  </Concept>
+  <Derivation title="なぜ標準化残差は «てこ比で割る» のか">
+
+普通の残差 $e_i$ は、てこ比が高い点ほど **小さく** なりがち（その点が直線を引き寄せるので残差が縮む）。
+実は残差の分散は一定でなく $\mathrm{Var}(e_i)=\sigma^2(1-h_i)$。
+
+だから単純な $|e_i|$ で外れ値を探すと、影響点を見逃す。$\sqrt{1-h_i}$ で割って分散を揃えた
+
+$$
+r_i=\frac{e_i}{s\sqrt{1-h_i}}
+$$
+
+が標準化残差で、てこ比の高い点の «隠れた外れ» も拾える。$|r_i|>2$（およそ95%の外）を目安に診る。
+
+  </Derivation>
+  <Exercise>
+
+確認: 「ダービン–ワトソン比が 0 に近いとき、残差は正の系列相関を持つ」——○か×か。
+（答: ○。DW≈2が無相関、0に近いと正の系列相関（残差が前後で似る）。時系列データで前提（誤差の無相関）が崩れているサイン）
+
+  </Exercise>
+</Level>
+
+<Level level={3} title="頑健回帰・影響関数" status="planned">
+  外れ値に強い M 推定・最小中央二乗（LMS）、影響関数による «1点の影響» の理論（前提: 推定法）。
+</Level>
+
+<Level level={4} title="一般化最小二乗（GLS）" status="planned">
+  不等分散・系列相関を共分散構造に織り込む GLS・加重最小二乗、頑健標準誤差（サンドイッチ推定）。
+</Level>
+
+<Level level={5} title="高次元での診断" status="planned">
+  説明変数が多いときの影響点・てこ比の扱い、交差検証による予測診断。
+</Level>
+
+<Level level={6} title="フロンティア" status="planned">
+  複雑モデル（機械学習）での «診断»（説明可能性・データ影響度推定）は研究が活発な領域（到達途上）。
+</Level>
+
+</Topic>

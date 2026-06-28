@@ -31,6 +31,7 @@
 - ✅ E-4 一般の分布に関する検定（適合度検定） `goodness-of-fit-tests`（#41）
 - ✅ E-5 ノンパラメトリック法 `nonparametric-tests`（#42）
 - ✅ F-2 重回帰分析 `multiple-regression`（#43）
+- ✅ F-3 回帰診断 `regression-diagnostics`（#44）
 
 ## キュー（優先順）
 
@@ -53,7 +54,7 @@
 | 15 | #41 | E-4 | 一般の分布に関する検定（適合度検定） | goodness-of-fit-tests | normal-tests | ✅ done |
 | 16 | #42 | E-5 | ノンパラメトリック法 | nonparametric-tests | goodness-of-fit-tests | ✅ done |
 | 17 | #43 | F-2 | 重回帰分析 | multiple-regression | simple-regression | ✅ done |
-| 18 | #44 | F-3 | 回帰診断 | regression-diagnostics | multiple-regression | pending |
+| 18 | #44 | F-3 | 回帰診断 | regression-diagnostics | multiple-regression | ✅ done |
 | 19 | #45 | F-4 | 質的回帰（ロジスティック回帰） | qualitative-regression | multiple-regression | pending |
 | 20 | #46 | F-5 | 一般化線形モデルと発展 | generalized-linear-models | qualitative-regression | pending |
 | 21 | #47 | G-1 | 分散分析・実験計画法 | analysis-of-variance | normal-tests | pending |

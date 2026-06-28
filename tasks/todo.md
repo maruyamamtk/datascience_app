@@ -505,3 +505,19 @@ MVP 5トピック完了後、SPEC §3 のチェックリスト全項目（A〜S,
 - **変更概要**: 説明変数が複数の線形回帰を4層実装。再利用可能な行列演算 linalg.ts（転置/積/逆行列）を新設し olsFit を正規方程式 β=(XᵀX)⁻¹Xᵀy＋係数SE＝√(σ̂²·(XᵀX)⁻¹の対角)で実装。MulticollinearityLab は2説明変数の相関ρスライダー→係数±2SEのエラーバー・VIF=1/(1−ρ²)・R²（TermController）が同時連動、真β=1固定なのにρを上げると係数が暴れSEが膨らむ多重共線性の本質を可視化。StepwiseStepper は前進選択でR²(必ず上がる青)とノイズ変数で下がる調整済みR²(赤)をコマ送り。R²単調増加の導出・Ridgeが多重共線性に強い導出・L1スパース選択を網羅。
 - **検証結果**: Vitest **471 passed**（+13: multiple-regression 10 / frames 3、registry リンク切れゼロ）。tsc / lint（警告0）/ build（/topics/multiple-regression・新用語5ページ出力）成功。`pnpm start` + Playwright 実機確認: rho=0.3 で VIF=1.1・β1=0.98±0.38、rho=0.96 で VIF=11.6・β1=0.07±1.24/β2=2.04±1.25（真値1から外れSE膨張）なのにR²=0.63維持＝多重共線性を実証、前進選択ステッパーで全変数R²=0.961/調整済み0.959、コンソールエラー0件。
 - **設計判断 / つまずき**: «多重共線性は予測でなく係数の安定性を壊す» を «R²は良いのに係数が暴れる» 可視化で実感させた（教育的に最重要ポイント）。テスト期待値の切片を 1.6→1.8 に自己修正（ȳ−slope·x̄=4.2−2.4=1.8）。linalg は部分ピボット選択つきガウス–ジョルダンで特異行列を null 検出。frame は StepwiseStepper のみ使用で競合なし。次は F-3 回帰診断（残差分析）へ。
+
+### コンテンツ拡充 #44 — [F-3] 回帰診断
+
+優先度 18/82。前提=重回帰。残差で前提の崩れを診る（てこ比・影響点・残差パターン・Q-Q・DW）。
+
+- [x] 計算層 `lib/stats/regression-diagnostics.ts`（fitSimple/leverage/residualSd/standardizedResiduals/durbinWatson/qqPoints、zQuantile 再利用）+ Vitest（8）
+- [x] 状態層 `lib/store/regression-diagnostics.ts`（controls {px,py}・可動点+基準データ）
+- [x] 描画層 `components/topics/regression-diagnostics/`（InfluenceLab=可動点→散布図+直線(点込み青/点なし緑破線)・てこ比・標準化残差の強連動 / ResidualPatternStepper=良い/非線形/不等分散/外れ値の残差プロット4図鑑コマ送り / DiagQuiz）+ frames.ts + Vitest（4）
+- [x] 用語ノード4件（leverage / durbin-watson / qq-plot / serial-correlation）相互リンク
+- [x] MDX `content/topics/regression-diagnostics.mdx`（L0-L2 充実：てこ比と影響点→残差を予測値にプロットする理由・残差模様→標準化残差(分散σ²(1−h)の補正)/Q-Q/DWの導出、L3-L6 planned）
+- [x] `/topics` 一覧へ反映（status: published）
+
+#### レビュー: 回帰診断トピック（2026-06-28）
+- **変更概要**: «回帰の前提が崩れていないか» を残差で診る4層実装。InfluenceLab は可動点(x,y)スライダー→散布図＋回帰直線（青=点込み/緑破線=点を除く）・てこ比 h=1/n+(x−x̄)²/Sxx・標準化残差（TermController）が同時連動、高てこ比×外れの «影響点» が直線を引っ張る様子を青vs緑線で可視化。ResidualPatternStepper は良い当てはめ/非線形(U字)/不等分散(ラッパ)/外れ値 の残差プロット模様を4図鑑でコマ送り。標準化残差が分散σ²(1−h)を補正する理由・残差を予測値にプロットする理由を導出で網羅。
+- **検証結果**: Vitest **483 passed**（+12: regression-diagnostics 8 / frames 4、registry リンク切れゼロ）。tsc / lint（警告0）/ build（/topics/regression-diagnostics・新用語4ページ出力）成功。`pnpm start` + Playwright 実機確認: 初期 点(9,9) で h=0.38・標準化残差≈0・傾き0.99（除外時0.99=影響なし）、点を(9,20)へ動かすと標準化残差2.6(>2外れ値)・傾き0.99→1.72（除外時0.99=1点が直線を引っ張る影響点）、残差パターン4図鑑が動作、コンソールエラー0件。
+- **設計判断**: «外れ値の危険度＝てこ比×外れ» を «点込み青線 vs 点なし緑破線» の差で実感させた（最重要ポイント）。残差プロットの «模様» で前提の種類を見分ける図鑑をコマ送りに。標準化残差がてこ比補正を含む理由（Var(eᵢ)=σ²(1−hᵢ)）を導出で明示。frame は ResidualPatternStepper のみ使用で競合なし。次は F-4 質的回帰（ロジスティック）へ。
