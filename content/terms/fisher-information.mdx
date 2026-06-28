@@ -1,0 +1,16 @@
+---
+title: フィッシャー情報量
+definition: データが母数 θ について持つ «情報の量» I(θ)=E[(∂/∂θ log f)²]。大きいほど推定の分散の下限（クラメール・ラオ）が小さい。
+aliases: [Fisher information, フィッシャー情報行列]
+seeAlso: [cramer-rao-bound, asymptotic-normality, maximum-likelihood]
+---
+
+# フィッシャー情報量
+
+$$
+I(\theta)=E\!\left[\left(\frac{\partial}{\partial\theta}\log f(X\mid\theta)\right)^2\right]
+$$
+
+- 対数尤度の «傾きの鋭さ»。尖った尤度ほど母数を特定しやすく、情報量が大きい。指数分布なら $I(\lambda)=1/\lambda^2$。
+- [クラメール・ラオの不等式](cramer-rao-bound)の下限 $1/(nI(\theta))$ に現れ、推定精度の限界を決める。
+- [最尤推定量](maximum-likelihood)は大標本で $N(\theta, 1/(nI(\theta)))$ に近づく（[漸近正規性](asymptotic-normality)）。

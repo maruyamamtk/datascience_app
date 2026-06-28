@@ -1,0 +1,135 @@
+---
+title: 推定量の漸近的性質（フィッシャー情報量）
+summary: 大標本で最尤推定量はどんな分布になるか。フィッシャー情報量・漸近正規性・クラメール・ラオ下限の達成を、推定量の標本分布が正規へ近づく様子で体感する。
+status: published
+---
+
+import { AsymptoticLab } from "@/components/topics/asymptotic-properties/AsymptoticLab";
+import { AsymptoticStepper } from "@/components/topics/asymptotic-properties/AsymptoticStepper";
+import { AsymptoticQuiz } from "@/components/topics/asymptotic-properties/AsymptoticQuiz";
+
+<Topic title="推定量の漸近的性質（フィッシャー情報量）" summary="大標本で最尤推定量はどんな分布になるか。フィッシャー情報量・漸近正規性・クラメール・ラオ下限の達成を、推定量の標本分布が正規へ近づく様子で体感する。">
+
+<ReaderGuide>
+
+- **初学者** → L0〜L1（最尤推定量の標本分布、n を増やすと正規へ＝漸近正規性）
+- **一通り使える人** → L2（フィッシャー情報量とクラメール・ラオ下限、デルタ法・ジャックナイフ・KL）
+- **「完全に理解した」人** → L3 以降（M推定の漸近論・高次元は到達途上）
+
+前提: [推定法](/topics/estimation-methods)の<Term id="maximum-likelihood">最尤法</Term>、[点推定の性質](/topics/point-estimation-properties)の<Term id="cramer-rao-bound">クラメール・ラオの不等式</Term>。
+
+</ReaderGuide>
+
+<Level level={0} title="ブラックボックス（最尤推定量は正規に近づく）">
+  <Concept>
+
+最尤推定量 $\hat\theta$ も標本ごとにぶれる。大標本では、その標本分布が**正規分布**に近づく——**<Term id="asymptotic-normality">漸近正規性</Term>**。
+
+指数分布の率 $\lambda$ なら $\hat\lambda=1/\bar x$ で、$n$ が大きいとき近似的に
+
+<Math tex="\hat\lambda\ \approx\ N\!\left(\lambda,\ \dfrac{\lambda^2}{n}\right)" />
+
+中心は真値 $\lambda$、分散は $\lambda^2/n$（$n$ で縮む）。
+
+  </Concept>
+  <Interact>
+
+下のラボで $n$ を動かすと、最尤推定 $\hat\lambda$ の標本分布（青）と漸近正規 $N(\lambda,\lambda^2/n)$（赤）が変わり、
+数式の漸近分散 $\lambda^2/n$ が同時に追従する（操作→図→数式の強連動）。小標本では右に歪み、$n$ を増やすと正規に重なる。
+
+<AsymptoticLab />
+
+  </Interact>
+  <Exercise>
+
+確認: 「最尤推定量はどんな $n$ でも厳密に正規分布に従う」——○か×か。
+（答: ×。«漸近» 正規性で、$n\to\infty$ の極限の話。小標本では歪むことが多い。ラボで $n$ を小さくすると右に歪むのが見える）
+
+  </Exercise>
+</Level>
+
+<Level level={1} title="古典的理解（フィッシャー情報量と下限の達成）">
+  <Concept>
+
+漸近分散 $\lambda^2/n$ の正体は**<Term id="fisher-information">フィッシャー情報量</Term>** $I(\lambda)$。
+
+<Math tex="\mathrm{Var}(\hat\lambda)\ \approx\ \dfrac{1}{n\,I(\lambda)},\qquad I(\lambda)=\dfrac1{\lambda^2}" />
+
+これは[クラメール・ラオの不等式](/topics/point-estimation-properties)の下限そのもの。最尤推定量は大標本で **下限を達成**（漸近有効）。
+
+  </Concept>
+  <Derivation title="指数分布のフィッシャー情報量 I(λ)=1/λ²">
+
+1 観測の対数尤度は $\log f(x\mid\lambda)=\log\lambda-\lambda x$。$\lambda$ で微分（スコア）すると
+
+$$
+\frac{\partial}{\partial\lambda}\log f=\frac1\lambda-x.
+$$
+
+フィッシャー情報量はスコアの分散 $I(\lambda)=\mathrm{Var}(1/\lambda-X)=\mathrm{Var}(X)=1/\lambda^2$（指数分布の分散は $1/\lambda^2$）。
+よって $n$ 観測では $nI(\lambda)=n/\lambda^2$、漸近分散は $1/(nI)=\lambda^2/n$。情報量が大きいほど分散の下限が小さい。
+
+  </Derivation>
+  <Interact>
+
+<AsymptoticStepper />
+
+  </Interact>
+  <Exercise>
+
+<AsymptoticQuiz />
+
+  </Exercise>
+</Level>
+
+<Level level={2} title="仮定体系（デルタ法・ジャックナイフ・KL）">
+  <Concept>
+
+漸近論の道具を広げる。
+
+- **<Term id="delta-method">デルタ法</Term>**: 推定量の «関数» $g(\hat\theta)$ の漸近分散を $g'(\theta)^2\cdot\sigma^2/n$ で求める（テイラー1次近似）。
+- **<Term id="jackknife">ジャックナイフ法</Term>**: 1 個ずつ抜いて統計量を再計算し、分布を仮定せずバイアス・分散を推定するリサンプリング。
+- **<Term id="kullback-leibler-divergence">カルバック・ライブラー情報量</Term>**: 分布の «違い» $\mathrm{KL}(p\|q)$。最尤推定は «経験分布とモデルの KL 最小化» と等価。
+
+これらは «母数の関数の標準誤差» や «分布を仮定しない誤差評価» に使い、現代的な推測（ブートストラップ・情報量規準）へつながる。
+
+  </Concept>
+  <Derivation title="最尤推定 = KL最小化（なぜ等価か）">
+
+経験分布 $\hat p$（観測の頻度）とモデル $q_\theta$ の KL は
+
+$$
+\mathrm{KL}(\hat p\,\|\,q_\theta)=\sum_x \hat p(x)\log\hat p(x)-\sum_x \hat p(x)\log q_\theta(x).
+$$
+
+第1項は $\theta$ に依らない定数。第2項 $-\sum_x \hat p(x)\log q_\theta(x)=-\frac1n\sum_i\log q_\theta(x_i)$ は «負の平均対数尤度»。
+よって KL の最小化は対数尤度の**最大化**＝[最尤推定](/topics/estimation-methods)と等価。最尤法は «モデルを真の分布に最も近づける» 推定だと分かる。
+
+  </Derivation>
+  <Exercise>
+
+確認: 「カルバック・ライブラー情報量は対称（$\mathrm{KL}(p\|q)=\mathrm{KL}(q\|p)$）な距離である」——○か×か。
+（答: ×。KL は非対称で三角不等式も満たさないので «距離» ではない。0以上で $p=q$ のとき0、という «違いの量»）
+
+  </Exercise>
+</Level>
+
+<Level level={3} title="M推定・一般の漸近論" status="planned">
+  最尤を含む M 推定（推定方程式 Σψ=0）の一致性・漸近正規性、サンドイッチ分散、頑健推定（前提:
+  解析）。
+</Level>
+
+<Level level={4} title="情報量規準（AIC・BIC）" status="planned">
+  KL情報量を期待値で近似した AIC、ベイズ的な BIC、モデル選択への応用（評価指標トピックで詳述）。
+</Level>
+
+<Level level={5} title="高次元・準最尤" status="planned">
+  パラメータ数が増える設定での漸近論の破れ、準最尤・合成尤度、高次元の情報行列。
+</Level>
+
+<Level level={6} title="フロンティア" status="planned">
+  複雑モデルでの «有効自由度»
+  や情報幾何（フィッシャー計量による統計多様体）は研究が続く領域（到達途上）。
+</Level>
+
+</Topic>

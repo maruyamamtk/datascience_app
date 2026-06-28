@@ -409,3 +409,19 @@ MVP 5トピック完了後、SPEC §3 のチェックリスト全項目（A〜S,
 - **変更概要**: «良い推定量とは» を推定量の標本分布で体感する4層実装。BiasVarianceLab は母 N(0,4) から サイズ n を2000回抽出し、偏り分散(1/n,赤)と不偏分散(1/(n-1),青)の標本分布ヒストグラムを重ね描き、各バイアス/分散/MSE と数式 MSE=bias²+分散（TermController）が n に同時連動。偏り分散の山が真値σ²より −σ²/n 左へずれる «なぜ n−1 で割るか» を体感。ConsistencyStepper は n を 3→200 と増やし不偏分散の標本分布が真値の一点へ潰れる（一致性）をコマ送り。MSE分解・有効性・クラメールラオ・ガウスマルコフ(BLUE)を導出＋用語で網羅。
 - **検証結果**: Vitest **391 passed**（+11: estimator-properties 7 / frames 4、registry リンク切れゼロ）。tsc / lint（警告0）/ build（/topics/point-estimation-properties・新用語7ページ出力）成功。`pnpm start` + Playwright 実機確認: n=5 で MSE=5.87=bias²(0.5)+分散(5.38)、n=40 で MSE=0.82・bias²=0.01（バイアス→0）、一致性ステッパー n=200 で推定量分散0.17へ縮小、コンソールエラー0件。
 - **設計判断 / つまずき**: «n−1で割る» の腑落ちを «標本分布の山が左にずれる» 可視化＋自由度の導出で二重化。simulateVarianceEstimators のテストは MC誤差を見込み厳密一致でなく範囲/緩い許容で検証（不偏バイアス<0.2、偏りバイアス∈(−1.2,−0.5)）。フィッシャー情報量は次トピック D-4 の主役なので前方リンクせず本文テキストで触れるに留めた。frame は ConsistencyStepper のみ使用で競合なし。
+
+### コンテンツ拡充 #38 — [D-4] 推定量の漸近的性質（フィッシャー情報量）
+
+優先度 12/82。前提=点推定の性質。最尤推定量の漸近正規性をシミュレーションで体感。
+
+- [x] 計算層 `lib/stats/asymptotics.ts`（exponentialFisherInfo / mleAsymptoticVariance / simulateMleSampling / klExponential / jackknife / stdNormalPdf、estimation.exponentialMle 再利用）+ Vitest（9, MC込み）
+- [x] 状態層 `lib/store/asymptotic-properties.ts`（controls {n}・真の率 TRUE_LAMBDA=1.5）
+- [x] 描画層 `components/topics/asymptotic-properties/`（AsymptoticLab=n→λ̂の標本分布ヒスト＋漸近正規N(λ,λ²/n)曲線＋数式の漸近分散の強連動 / AsymptoticStepper=nを増やしλ̂が正規へ重なるコマ送り / AsymptoticQuiz）+ frames.ts + Vitest（4）
+- [x] 用語ノード4件（fisher-information / asymptotic-normality / kullback-leibler-divergence / jackknife）+ 既存 delta-method/cramer-rao-bound 再利用
+- [x] MDX `content/topics/asymptotic-properties.mdx`（L0-L2 充実：漸近正規性→指数のI(λ)=1/λ²導出・下限達成→デルタ法/ジャックナイフ/KL＋最尤=KL最小化の導出、L3-L6 planned）
+- [x] `/topics` 一覧へ反映（status: published）
+
+#### レビュー: 推定量の漸近的性質トピック（2026-06-28）
+- **変更概要**: «大標本で最尤推定量はどんな分布か» を4層実装。AsymptoticLab は Exp(λ=1.5) から サイズ n を2500回抽出し λ̂=1/x̄ の標本分布ヒストグラム（青）と漸近正規 N(λ,λ²/n)（赤曲線）を重ね、数式の漸近分散 λ²/n（TermController）・フィッシャー情報量 I(λ)=1/λ²・漸近SD=実測SD が n に同時連動。小標本では右に歪み、n を増やすと正規に重なる＝漸近正規性。AsymptoticStepper は n=5→400 でコマ送り。I(λ)=1/λ² の導出（スコアの分散）・最尤=KL最小化の導出・デルタ法・ジャックナイフ・KL非対称を網羅。
+- **検証結果**: Vitest **404 passed**（+13: asymptotics 9 / frames 4、registry リンク切れゼロ）。tsc / lint（警告0、実装中に useMemo 依存警告を解消）/ build（/topics/asymptotic-properties・新用語4ページ出力）成功。`pnpm start` + Playwright 実機確認: n=10 で漸近分散0.225・I(λ)=0.444、n=200 で漸近分散0.011・漸近SD=実測SD=0.106（漸近正規性を実証）、ステッパー n=400 で SD=0.075一致、コンソールエラー0件。
+- **設計判断 / つまずき**: «漸近分散がフィッシャー情報量の逆数» を «実測SDと理論SDが一致する» 可視化で実証。AsymptoticLab の normalPath を当初 useMemo にしたら toX/toYcount 依存で lint 警告→ 軽量な毎描画計算に変更。KL を最尤と接続（最尤＝経験分布とモデルの KL 最小化）し、次の情報量規準（AIC/BIC, J領域）への伏線にした。frame は AsymptoticStepper のみ使用で競合なし。これで推定ブロック（D-1〜D-4＋既存 D-5 信頼区間）が完成。

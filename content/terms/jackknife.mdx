@@ -1,0 +1,14 @@
+---
+title: ジャックナイフ法
+definition: 標本から1個ずつ抜いて統計量を再計算し、そのばらつきからバイアス・分散を推定するリサンプリング法。ブートストラップの先駆け。
+aliases: [jackknife, ジャックナイフ]
+seeAlso: [bias-variance-decomposition, mean-squared-error]
+---
+
+# ジャックナイフ法
+
+$n$ 個から «1 個だけ抜いた» $n$ 通りの部分標本で統計量 $\hat\theta_{(i)}$ を再計算する。
+
+- **分散推定**: $\widehat{\mathrm{Var}}=\dfrac{n-1}{n}\sum_i (\hat\theta_{(i)}-\bar\theta_{(\cdot)})^2$。
+- **バイアス推定**: $\widehat{\mathrm{bias}}=(n-1)(\bar\theta_{(\cdot)}-\hat\theta)$。
+- 分布を仮定せず標準誤差を出せる «リサンプリング» の先駆け。より柔軟なブートストラップ（復元抽出）の親戚。
