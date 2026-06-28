@@ -473,3 +473,19 @@ MVP 5トピック完了後、SPEC §3 のチェックリスト全項目（A〜S,
 - **変更概要**: «観測度数は想定分布と整合するか» を4層実装。GoodnessOfFitLab はサイコロ6面の観測度数を+/−で増減→観測(青棒)vs期待(赤線, 一様)の差から χ²=Σ(O−E)²/E・p値・数式（TermController）が同時連動、p<0.05で「一様と言えない」色分け判定。ChiSquareStepper は各目の寄与 (O−E)²/E を1つずつ積み上げ合計がχ²になる過程をコマ送り。なぜ(O−E)²/Eがカイ二乗か（標準化した正規の二乗和）・自由度k−1・独立性検定の期待度数=行和×列和/総和を導出で網羅。
 - **検証結果**: Vitest **445 passed**（+15: goodness-of-fit 11 / frames 4、registry リンク切れゼロ）。tsc / lint（警告0）/ build（/topics/goodness-of-fit-tests・新用語2ページ出力）成功。`pnpm start` + Playwright 実機確認: 初期 観測[12,8,10,11,9,10] で χ²=1.0・p=0.963、目1を15に増やすと χ²=2.81・p=0.729（観測の偏りで連動）、χ²ステッパーが寄与[1.93,0.6,...]積み上げ合計2.81＝ラボ一致、コンソールエラー0件。
 - **設計判断 / つまずき**: **本物のバグを修正** — chiSquareCdf の数値積分が df=1（密度がx=0で発散）で χ²=∞ を拾い CDF=1 を返した→ df=1 は閉形式 2Φ(√x)−1 に切替え。lessons.md に «カイ二乗CDF数値積分のdf=1特異点» を追記。E で割って «相対的なずれ» にする点・期待度数5以上の目安・パラメータ推定で自由度が減る点を演習で強調。frame は ChiSquareStepper のみ使用で競合なし。これで検定ブロック（E-1〜E-4）が概ね完成（残 E-5 ノンパラメトリック）。
+
+### コンテンツ拡充 #42 — [E-5] ノンパラメトリック法
+
+優先度 16/82。前提=一般の分布に関する検定。並べ替え検定で帰無分布をデータから作る体験。
+
+- [x] 計算層 `lib/stats/nonparametric.ts`（meanDiff / permutationNull(Fisher-Yates) / permutationPValue / ranks(タイ平均) / wilcoxonRankSum / spearman、sample.mean 再利用）+ Vitest（9）
+- [x] 状態層 `lib/store/nonparametric-tests.ts`（controls {shift}・固定シードの決定的並べ替えで p を再現可能に）
+- [x] 描画層 `components/topics/nonparametric-tests/`（PermutationTestLab=shift→2群ドット・並べ替え帰無分布・観測差・p値＆数式の強連動 / PermutationStepper=並べ替え回数10→1200で帰無分布が育ちp収束するコマ送り / NonparamQuiz）+ frames.ts + Vitest（4）
+- [x] 用語ノード4件（permutation-test / wilcoxon-rank-sum-test / kruskal-wallis-test / rank-correlation）相互リンク
+- [x] MDX `content/topics/nonparametric-tests.mdx`（L0-L2 充実：並べ替え検定→交換可能性で帰無分布が作れる導出→順位ベース検定群＋スピアマンが単調を捉える導出、L3-L6 planned）
+- [x] `/topics` 一覧へ反映（status: published）
+
+#### レビュー: ノンパラメトリック法トピック（2026-06-28）
+- **変更概要**: «分布を仮定しない» 検定を4層実装。PermutationTestLab は群Aの底上げ shift スライダー→2群ドットプロット・並べ替え帰無分布（ラベルをシャッフルした平均差のヒスト）・観測差（緑線）・p値（観測以上に極端な割合, TermController）が同時連動、有意判定の色分け。PermutationStepper は並べ替え回数を10→1200と増やし帰無分布が滑らかになりp推定が安定する過程をコマ送り。ラベルの交換可能性で帰無分布が作れる導出・スピアマンが単調関係を捉える導出（y=x³でρ=1）を網羅。順位(タイ平均)・ウィルコクソン順位和・スピアマンを計算層で実装。
+- **検証結果**: Vitest **458 passed**（+13: nonparametric 9 / frames 4、registry リンク切れゼロ）。tsc / lint（警告0、実装中に useMemo 依存警告を解消）/ build（/topics/nonparametric-tests・新用語4ページ出力）成功。`pnpm start` + Playwright 実機確認: shift=1.5 で Δ=2.17・p=0.004（有意）、shift=0 で Δ=0.67・p=0.396（有意でない）、並べ替えステッパー1200回で p推定0.396＝ラボ一致、コンソールエラー0件。
+- **設計判断**: 抽象的な «ノンパラ» を «ラベルをシャッフルして帰無分布をデータから作る» という操作可能な現象に落とした。帰無分布を固定シードの決定的並べ替えで derive し、shift にのみ依存して p を再現可能に。順位ベース検定群（ウィルコクソン/符号付き順位/クラスカル–ウォリス/順位相関）は «値でなく順位/並べ替えに着目して分布の仮定を外す» 共通思想で整理。frame は PermutationStepper のみ使用で競合なし。**これで検定ブロック（E-1〜E-5）が完成**。次は F群（回帰）へ。

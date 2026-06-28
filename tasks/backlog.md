@@ -29,6 +29,7 @@
 - ✅ E-2 検定法の導出 `test-derivation`（#39）
 - ✅ E-3 正規分布に関する検定 `normal-tests`（#40）
 - ✅ E-4 一般の分布に関する検定（適合度検定） `goodness-of-fit-tests`（#41）
+- ✅ E-5 ノンパラメトリック法 `nonparametric-tests`（#42）
 
 ## キュー（優先順）
 
@@ -49,7 +50,7 @@
 | 13 | #39 | E-2 | 検定法の導出（ネイマン・ピアソン） | test-derivation | hypothesis-testing, point-estimation-properties | ✅ done |
 | 14 | #40 | E-3 | 正規分布に関する検定（t検定・2標本） | normal-tests | test-derivation, sampling-distributions | ✅ done |
 | 15 | #41 | E-4 | 一般の分布に関する検定（適合度検定） | goodness-of-fit-tests | normal-tests | ✅ done |
-| 16 | #42 | E-5 | ノンパラメトリック法 | nonparametric-tests | goodness-of-fit-tests | pending |
+| 16 | #42 | E-5 | ノンパラメトリック法 | nonparametric-tests | goodness-of-fit-tests | ✅ done |
 | 17 | #43 | F-2 | 重回帰分析 | multiple-regression | simple-regression | pending |
 | 18 | #44 | F-3 | 回帰診断 | regression-diagnostics | multiple-regression | pending |
 | 19 | #45 | F-4 | 質的回帰（ロジスティック回帰） | qualitative-regression | multiple-regression | pending |
