@@ -1,0 +1,18 @@
+---
+title: L1正則化
+definition: 係数の絶対値の和 λΣ|βⱼ| を罰則に加える正則化（Lasso）。一部の係数をちょうど0にして自動的に変数選択する。L2（Ridge）は0にせず全体を縮小。
+aliases: [L1 regularization, Lasso, ラッソ, スパース正則化]
+seeAlso: [multiple-regression, multicollinearity, least-squares]
+---
+
+# L1正則化（Lasso）
+
+[最小二乗](least-squares)の損失に **係数の絶対値の和** を罰則として加える。
+
+$$
+\min_\beta\ \|y-X\beta\|^2+\lambda\sum_j|\beta_j|
+$$
+
+- 一部の係数を **ちょうど0** にする（スパース化＝自動的な変数選択）。$\lambda$ が大きいほど多くの係数が0に。
+- L2正則化（Ridge, $\lambda\sum\beta_j^2$）は0にはせず全体を縮小し、[多重共線性](multicollinearity)に強い。
+- «バイアスを入れて分散を下げる» 縮小推定の代表。予測精度と解釈性を両立させる。

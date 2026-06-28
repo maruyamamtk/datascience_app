@@ -1,0 +1,14 @@
+---
+title: 多重共線性
+definition: 説明変数どうしが強く相関している状態。係数の標準誤差が膨らみ推定が不安定になる。指標は VIF。予測（R²）は良くても係数解釈が危うい。
+aliases: [multicollinearity, 共線性, マルチコ]
+seeAlso: [variance-inflation-factor, multiple-regression, l1-regularization]
+---
+
+# 多重共線性
+
+説明変数が «似た情報» を持ち強く相関している状態。
+
+- どちらの変数の寄与か切り分けられず、係数推定の分散（標準誤差）が膨らみ **不安定** になる。
+- 指標は[分散拡大係数 VIF](variance-inflation-factor)。VIF>10 が «強い» の目安。
+- 予測（R²）は良くても **個々の係数の解釈** は危うい。対処は変数の削減・主成分回帰・[L1/L2正則化](l1-regularization)。

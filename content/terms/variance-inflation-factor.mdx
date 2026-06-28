@@ -1,0 +1,16 @@
+---
+title: 分散拡大係数
+definition: VIFⱼ=1/(1−R²ⱼ)。説明変数 j を他の説明変数で回帰した決定係数 R²ⱼ から計算する多重共線性の指標。係数分散が何倍に膨らむかを表す。
+aliases: [variance inflation factor, VIF, 分散拡大要因]
+seeAlso: [multicollinearity, multiple-regression]
+---
+
+# 分散拡大係数（VIF）
+
+$$
+\mathrm{VIF}_j=\frac{1}{1-R_j^2}
+$$
+
+- $R_j^2$ は «説明変数 $x_j$ を他の説明変数で回帰した» 決定係数。$x_j$ が他で説明できるほど大きい。
+- 係数 $\hat\beta_j$ の分散が、相関がない場合の **VIF 倍** に膨らむ。2変数なら $\mathrm{VIF}=1/(1-\rho^2)$。
+- 目安は **VIF>10** で強い[多重共線性](multicollinearity)。$\rho\to1$ で VIF→∞（係数が定まらない）。

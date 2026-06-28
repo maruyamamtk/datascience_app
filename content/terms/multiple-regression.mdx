@@ -1,0 +1,18 @@
+---
+title: 重回帰分析
+definition: 複数の説明変数で応答を予測する線形回帰 y=β0+β1x1+…+βpxp+ε。係数は正規方程式 β̂=(XᵀX)⁻¹Xᵀy で求める。
+aliases: [multiple regression, 重回帰, 多重回帰]
+seeAlso: [least-squares, multicollinearity, adjusted-r-squared]
+---
+
+# 重回帰分析
+
+説明変数が複数ある線形回帰。
+
+$$
+y=\beta_0+\beta_1 x_1+\cdots+\beta_p x_p+\varepsilon,\qquad \hat\beta=(X^\top X)^{-1}X^\top y
+$$
+
+- 各 $\beta_j$ は «他の変数を一定にしたときの» $x_j$ の効果（偏回帰係数）。[最小二乗](least-squares)で推定。
+- 説明変数どうしが強く相関すると[多重共線性](multicollinearity)で係数が不安定に。
+- モデルの良さは R² でなく[自由度調整済み R²](adjusted-r-squared)や情報量規準で比べる。

@@ -489,3 +489,19 @@ MVP 5トピック完了後、SPEC §3 のチェックリスト全項目（A〜S,
 - **変更概要**: «分布を仮定しない» 検定を4層実装。PermutationTestLab は群Aの底上げ shift スライダー→2群ドットプロット・並べ替え帰無分布（ラベルをシャッフルした平均差のヒスト）・観測差（緑線）・p値（観測以上に極端な割合, TermController）が同時連動、有意判定の色分け。PermutationStepper は並べ替え回数を10→1200と増やし帰無分布が滑らかになりp推定が安定する過程をコマ送り。ラベルの交換可能性で帰無分布が作れる導出・スピアマンが単調関係を捉える導出（y=x³でρ=1）を網羅。順位(タイ平均)・ウィルコクソン順位和・スピアマンを計算層で実装。
 - **検証結果**: Vitest **458 passed**（+13: nonparametric 9 / frames 4、registry リンク切れゼロ）。tsc / lint（警告0、実装中に useMemo 依存警告を解消）/ build（/topics/nonparametric-tests・新用語4ページ出力）成功。`pnpm start` + Playwright 実機確認: shift=1.5 で Δ=2.17・p=0.004（有意）、shift=0 で Δ=0.67・p=0.396（有意でない）、並べ替えステッパー1200回で p推定0.396＝ラボ一致、コンソールエラー0件。
 - **設計判断**: 抽象的な «ノンパラ» を «ラベルをシャッフルして帰無分布をデータから作る» という操作可能な現象に落とした。帰無分布を固定シードの決定的並べ替えで derive し、shift にのみ依存して p を再現可能に。順位ベース検定群（ウィルコクソン/符号付き順位/クラスカル–ウォリス/順位相関）は «値でなく順位/並べ替えに着目して分布の仮定を外す» 共通思想で整理。frame は PermutationStepper のみ使用で競合なし。**これで検定ブロック（E-1〜E-5）が完成**。次は F群（回帰）へ。
+
+### コンテンツ拡充 #43 — [F-2] 重回帰分析
+
+優先度 17/82（F群 回帰の起点）。前提=単回帰。多重共線性とR²vs調整済みR²を体感。
+
+- [x] 計算層 `lib/stats/linalg.ts`（transpose/matMul/matVec/inverse(部分ピボット)/solve）+ `multiple-regression.ts`（olsFit(正規方程式・SE・調整済みR²)/designMatrix/vif/generateCollinearData、normalSample 再利用）+ Vitest（10）
+- [x] 状態層 `lib/store/multiple-regression.ts`（controls {rho}・真β=1固定・決定的データ生成）
+- [x] 描画層 `components/topics/multiple-regression/`（MulticollinearityLab=相関ρ→係数±2SEのエラーバー・VIF・R²＆数式の強連動 / StepwiseStepper=前進選択でR²(青)vs調整済みR²(赤)をコマ送り / MultiRegQuiz）+ frames.ts + Vitest（3）
+- [x] 用語ノード5件（multiple-regression / multicollinearity / variance-inflation-factor / adjusted-r-squared / l1-regularization）相互リンク
+- [x] MDX `content/topics/multiple-regression.mdx`（L0-L2 充実：正規方程式・多重共線性→R²が必ず上がる導出・調整済みR²→正則化/変数選択/残差分析/GLS＋Ridgeが多重共線性に強い導出、L3-L6 planned）
+- [x] `/topics` 一覧へ反映（status: published）
+
+#### レビュー: 重回帰分析トピック（2026-06-28）
+- **変更概要**: 説明変数が複数の線形回帰を4層実装。再利用可能な行列演算 linalg.ts（転置/積/逆行列）を新設し olsFit を正規方程式 β=(XᵀX)⁻¹Xᵀy＋係数SE＝√(σ̂²·(XᵀX)⁻¹の対角)で実装。MulticollinearityLab は2説明変数の相関ρスライダー→係数±2SEのエラーバー・VIF=1/(1−ρ²)・R²（TermController）が同時連動、真β=1固定なのにρを上げると係数が暴れSEが膨らむ多重共線性の本質を可視化。StepwiseStepper は前進選択でR²(必ず上がる青)とノイズ変数で下がる調整済みR²(赤)をコマ送り。R²単調増加の導出・Ridgeが多重共線性に強い導出・L1スパース選択を網羅。
+- **検証結果**: Vitest **471 passed**（+13: multiple-regression 10 / frames 3、registry リンク切れゼロ）。tsc / lint（警告0）/ build（/topics/multiple-regression・新用語5ページ出力）成功。`pnpm start` + Playwright 実機確認: rho=0.3 で VIF=1.1・β1=0.98±0.38、rho=0.96 で VIF=11.6・β1=0.07±1.24/β2=2.04±1.25（真値1から外れSE膨張）なのにR²=0.63維持＝多重共線性を実証、前進選択ステッパーで全変数R²=0.961/調整済み0.959、コンソールエラー0件。
+- **設計判断 / つまずき**: «多重共線性は予測でなく係数の安定性を壊す» を «R²は良いのに係数が暴れる» 可視化で実感させた（教育的に最重要ポイント）。テスト期待値の切片を 1.6→1.8 に自己修正（ȳ−slope·x̄=4.2−2.4=1.8）。linalg は部分ピボット選択つきガウス–ジョルダンで特異行列を null 検出。frame は StepwiseStepper のみ使用で競合なし。次は F-3 回帰診断（残差分析）へ。
