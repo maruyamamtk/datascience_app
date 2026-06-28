@@ -1,0 +1,18 @@
+---
+title: 連続修正
+definition: 離散分布を連続分布で近似するときに境界へ ±0.5 を加える補正。P(X≤k)≈Φ((k+0.5−μ)/σ)。近似精度を上げる。
+aliases: [continuity correction, 連続性の修正]
+seeAlso: [convergence-in-distribution, binomial-distribution]
+---
+
+# 連続修正
+
+離散の[二項分布](binomial-distribution)などを連続の正規分布で近似する際の境界補正。
+
+$$
+P(X\le k)\approx \Phi\!\left(\frac{k+0.5-\mu}{\sigma}\right)
+$$
+
+- 離散の各値を «幅 1 の長方形» とみなし、$k$ の右端 $k+0.5$ まで面積に含める。
+- $P(X\ge k)$ なら $k-0.5$ を使う。$n$ が小さいほど補正の効果が大きい。
+- 補正なしより[分布収束](convergence-in-distribution)の近似誤差が小さくなる。

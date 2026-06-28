@@ -1,0 +1,16 @@
+---
+title: 確率収束
+definition: 確率変数列 Xₙ が定数（or 変数）X に «確率的に» 近づくこと。任意の ε>0 で P(|Xₙ−X|>ε)→0。大数の弱法則の収束様式。
+aliases: [convergence in probability, 確率収束]
+seeAlso: [law-of-large-numbers, convergence-in-distribution]
+---
+
+# 確率収束
+
+$$
+X_n\xrightarrow{P}X \iff \forall\varepsilon>0,\ P(|X_n-X|>\varepsilon)\to0
+$$
+
+- «$X$ から $\varepsilon$ 以上離れる確率が 0 に近づく»。[大数の法則](law-of-large-numbers)の弱法則はこの収束。
+- [分布収束](convergence-in-distribution)より強い（確率収束 ⇒ 分布収束）。概収束はさらに強い。
+- «ぴったり一致» ではなく «外れる確率が消える» という確率的な収束概念。

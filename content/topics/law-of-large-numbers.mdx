@@ -1,0 +1,134 @@
+---
+title: 大数の法則と正規近似
+summary: 標本平均がなぜ母平均に「張り付く」のか（大数の法則）と、二項やポアソンが正規で近似できる理由（収束・連続修正）を操作で体感する。中心極限定理の兄弟分。
+status: published
+---
+
+import { LlnLab } from "@/components/topics/law-of-large-numbers/LlnLab";
+import { NormalApproxStepper } from "@/components/topics/law-of-large-numbers/NormalApproxStepper";
+import { LlnQuiz } from "@/components/topics/law-of-large-numbers/LlnQuiz";
+
+<Topic title="大数の法則と正規近似" summary="標本平均がなぜ母平均に「張り付く」のか（大数の法則）と、二項やポアソンが正規で近似できる理由（収束・連続修正）を操作で体感する。中心極限定理の兄弟分。">
+
+<ReaderGuide>
+
+- **初学者** → L0〜L1（標本平均が μ に収束する様子、二項→正規の近似）
+- **一通り使える人** → L2（確率収束 vs 分布収束、連続修正・ポアソン近似・デルタ法）
+- **「完全に理解した」人** → L3 以降（収束の証明・極値理論は到達途上）
+
+前提: [中心極限定理](/topics/central-limit-theorem)の<Term id="standard-error">標準誤差</Term> σ/√n、[分布の特性値](/topics/distribution-characteristics)の<Term id="chebyshev-inequality">チェビシェフの不等式</Term>。
+
+</ReaderGuide>
+
+<Level level={0} title="ブラックボックス（標本平均は μ に収束する）">
+  <Concept>
+
+データをたくさん集めて平均すると、その値は «真の平均» に近づく——これが**<Term id="law-of-large-numbers">大数の法則</Term>**。
+
+<Math tex="\bar X_n=\frac1n\sum_i X_i\ \xrightarrow{n\to\infty}\ \mu" />
+
+序盤は大きく揺れるが、$n$ を増やすほど揺れ幅 $\sigma/\sqrt n$（<Term id="standard-error">標準誤差</Term>）が縮み、平均は $\mu$ に張り付く。
+
+  </Concept>
+  <Interact>
+
+下のラボで元分布を選び、標本数 $n$ を増やすと、累積平均の折れ線が母平均 $\mu$（紫線）へ収束し、
+数式の $\bar X_n$ と $|\bar X_n-\mu|$ が同時に追従する（操作→図→数式の強連動）。
+指数分布のように歪んでいても収束することを確かめよう。
+
+<LlnLab />
+
+  </Interact>
+  <Exercise>
+
+確認: 「大数の法則は、$n$ を増やすと標本平均が母平均に **ぴったり一致** することを保証する」——○か×か。
+（答: ×。保証するのは «$\mu$ から $\varepsilon$ 以上離れる確率が 0 に近づく»（確率収束）。有限の $n$ ではぴったりにはならない）
+
+  </Exercise>
+</Level>
+
+<Level level={1} title="古典的理解（二項 → 正規の近似）">
+  <Concept>
+
+大数の法則の «兄弟» が正規近似。**<Term id="binomial-distribution">二項分布</Term>**は $n$ を増やすと**正規分布**に近づく（de Moivre–Laplace の定理）。
+
+<Math tex="\mathrm{Bin}(n,p)\ \approx\ N\bigl(np,\ np(1-p)\bigr)\quad(n\ \text{大})" />
+
+下のステッパーで $n$ を増やすと、とがった二項の棒が滑らかな正規曲線に重なっていく。
+
+  </Concept>
+  <Derivation title="なぜ √n で割るのか（大数の法則 vs 中心極限定理）">
+
+標本平均の分散は $\mathrm{Var}[\bar X_n]=\sigma^2/n$。
+
+- **大数の法則**: 分散が $\to0$ なので $\bar X_n$ は一点 $\mu$ に潰れる（[確率収束](convergence-in-probability)）。
+- **中心極限定理**: そのままでは潰れて形が見えないので $\sqrt n$ 倍に «拡大» すると、$\sqrt n(\bar X_n-\mu)\xrightarrow{d}N(0,\sigma^2)$ という正規の形が現れる（[分布収束](convergence-in-distribution)）。
+
+つまり LLN が «どこへ収束するか»、CLT が «どんな形で収束するか» を述べる。二項の正規近似は、和 $X=\sum$ ベルヌーイへの CLT そのもの。
+
+  </Derivation>
+  <Interact>
+
+<NormalApproxStepper />
+
+  </Interact>
+  <Exercise>
+
+<LlnQuiz />
+
+  </Exercise>
+</Level>
+
+<Level level={2} title="仮定体系（収束概念・連続修正・ポアソン近似・デルタ法）">
+  <Concept>
+
+«収束» にも種類があり、近似の道具も状況で使い分ける。
+
+- **<Term id="convergence-in-probability">確率収束</Term>**（LLN）⇒ **<Term id="convergence-in-distribution">分布収束</Term>**（CLT）。前者の方が強い。
+- **<Term id="continuity-correction">連続修正</Term>**: 離散を連続で近似するとき境界に ±0.5。$P(X\le k)\approx\Phi((k+0.5-\mu)/\sigma)$ で精度が上がる。
+- **ポアソン近似（少数の法則）**: $p$ が極端に小さいときは正規でなく[ポアソン分布](poisson-distribution) $\mathrm{Po}(np)$ に近づく。
+- **<Term id="delta-method">デルタ法</Term>**: 平均の «関数» $g(\bar X)$ の漸近分布を $N(g(\mu),g'(\mu)^2\sigma^2/n)$ で近似。
+
+«正規近似かポアソン近似か» は $n$ と $p$（= $np$ と $p$ の小ささ）で決まる。
+
+  </Concept>
+  <Derivation title="連続修正はなぜ効くか（棒を長方形で見る）">
+
+二項の各値 $k$ を «中心 $k$・幅 1 の長方形» とみなす。$P(X\le k)$ を正規の面積で近似するとき、
+長方形は $k+0.5$ まで広がっているので、積分の上端を $k$ ではなく $k+0.5$ にする。
+
+$$
+P(X\le k)\approx\Phi\!\left(\frac{k+0.5-\mu}{\sigma}\right).
+$$
+
+この $+0.5$ を入れないと、棒の «右半分» を取りこぼして系統的に過小評価になる。$n$ が小さいほどこのズレが効くため、連続修正の効果が大きい。
+
+  </Derivation>
+  <Exercise>
+
+確認: 「$p$ が極端に小さく $np$ が中程度のカウントは、正規近似よりポアソン近似が適することが多い」——○か×か。
+（答: ○。少数の法則。$p$ が小さいと二項は左右非対称のままで正規に乗りにくく、ポアソン $\mathrm{Po}(np)$ がよく合う）
+
+  </Exercise>
+</Level>
+
+<Level level={3} title="収束概念の階層と証明" status="planned">
+  概収束・確率収束・分布収束・L²収束の関係、連続写像定理・スラツキーの定理、大数の強法則の証明
+  （前提: 測度論的確率）。
+</Level>
+
+<Level level={4} title="極値理論" status="planned">
+  和・平均ではなく <Term id="extreme-value-distribution">最大値</Term>{" "}
+  の極限（一般化極値分布）、裾の型と Gumbel/Fréchet/Weibull、稀な極端のリスク評価。
+</Level>
+
+<Level level={5} title="高次元・従属データでの収束" status="planned">
+  従属系列（マルチンゲール・混合過程）での大数の法則・中心極限定理、高次元での収束レート。
+</Level>
+
+<Level level={6} title="フロンティア" status="planned">
+  高次元・依存構造のある現代的データでの «どのくらいの n で正規近似が効くか»
+  の定量評価は研究が続く領域（到達途上）。
+</Level>
+
+</Topic>

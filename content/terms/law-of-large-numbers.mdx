@@ -1,0 +1,18 @@
+---
+title: 大数の法則
+definition: 独立同分布な標本の標本平均 X̄ₙ が、n→∞ で母平均 μ に収束する法則。弱法則は確率収束、強法則は概収束。
+aliases: [law of large numbers, LLN, 大数の弱法則, 大数の強法則]
+seeAlso: [convergence-in-probability, standard-error, expected-value]
+---
+
+# 大数の法則（LLN）
+
+独立同分布な $X_1,\dots,X_n$ の標本平均は母平均に収束する。
+
+$$
+\bar X_n=\frac1n\sum_i X_i\ \xrightarrow{n\to\infty}\ \mu
+$$
+
+- **弱法則**: 任意の $\varepsilon>0$ で $P(|\bar X_n-\mu|>\varepsilon)\to0$（[確率収束](convergence-in-probability)）。
+- 鍵は $\mathrm{Var}[\bar X_n]=\sigma^2/n\to0$（[標準誤差](standard-error)が $\sqrt n$ で縮む）。チェビシェフの不等式で示せる。
+- «平均がどこへ行くか» を述べる。«どんなばらつきの形で» 近づくかは中心極限定理（CLT）。

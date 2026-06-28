@@ -1,0 +1,16 @@
+---
+title: 分布収束
+definition: 確率変数列 Xₙ の分布関数が極限分布の分布関数に各連続点で収束すること。中心極限定理の収束様式。
+aliases: [convergence in distribution, 法則収束, 弱収束]
+seeAlso: [convergence-in-probability, law-of-large-numbers]
+---
+
+# 分布収束
+
+$$
+X_n\xrightarrow{d}X \iff F_{X_n}(x)\to F_X(x)\ (\text{各連続点})
+$$
+
+- «分布の形» が近づくこと。中心極限定理 $\sqrt n(\bar X_n-\mu)\xrightarrow{d}N(0,\sigma^2)$ はこの収束。
+- [確率収束](convergence-in-probability)より弱い（確率収束 ⇒ 分布収束、逆は一般に不成立）。
+- 二項分布が正規分布へ近づく（de Moivre–Laplace）のも分布収束の例。

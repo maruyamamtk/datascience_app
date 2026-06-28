@@ -1,0 +1,18 @@
+---
+title: デルタ法
+definition: 漸近正規な推定量 X̄ の滑らかな関数 g(X̄) の漸近分布を求める手法。g(X̄)≈N(g(μ), g'(μ)²σ²/n)。テイラー1次近似が核。
+aliases: [delta method, デルタ法]
+seeAlso: [convergence-in-distribution, variance]
+---
+
+# デルタ法
+
+$\bar X\approx N(\mu,\sigma^2/n)$ のとき、滑らかな $g$ について
+
+$$
+g(\bar X)\approx N\!\left(g(\mu),\ g'(\mu)^2\,\frac{\sigma^2}{n}\right)
+$$
+
+- $g(\bar X)\approx g(\mu)+g'(\mu)(\bar X-\mu)$ というテイラー1次近似から、[分散](variance)が $g'(\mu)^2$ 倍される。
+- 比・対数・オッズなど «変換した推定量» の標準誤差を求めるのに使う。
+- $g'(\mu)=0$ のときは2次の項が効く（2次デルタ法）。
