@@ -1,0 +1,16 @@
+---
+title: カイ二乗分布
+definition: 標準正規を k 個独立に二乗して足した和の分布。自由度 k で平均 k、分散 2k。標本分散・適合度検定に現れる。
+aliases: [chi-square distribution, χ²分布, カイ2乗分布]
+seeAlso: [t-distribution, f-distribution, degrees-of-freedom]
+---
+
+# カイ二乗分布
+
+$$
+\chi^2_k = Z_1^2+\cdots+Z_k^2\quad(Z_i\sim N(0,1)\ \text{独立})
+$$
+
+- [ガンマ分布](gamma-distribution) $\mathrm{Gamma}(k/2, 2)$ の特別な場合。平均 $k$、分散 $2k$。
+- $(n-1)s^2/\sigma^2\sim\chi^2_{n-1}$ なので母分散の検定・区間推定に。適合度検定（観測度数 vs 期待度数）でも統計量がこれに従う。
+- 2 つを自由度で割って比を取ると[F分布](f-distribution)。

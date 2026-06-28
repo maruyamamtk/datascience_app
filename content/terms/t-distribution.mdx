@@ -1,0 +1,14 @@
+---
+title: t分布
+definition: 正規母集団で σ を標本標準偏差 s に置き換えた (x̄−μ)/(s/√n) が従う分布。自由度 ν で形が決まり、ν→∞ で標準正規。低自由度ほど裾が重い。
+aliases: [t distribution, スチューデントのt分布, Student's t]
+seeAlso: [chi-square-distribution, degrees-of-freedom, standard-normal-distribution]
+---
+
+# t分布
+
+標準正規 $Z$ を独立な $\sqrt{\chi^2_\nu/\nu}$ で割った量 $T=Z/\sqrt{\chi^2_\nu/\nu}$ の分布。
+
+- σ 未知の母平均の検定・区間推定で、検定統計量 $(\bar x-\mu)/(s/\sqrt n)$ が[自由度](degrees-of-freedom) $n-1$ の t 分布に従う。
+- 標本標準偏差 $s$ のぶれを織り込むぶん**裾が重い**。$\nu\to\infty$ で[標準正規](standard-normal-distribution)に一致。
+- $\nu\le1$ で平均なし、$\nu\le2$ で分散なし（裾が重い）。

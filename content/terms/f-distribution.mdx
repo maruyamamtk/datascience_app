@@ -1,0 +1,16 @@
+---
+title: F分布
+definition: 2 つの独立なカイ二乗をそれぞれ自由度で割った «分散の比» (χ²_{d1}/d1)/(χ²_{d2}/d2) の分布。分散分析・等分散検定に使う。
+aliases: [F distribution, 分散比分布, スネデカーのF]
+seeAlso: [chi-square-distribution, t-distribution, degrees-of-freedom]
+---
+
+# F分布
+
+$$
+F=\frac{\chi^2_{d_1}/d_1}{\chi^2_{d_2}/d_2}
+$$
+
+- «分散の比» の分布。分散分析（群間分散/群内分散）や等分散検定の検定統計量がこれに従う。
+- 2 つの[自由度](degrees-of-freedom) $d_1,d_2$ で形が決まる。$d_2>2$ で平均 $d_2/(d_2-2)$。
+- [t分布](t-distribution)の二乗は自由度 $(1,\nu)$ の F に等しい。[カイ二乗](chi-square-distribution)から作られる。
