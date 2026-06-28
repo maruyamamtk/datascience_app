@@ -1,0 +1,16 @@
+---
+title: 指数分布
+definition: 率 λ の «無記憶» な待ち時間の分布 $f(x)=\lambda e^{-\lambda x}$（x≥0）。平均 1/λ、分散 1/λ²。ポアソン過程の事象間隔。
+aliases: [exponential distribution, Exp(λ)]
+seeAlso: [gamma-distribution, poisson-distribution, probability-density-function]
+---
+
+# 指数分布
+
+$$
+f(x)=\lambda e^{-\lambda x}\quad(x\ge0)
+$$
+
+- 平均 $1/\lambda$、分散 $1/\lambda^2$。**無記憶性**: «あと何分» の分布が経過時間に依らない（連続分布で唯一）。
+- [ポアソン分布](poisson-distribution)で «回数» を数えるとき、«事象間の待ち時間» は指数分布になる。
+- これを $k$ 個足すと[ガンマ分布](gamma-distribution) Gamma(k, 1/λ)。

@@ -1,0 +1,17 @@
+---
+title: 半正規分布
+definition: 平均0の正規分布の絶対値 |N(0,σ²)| の分布（x≥0）。距離・大きさなど «符号を捨てた» 量に使う。平均 σ√(2/π)。
+aliases: [half-normal distribution, 半正規]
+seeAlso: [standard-normal-distribution, probability-density-function]
+---
+
+# 半正規分布
+
+$X=|Z|$（$Z\sim N(0,\sigma^2)$）の分布。
+
+$$
+f(x)=\frac{\sqrt2}{\sigma\sqrt\pi}\exp\!\left(-\frac{x^2}{2\sigma^2}\right)\quad(x\ge0)
+$$
+
+- 正規分布を 0 で «折り返した» 形。距離・誤差の大きさなど符号を捨てた量に。
+- 平均 $\sigma\sqrt{2/\pi}$、分散 $\sigma^2(1-2/\pi)$。階層ベイズで分散パラメータの事前分布にも使われる。

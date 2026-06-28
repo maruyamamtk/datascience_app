@@ -1,0 +1,16 @@
+---
+title: コーシー分布
+definition: 位置 x₀・尺度 γ の «裾が極端に重い» 分布 $f(x)=\frac{1}{\pi\gamma(1+((x-x_0)/\gamma)^2)}$。平均も分散も存在しない。
+aliases: [Cauchy distribution, ローレンツ分布]
+seeAlso: [probability-density-function, expected-value]
+---
+
+# コーシー分布
+
+$$
+f(x)=\frac{1}{\pi\gamma\left(1+\left(\frac{x-x_0}{\gamma}\right)^2\right)}
+$$
+
+- 釣鐘型に似るが裾が極端に重く、**平均も分散も存在しない**（定義積分が発散）。
+- 標本平均を取っても安定せず（大数の法則・中心極限定理が成り立たない）、外れ値が常に効く «病的» な例。
+- 2 つの独立な標準正規の比 $Z_1/Z_2$ がコーシー分布。頑健統計の «重い裾» の典型例として登場する。

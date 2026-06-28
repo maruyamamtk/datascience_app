@@ -1,0 +1,16 @@
+---
+title: ガンマ分布
+definition: 形状 k・尺度 θ の正の連続分布。独立な指数分布を k 個足した和。平均 kθ、分散 kθ²。k=1 で指数分布。
+aliases: [gamma distribution, Gamma(k, θ)]
+seeAlso: [exponential-distribution, beta-distribution, probability-density-function]
+---
+
+# ガンマ分布
+
+$$
+f(x)=\frac{x^{k-1}e^{-x/\theta}}{\theta^k\,\Gamma(k)}\quad(x\ge0)
+$$
+
+- 独立な[指数分布](exponential-distribution) Exp(1/θ) を $k$ 個足した和（$k$ 回目の事象までの待ち時間）。
+- 平均 $k\theta$、分散 $k\theta^2$。$k=1$ で指数、$k$ を増やすと釣鐘型に近づく（中心極限定理の芽）。
+- カイ二乗分布はガンマの特別な場合。正規化に[ガンマ関数](beta-distribution) $\Gamma(k)$ を使う。

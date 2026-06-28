@@ -1,0 +1,15 @@
+---
+title: 連続一様分布
+definition: 区間 [a,b] 上で密度が一定 $f(x)=1/(b-a)$ の連続分布。平均 (a+b)/2、分散 (b-a)²/12。乱数生成の基礎。
+aliases: [continuous uniform distribution, U[a,b], 一様分布（連続）]
+seeAlso: [probability-density-function, quantile-function]
+---
+
+# 連続一様分布
+
+$$
+f(x)=\frac{1}{b-a}\quad(a\le x\le b)
+$$
+
+- 区間内のどこも等しく «起こりやすい»。平均は中点 $(a+b)/2$、分散 $(b-a)^2/12$。
+- $U[0,1]$ は乱数生成の出発点。[分位点関数](quantile-function) $F^{-1}$ を通せば任意の分布の乱数を作れる（逆関数法）。

@@ -1,0 +1,16 @@
+---
+title: 多変量正規分布
+definition: 正規分布の多次元版。平均ベクトル μ と共分散行列 Σ で定まり、等高線は楕円。任意の線形結合がまた正規になる。
+aliases: [multivariate normal, 多変量正規, MVN, 多次元正規分布]
+seeAlso: [standard-normal-distribution, correlation-coefficient, joint-distribution]
+---
+
+# 多変量正規分布
+
+$$
+f(\mathbf{x})=\frac{1}{(2\pi)^{d/2}|\Sigma|^{1/2}}\exp\!\left(-\tfrac12(\mathbf{x}-\boldsymbol\mu)^\top\Sigma^{-1}(\mathbf{x}-\boldsymbol\mu)\right)
+$$
+
+- 平均ベクトル $\boldsymbol\mu$ と共分散行列 $\Sigma$ で定まる[同時分布](joint-distribution)。等確率の等高線は楕円（$\Sigma$ が傾き・伸びを決める）。
+- 任意の線形結合がまた正規。周辺分布・条件付き分布も正規という扱いやすさを持つ。
+- 各成分の[相関](correlation-coefficient)は $\Sigma$ の非対角成分で表される。回帰・主成分分析・ガウス過程の土台。

@@ -40,3 +40,7 @@
   正規分布(#20)・信頼区間(#24)・仮説検定(#22) は同型。frames.ts はコマ送りフレームの純関数ビルダー。
 - 用語ノードの seeAlso と本文 markdown リンクは `lib/content/registry.test.ts` で解決検証されるので、
   新規 `<Term id>` 参照・新規用語の seeAlso は必ず実在 slug にする（リンク切れゼロが CI 相当の保証）。
+  - **将来トピックの用語へ先回りリンクしない**: 例えば C-2 ベータ分布で `seeAlso: bayesian-basics`（#59 ベイズで作る予定）を
+    入れると registry.test.ts が落ちる。前方参照は «本文中の通常テキスト» に留め、seeAlso/Term/markdown リンクは
+    «今あるトピックで作る用語» だけにする。トピック間リンク（`/topics/xxx`）はルートなので未作成でもテストは通るが、
+    実在を確認してから貼る。出典: #32 連続分布 実装時の registry テスト落ち。
