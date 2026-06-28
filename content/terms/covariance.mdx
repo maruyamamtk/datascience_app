@@ -1,0 +1,18 @@
+---
+title: 共分散
+definition: 2変数が一緒に動く度合い Cov(X,Y)=E[(X−μX)(Y−μY)]。正なら同方向、負なら逆方向。相関係数は共分散を標準偏差で割って規格化したもの。
+aliases: [covariance, 共分散]
+seeAlso: [covariance-matrix, correlation-coefficient]
+---
+
+# 共分散
+
+2つの変数が «一緒に動く» 度合い。
+
+$$
+\operatorname{Cov}(X,Y)=E[(X-\mu_X)(Y-\mu_Y)]
+$$
+
+- **正** なら同方向（片方が大きいともう片方も大きい）、**負** なら逆方向、0 なら線形の連動なし。
+- 単位に依存するので大小の比較は難しい。標準偏差で割って規格化したのが[相関係数](correlation-coefficient)（−1〜1）。
+- 複数変数ぶん並べると[共分散行列](covariance-matrix)になり、主成分分析の出発点になる。

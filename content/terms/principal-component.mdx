@@ -1,0 +1,14 @@
+---
+title: 主成分
+definition: データの分散が最大になる方向（共分散行列の固有ベクトル）。第1主成分が分散最大、第2は直交する中で次に大きい。新しい座標軸としてデータを要約する。
+aliases: [principal component, 主成分, PC]
+seeAlso: [eigen-decomposition, explained-variance-ratio, dimensionality-reduction]
+---
+
+# 主成分
+
+データの分散が最大になる方向に取り直した新しい座標軸。
+
+- **第1主成分** が分散最大の方向、**第2主成分** はそれに直交する中で次に分散が大きい方向…と続く。
+- 数学的には[共分散行列](covariance-matrix)の[固有ベクトル](eigen-decomposition)。固有値がその方向の分散。
+- 分散の大きい主成分だけ残せば[次元圧縮](dimensionality-reduction)になる。各主成分の重要さは[寄与率](explained-variance-ratio)で測る。

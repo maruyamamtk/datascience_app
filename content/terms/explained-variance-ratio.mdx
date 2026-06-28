@@ -1,0 +1,18 @@
+---
+title: 寄与率
+definition: 各主成分が全分散のどれだけを説明するか λ_k/Σλ。第1主成分の寄与率が高いほど少数の軸でデータを要約できる。累積寄与率で残す次元を決める。
+aliases: [explained variance ratio, 寄与率, 累積寄与率, 説明分散]
+seeAlso: [principal-component, dimensionality-reduction]
+---
+
+# 寄与率
+
+各[主成分](principal-component)が全分散のうちどれだけを説明するか。
+
+$$
+r_k=\frac{\lambda_k}{\lambda_1+\lambda_2+\cdots}
+$$
+
+- 固有値 $\lambda_k$ がその主成分の分散。寄与率はそれを全分散で割った割合。
+- 第1主成分の寄与率が高い＝少数の軸でデータを要約できる（[次元圧縮](dimensionality-reduction)の効果大）。
+- **累積寄与率**（上位 k 個の和）が «80%» 等になる k を残す次元の目安にする。

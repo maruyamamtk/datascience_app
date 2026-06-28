@@ -1,0 +1,14 @@
+---
+title: 固有値分解
+definition: 対称行列を固有ベクトル（方向）と固有値（その方向の伸び）に分解すること。共分散行列に行うと主成分が得られる。Av=λv。
+aliases: [eigendecomposition, 固有値分解, 固有ベクトル, 固有値, eigenvector, eigenvalue]
+seeAlso: [principal-component, covariance-matrix]
+---
+
+# 固有値分解
+
+行列 $A$ に対し $A\mathbf v=\lambda\mathbf v$ を満たす方向 $\mathbf v$（固有ベクトル）と伸び $\lambda$（固有値）。
+
+- 固有ベクトル方向に $A$ を掛けると «向きは変わらず長さだけ $\lambda$ 倍» になる。
+- [共分散行列](covariance-matrix)（対称・半正定値）に行うと、固有ベクトル＝[主成分](principal-component)の向き、固有値＝その方向の分散。
+- 固有値の和＝トレース（全分散）、積＝行列式。2×2 なら $\lambda=\dfrac{\mathrm{tr}\pm\sqrt{\mathrm{tr}^2-4\det}}{2}$ で解析的に解ける。

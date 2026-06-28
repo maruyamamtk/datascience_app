@@ -1,0 +1,141 @@
+---
+title: 主成分分析
+summary: 相関した多次元データを «分散最大の方向»（主成分）に座標変換して次元を圧縮する。共分散行列の固有値分解・寄与率・分散最大方向の探索を操作で体感する。
+status: published
+---
+
+import { PcaLab } from "@/components/topics/principal-component-analysis/PcaLab";
+import { MaxVarianceStepper } from "@/components/topics/principal-component-analysis/MaxVarianceStepper";
+import { PcaQuiz } from "@/components/topics/principal-component-analysis/PcaQuiz";
+
+<Topic title="主成分分析" summary="相関した多次元データを «分散最大の方向»（主成分）に座標変換して次元を圧縮する。共分散行列の固有値分解・寄与率・分散最大方向の探索を操作で体感する。">
+
+<ReaderGuide>
+
+- **初学者** → L0〜L1（分散最大の方向＝第1主成分、固有値分解、寄与率）
+- **一通り使える人** → L2（標準化と相関行列・主成分得点・因子分析との違い・特異値分解）
+- **「完全に理解した」人** → L3 以降（カーネルPCA・非線形次元圧縮は到達途上）
+
+前提: [重回帰](/topics/multiple-regression)の<Term id="covariance-matrix">共分散行列</Term>、[分布の特性値](/topics/distribution-characteristics)の<Term id="correlation-coefficient">相関係数</Term>。
+
+</ReaderGuide>
+
+<Level level={0} title="ブラックボックス（分散最大の方向）">
+  <Concept>
+
+相関した2変数のデータは «斜めの楕円» に広がる。その **最も広がる方向** に座標を取り直すのが**<Term id="principal-component">主成分分析</Term>**（PCA）。
+
+第1主成分＝分散最大の方向、第2主成分＝それに直交する中で次に分散が大きい方向。
+情報（分散）が最も多く乗る軸に並べ替えることで、少ない軸でデータを要約できる。
+
+  </Concept>
+  <Interact>
+
+下のラボで2変数の相関を変えると、主成分軸（赤=PC1 / 青=PC2）の向きと長さ・**<Term id="explained-variance-ratio">寄与率</Term>**が変わり、数式が同時に追従する（操作→図→数式の強連動）。
+相関を強めると第1主成分にデータが集中し寄与率が上がるのを確かめよう。
+
+<PcaLab />
+
+  </Interact>
+  <Exercise>
+
+確認: 「第1主成分は、データの平均がある方向を指す」——○か×か。
+（答: ×。第1主成分は «分散が最大» の方向（データが最も広がる向き）。平均は中心化で原点に移すだけで、向きとは無関係）
+
+  </Exercise>
+</Level>
+
+<Level level={1} title="古典的理解（固有値分解と寄与率）">
+  <Concept>
+
+主成分は**<Term id="covariance-matrix">共分散行列</Term>**の**<Term id="eigen-decomposition">固有ベクトル</Term>**、固有値がその方向の分散。
+寄与率 $r_k=\lambda_k/\sum\lambda$ で各主成分の重要さを測り、上位だけ残せば**<Term id="dimensionality-reduction">次元圧縮</Term>**になる。
+
+下のステッパーで軸を回し «射影分散が最大» の向きを探すと、それが第1主成分になることを体感できる。
+
+  </Concept>
+  <Derivation title="なぜ «分散最大の方向» が共分散行列の固有ベクトルなのか">
+
+単位ベクトル $\mathbf u$ 方向へ中心化データ $\mathbf x_i$ を射影したスコアは $\mathbf u^\top\mathbf x_i$。その分散は
+
+$$
+\operatorname{Var}(\mathbf u^\top\mathbf x)=\mathbf u^\top\Sigma\,\mathbf u,\qquad \Sigma=\text{共分散行列}.
+$$
+
+$\|\mathbf u\|=1$ の制約で $\mathbf u^\top\Sigma\mathbf u$ を最大化する。ラグランジュ未定乗数 $\lambda$ で
+$\mathbf u^\top\Sigma\mathbf u-\lambda(\mathbf u^\top\mathbf u-1)$ を微分すると
+
+$$
+\Sigma\mathbf u=\lambda\mathbf u.
+$$
+
+つまり最適な $\mathbf u$ は $\Sigma$ の **固有ベクトル**、その分散 $\mathbf u^\top\Sigma\mathbf u=\lambda$ は **固有値**。
+最大固有値の固有ベクトルが第1主成分。だから «分散最大の方向探し» が «固有値分解» に一致する。
+
+  </Derivation>
+  <Interact>
+
+<MaxVarianceStepper />
+
+  </Interact>
+  <Exercise>
+
+<PcaQuiz />
+
+  </Exercise>
+</Level>
+
+<Level level={2} title="仮定体系（標準化・主成分得点・関連手法）">
+  <Concept>
+
+PCA を実務で使うための論点を整理する。
+
+- **共分散行列 vs 相関行列**: 変数の単位が違うとスケールの大きい変数が主成分を支配する。標準化（＝相関行列でPCA）で公平に。
+- **主成分得点**: 各データ点を主成分軸に射影した座標。これを使って可視化・回帰（主成分回帰）。
+- **特異値分解（SVD）**: データ行列を直接 SVD すると主成分が得られる。大規模・数値的に安定。
+- **因子分析との違い**: PCA は «分散を要約する軸»、因子分析は «観測の背後の潜在因子» を仮定するモデル（次トピック）。
+
+«分散の構造を固有値分解で捉える» のが多変量解析の共通の道具になる。
+
+  </Concept>
+  <Derivation title="累積寄与率で «残す次元» をどう決めるか">
+
+固有値 $\lambda_1\ge\lambda_2\ge\cdots$ を大きい順に並べると、上位 $k$ 個の累積寄与率は
+
+$$
+\frac{\lambda_1+\cdots+\lambda_k}{\lambda_1+\cdots+\lambda_p}.
+$$
+
+これが «元データの分散のうち、上位 $k$ 主成分で説明できる割合»。
+例えば累積寄与率が $k=2$ で 0.9 なら、10次元のデータでも «2軸で90%» を保てるので2次元に圧縮してよい、と判断する。
+
+目安は «累積80〜90%» や «固有値が1を下回る手前まで（カイザー基準）»、固有値の落ち方（スクリープロット）の «肘» など。
+情報の保持と次元の少なさのトレードオフを、固有値の大きさで定量的に決められるのが PCA の強み。
+
+  </Derivation>
+  <Exercise>
+
+確認: 「変数の単位が大きく異なるとき、共分散行列でPCAすると単位の大きい変数が主成分を支配しやすい」——○か×か。
+（答: ○。PCAは分散を見るので、スケールの大きい変数が効く。標準化（相関行列でPCA）すると各変数を公平に扱える）
+
+  </Exercise>
+</Level>
+
+<Level level={3} title="特異値分解と低ランク近似" status="planned">
+  データ行列の SVD と PCA の関係、低ランク近似（Eckart–Young）、欠測・ロバストPCA（前提:
+  線形代数）。
+</Level>
+
+<Level level={4} title="カーネルPCA・非線形次元圧縮" status="planned">
+  カーネル法で非線形構造を捉えるカーネルPCA、t-SNE・UMAP など可視化向け非線形手法。
+</Level>
+
+<Level level={5} title="確率的PCA・因子分析" status="planned">
+  確率モデルとしての確率的PCA、潜在因子を仮定する因子分析（共分散構造分析トピックへ）。
+</Level>
+
+<Level level={6} title="フロンティア" status="planned">
+  自己符号化器（オートエンコーダ）など深層の非線形次元圧縮との接続は研究が活発（到達途上）。
+</Level>
+
+</Topic>
