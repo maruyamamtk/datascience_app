@@ -1,0 +1,17 @@
+---
+title: 一般化線形モデル
+definition: 線形予測子 η=Xβ・リンク関数 g(μ)=η・指数型分布族の応答 の3要素で、連続/2値/件数など多様な応答を統一的に回帰する枠組み（GLM）。
+aliases: [generalized linear model, GLM, 一般化線形モデル]
+seeAlso: [link-function, poisson-regression, logistic-regression]
+---
+
+# 一般化線形モデル（GLM）
+
+線形回帰を «応答の型» に合わせて一般化した統一枠組み。3要素：
+
+1. **線形予測子** $\eta=\beta_0+\beta_1x_1+\cdots$
+2. **<Term id="link-function">リンク関数</Term>** $g(\mu)=\eta$（平均 μ を線形予測子に結ぶ）
+3. **<Term id="exponential-family">指数型分布族</Term>** の応答（正規・二項・ポアソン等）
+
+- 恒等リンク＋正規＝線形回帰、ロジット＋二項＝[ロジスティック回帰](logistic-regression)、対数＋ポアソン＝[ポアソン回帰](poisson-regression)。
+- 係数は最尤（IRLS）で推定、当てはまりは[デビアンス](deviance)で測る。

@@ -537,3 +537,19 @@ MVP 5トピック完了後、SPEC §3 のチェックリスト全項目（A〜S,
 - **変更概要**: 2値応答の回帰を4層実装。LogisticLab は b0・b1 スライダー→シグモイド曲線・決定境界(P=0.5)・オッズ比 e^b1・対数尤度（TermController）が同時連動、データ点(緑1/赤0)にS字を当てはめる。LogitFitStepper は勾配上昇で(0,0)から最尤へ登りシグモイドがデータに馴染む過程をコマ送り。シグモイドの逆関数=対数オッズが線形(ロジットリンク)の導出・オッズ比が«確率の倍率»でない導出を網羅。sigmoid は大|z|で exp 発散しないよう数値安定化。
 - **検証結果**: Vitest **496 passed**（+13: logistic 9 / frames 4、registry リンク切れゼロ）。tsc / lint（警告0）/ build成功。`pnpm start` + Playwright 実機確認: b0=-1,b1=0.6 で OR=1.82・決定境界1.67・対数尤度-26.2、b1=1.5 で OR=4.48・対数尤度-20.6（真値方向で改善）、当てはめステッパー反復400で b0=-2.46/b1=1.92・対数尤度-17.9（真値-2,1.5へ収束）、コンソールエラー0件。
 - **設計判断 / つまずき**: **MDX build バグを修正** — odds-ratio.mdx の「<1 で起こりにくい」の `<1` が JSX タグ開始と誤認され build 失敗（テストは緑）。言葉に直し lessons.md に追記。«対数オッズが線形» というロジスティックの本質を逆関数の導出で示し、オッズ比が x によらず一定（確率の倍率は一定でない）点を強調。frame は LogitFitStepper のみ使用で競合なし。次は F-5 一般化線形モデルで回帰ブロック完成。
+
+### コンテンツ拡充 #46 — [F-5] 一般化線形モデルと発展
+
+優先度 20/82（F群 回帰の締め）。前提=質的回帰。ポアソン回帰を具体例にGLMを統一。
+
+- [x] 計算層 `lib/stats/glm.ts`（linkFn/inverseLink(3族)/poissonMean/poissonLogLikelihood/poissonGradientStep/fitPoisson/poissonDeviance/generateCountData(Knuth)）+ Vitest（9）
+- [x] 状態層 `lib/store/generalized-linear-models.ts`（controls {b0,b1}・固定カウントデータ）
+- [x] 描画層 `components/topics/generalized-linear-models/`（PoissonRegressionLab=b0/b1→指数平均曲線λ=exp(b0+b1x)・デビアンス・対数尤度の強連動 / GlmFamilyStepper=正規(恒等)→二項(ロジット)→ポアソン(対数)の族ギャラリーコマ送り / GlmQuiz）+ frames.ts + Vitest（4）
+- [x] 用語ノード5件（generalized-linear-model / link-function / poisson-regression / exponential-family / deviance）相互リンク
+- [x] MDX `content/topics/generalized-linear-models.mdx`（L0-L2 充実：ポアソン回帰→なぜリンク関数が必要かの導出→指数型分布族/IRLS/過分散＋デビアンスが残差平方和の一般化の導出、L3-L6 planned）
+- [x] `/topics` 一覧へ反映（status: published）
+
+#### レビュー: 一般化線形モデルトピック（2026-06-28）
+- **変更概要**: 線形/ロジスティック/ポアソン回帰を統一するGLMを4層実装。PoissonRegressionLab は b0・b1 スライダー→指数の平均曲線 λ=exp(b0+b1x)・デビアンス・対数尤度（TermController）が同時連動、件数データに曲線を当てはめる。GlmFamilyStepper は同じ線形予測子 η を各リンクの逆関数（恒等→ロジット→対数）で平均μに写す3族ギャラリーをコマ送り＝«統一構造»を可視化。なぜリンク関数が必要か（μの範囲制約を線形予測子−∞〜∞に合わせる）・デビアンスが残差平方和の一般化である導出を網羅。
+- **検証結果**: Vitest **509 passed**（+13: glm 9 / frames 4、registry リンク切れゼロ）。tsc / lint（警告0）/ build成功。`pnpm start` + Playwright 実機確認: b0=0,b1=0.3 で D=217.8、b1=0.6（真値）で D=61.1・対数尤度-172.3→-93.9（大幅改善）、GLM族ステッパーが正規(恒等)→二項(ロジット)→ポアソン(対数)を循環表示、コンソールエラー0件。
+- **設計判断 / つまずき**: GLMの抽象を «同じ η を別のリンクで別の曲線にする» 族ギャラリーで具体化（最重要の統一視点）。ポアソン乱数は Knuth のアルゴリズムで決定的生成。ステッパーの連続クリックは1 evaluate内だと stale state を読む既知挙動を再確認（setTimeout/別 evaluate で正常）。frame は GlmFamilyStepper のみ使用で競合なし。**これで F群（回帰 F-1〜F-5）完成**。次は G群（多変量解析）へ。

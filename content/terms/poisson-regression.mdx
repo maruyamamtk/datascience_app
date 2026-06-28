@@ -1,0 +1,18 @@
+---
+title: ポアソン回帰
+definition: 件数（カウント）データの平均 λ を log λ=b0+b1x（対数リンク）でモデル化する GLM。λ=exp(線形)>0 が保証される。過分散時は負の二項回帰へ。
+aliases: [Poisson regression, ポアソン回帰]
+seeAlso: [generalized-linear-model, link-function, poisson-distribution]
+---
+
+# ポアソン回帰
+
+件数（0,1,2,…）の応答を回帰する[一般化線形モデル](generalized-linear-model)。
+
+$$
+\log\lambda=b_0+b_1x\quad\Leftrightarrow\quad \lambda=e^{b_0+b_1x}
+$$
+
+- 平均 λ は[ポアソン分布](poisson-distribution)の平均。対数[リンク](link-function)で $\lambda>0$ を保証。
+- 係数 $b_1$ は «$x$ が1増えると λ が $e^{b_1}$ 倍»（率比）。係数は最尤で推定。
+- ポアソンは «平均=分散» を仮定。実データが散らばりすぎる（過分散）なら準ポアソン・負の二項回帰。
