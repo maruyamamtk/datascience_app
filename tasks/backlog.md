@@ -37,6 +37,7 @@
 - ✅ G-1 分散分析・実験計画法 `analysis-of-variance`（#47）
 - ✅ G-2 標本調査法 `sampling-survey`（#48）
 - ✅ H-1 主成分分析 `principal-component-analysis`（#49）
+- ✅ H-2 判別分析 `discriminant-analysis`（#50）
 
 ## キュー（優先順）
 
@@ -65,7 +66,7 @@
 | 21 | #47 | G-1 | 分散分析・実験計画法 | analysis-of-variance | normal-tests | ✅ done |
 | 22 | #48 | G-2 | 標本調査法 | sampling-survey | estimation-methods | ✅ done |
 | 23 | #49 | H-1 | 主成分分析 | principal-component-analysis | multiple-regression | ✅ done |
-| 24 | #50 | H-2 | 判別分析 | discriminant-analysis | principal-component-analysis | pending |
+| 24 | #50 | H-2 | 判別分析 | discriminant-analysis | principal-component-analysis | ✅ done |
 | 25 | #51 | H-3 | クラスター分析 | cluster-analysis | principal-component-analysis | pending |
 | 26 | #52 | H-4 | 共分散構造分析・因子分析 | covariance-structure-analysis | principal-component-analysis | pending |
 | 27 | #53 | H-5 | その他の多変量解析 | multivariate-other | principal-component-analysis | pending |

@@ -1,0 +1,139 @@
+---
+title: 判別分析
+summary: 既知の群に新しい観測がどちらに属するかを判別する。フィッシャー線形判別が «群間の隔たり／群内のばらつき» 最大の軸を見つける仕組み・判別境界・誤判別率・混同行列を操作で体感する。
+status: published
+---
+
+import { LdaLab } from "@/components/topics/discriminant-analysis/LdaLab";
+import { FisherAxisStepper } from "@/components/topics/discriminant-analysis/FisherAxisStepper";
+import { LdaQuiz } from "@/components/topics/discriminant-analysis/LdaQuiz";
+
+<Topic title="判別分析" summary="既知の群に新しい観測がどちらに属するかを判別する。フィッシャー線形判別が «群間の隔たり／群内のばらつき» 最大の軸を見つける仕組み・判別境界・誤判別率・混同行列を操作で体感する。">
+
+<ReaderGuide>
+
+- **初学者** → L0〜L1（2群を分ける判別軸と境界、誤判別率、PCAとの違い）
+- **一通り使える人** → L2（線形判別の前提・2次判別（QDA）・ベイズ判別・混同行列の指標）
+- **「完全に理解した」人** → L3 以降（正則化判別・カーネル判別は到達途上）
+
+前提: [主成分分析](/topics/principal-component-analysis)の<Term id="covariance-matrix">共分散行列</Term>、[ロジスティック回帰](/topics/qualitative-regression)の分類の考え方。
+
+</ReaderGuide>
+
+<Level level={0} title="ブラックボックス（2群を分ける軸）">
+  <Concept>
+
+«この観測はA群かB群か» をデータから判定するのが**<Term id="discriminant-analysis">判別分析</Term>**。
+代表が**<Term id="linear-discriminant">フィッシャー線形判別</Term>**（LDA）——2群を最もよく分ける «判別軸» を見つけ、その上で境界（しきい値）を引いて分類する。
+
+主成分分析が «分散最大» の方向（ラベルなし）を探すのに対し、判別分析は «クラス分離最大» の方向（ラベルあり）を探す。
+
+  </Concept>
+  <Interact>
+
+下のラボで2クラスの隔たりを変えると、判別境界（緑）・判別軸（紫）・混同行列・**<Term id="misclassification-rate">誤判別率</Term>**が変わり、数式が同時に追従する（操作→図→数式の強連動）。
+隔たりを大きくすると2群が離れ、誤判別率（縁取りの誤分類点）が減るのを確かめよう。
+
+<LdaLab />
+
+  </Interact>
+  <Exercise>
+
+確認: 「判別分析は、データの分散が最大の方向を判別軸に選ぶ」——○か×か。
+（答: ×。それは主成分分析。判別分析は «群間の隔たり／群内のばらつき» が最大＝2群が最も分かれる方向を選ぶ。分散最大の方向とは一致しないことが多い）
+
+  </Exercise>
+</Level>
+
+<Level level={1} title="古典的理解（分離度を最大化する軸）">
+  <Concept>
+
+判別軸は «群間の隔たり² を 群内のばらつき で割った分離度» を最大にする方向。
+
+<Math tex="w\propto \Sigma_w^{-1}(\mu_1-\mu_2)" />
+
+下のステッパーで軸を回し «分離度が最大» の向きを探すと、それが判別軸になることを体感できる。下の帯は射影で、2群の重なりが最小になる向きが最適。
+
+  </Concept>
+  <Derivation title="なぜ判別軸が Σ_w⁻¹(μ1−μ2) なのか">
+
+軸 $\mathbf w$ へ射影したときの «群間の隔たり» は $(\mathbf w^\top(\mu_1-\mu_2))^2$、«群内のばらつき» は $\mathbf w^\top\Sigma_w\mathbf w$（$\Sigma_w$＝プールした群内共分散）。
+フィッシャーの分離度は
+
+$$
+J(\mathbf w)=\frac{(\mathbf w^\top(\mu_1-\mu_2))^2}{\mathbf w^\top\Sigma_w\mathbf w}.
+$$
+
+これを $\mathbf w$ で微分して0と置くと（一般化固有値問題）、最大化する方向は
+
+$$
+\mathbf w\propto \Sigma_w^{-1}(\mu_1-\mu_2).
+$$
+
+«群の重心差» を «群内のばらつきの構造 $\Sigma_w$» で割り戻すのが肝。ばらつきの大きい方向の差は割り引かれ、ばらつきの小さい方向の差が強調される。
+だから単純な重心差 $\mu_1-\mu_2$ ではなく、$\Sigma_w^{-1}$ をかけた方向が «最も分かれる» 軸になる。
+
+  </Derivation>
+  <Interact>
+
+<FisherAxisStepper />
+
+  </Interact>
+  <Exercise>
+
+<LdaQuiz />
+
+  </Exercise>
+</Level>
+
+<Level level={2} title="仮定体系（LDA・QDA・ベイズ判別）">
+  <Concept>
+
+判別分析の仮定と拡張を整理する。
+
+- **線形判別（LDA）の前提**: 各クラスが正規分布で、**共分散が共通**。だから境界は直線。
+- **2次判別（QDA）**: 共分散がクラスで異なるとき、各クラスを別々の正規で表す。境界は2次曲線。
+- **ベイズ判別**: 事前確率 × 尤度（各クラスの密度）が大きい方へ分類。LDA/QDA はその正規版。
+- **評価**: [混同行列](confusion-matrix)から誤判別率・感度・特異度。学習データでなく交差検証で測る。
+
+判別分析は «生成モデル»（各クラスの分布を仮定）。一方ロジスティック回帰は «識別モデル»（境界を直接モデル化）。同じ分類でも考え方が違う。
+
+  </Concept>
+  <Derivation title="LDA の直線境界はベイズ判別から出る">
+
+各クラスが共通共分散 $\Sigma$ の正規 $N(\mu_k,\Sigma)$ で、事前確率 $\pi_k$ とする。ベイズ判別は事後確率 $\propto\pi_k\,f_k(x)$ が大きい方へ分類。
+対数を取って2クラスの差を見ると、$x^\top\Sigma^{-1}x$ の **2次の項が共通共分散のため相殺** され、
+
+$$
+\log\frac{\pi_1 f_1(x)}{\pi_2 f_2(x)}=x^\top\Sigma^{-1}(\mu_1-\mu_2)+\text{const}
+$$
+
+と $x$ について **1次（線形）** になる。だから境界 $=0$ は直線。これがフィッシャー判別と一致する。
+共分散がクラスで違うと2次項が残り、境界が2次曲線になる＝QDA。判別の «線形／2次» は共分散を共通とみるかどうかで決まる。
+
+  </Derivation>
+  <Exercise>
+
+確認: 「各クラスの共分散が大きく異なるとき、線形判別より2次判別（QDA）のほうが適切で、境界は曲線になる」——○か×か。
+（答: ○。共通共分散の仮定が崩れると2次項が残り境界が曲線に。クラスごとに分布の形が違うときは QDA）
+
+  </Exercise>
+</Level>
+
+<Level level={3} title="正則化判別・高次元" status="planned">
+  共分散推定が不安定な高次元での正則化判別分析（RDA）、次元圧縮（PCA）との併用（前提: 主成分分析）。
+</Level>
+
+<Level level={4} title="多クラス・非線形判別" status="planned">
+  3クラス以上への拡張、カーネル判別分析、サポートベクターマシンとの関係。
+</Level>
+
+<Level level={5} title="識別モデルとの比較" status="planned">
+  生成モデル（LDA）と識別モデル（ロジスティック回帰）の理論的な違い・使い分け（質的回帰トピックへ）。
+</Level>
+
+<Level level={6} title="フロンティア" status="planned">
+  深層学習の表現学習と古典判別の接続、確率較正された分類は研究が活発（到達途上）。
+</Level>
+
+</Topic>
