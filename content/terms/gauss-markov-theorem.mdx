@@ -1,0 +1,14 @@
+---
+title: ガウス・マルコフの定理
+definition: 線形回帰で誤差が «平均0・等分散・無相関» なら、最小二乗推定量が «線形不偏推定量の中で最小分散»（BLUE）であるという定理。
+aliases: [Gauss-Markov theorem, BLUE, 最良線形不偏推定量]
+seeAlso: [least-squares, unbiasedness, efficiency]
+---
+
+# ガウス・マルコフの定理
+
+線形模型 $y=X\beta+\varepsilon$ で、誤差が **平均0・等分散・無相関**（正規性は不要）なら、
+
+- [最小二乗](least-squares)推定量 $\hat\beta=(X^\top X)^{-1}X^\top y$ は **BLUE**（Best Linear Unbiased Estimator）。
+- すなわち «線形かつ[不偏](unbiasedness)» な推定量の中で[分散が最小](efficiency)。
+- 正規性を仮定しなくても成り立つのが強み。仮定（等分散・無相関）が崩れると一般化最小二乗が必要になる。

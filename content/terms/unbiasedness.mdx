@@ -1,0 +1,16 @@
+---
+title: 不偏性
+definition: 推定量の期待値が真の母数に等しい性質 E[θ̂]=θ。1回ごとは外れても «平均すれば真値»。標本分散を 1/(n−1) で割るのはこれを満たすため。
+aliases: [unbiasedness, 不偏推定量, unbiased]
+seeAlso: [mean-squared-error, consistency, variance]
+---
+
+# 不偏性
+
+$$
+E[\hat\theta]=\theta
+$$
+
+- «平均すれば真値» という性質。$\hat\theta$ は標本ごとにぶれるが、その期待値が母数 $\theta$ に一致する。
+- 標本[分散](variance)を $1/(n-1)$ で割る不偏分散 $s^2$ は $E[s^2]=\sigma^2$。$1/n$ 版は $-\sigma^2/n$ だけ下に偏る。
+- 不偏が常に最良とは限らない——[MSE](mean-squared-error)はバイアスと分散の和で、少し偏らせて分散を下げる方が良いこともある。

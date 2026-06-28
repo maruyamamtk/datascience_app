@@ -1,0 +1,14 @@
+---
+title: 有効性
+definition: 不偏推定量の中で分散が最小であること。クラメール・ラオ下限を達成する推定量が «有効»。2つの推定量の分散の比が相対効率。
+aliases: [efficiency, 有効推定量, 相対効率, relative efficiency]
+seeAlso: [cramer-rao-bound, unbiasedness, mean-squared-error]
+---
+
+# 有効性
+
+不偏推定量のうち «分散が最小» のもの。
+
+- 分散が小さいほど «ぶれが少ない» 良い推定量。[クラメール・ラオの不等式](cramer-rao-bound)の下限を達成すると有効。
+- **相対効率** $=\mathrm{Var}(\hat\theta_2)/\mathrm{Var}(\hat\theta_1)$。1 より大きいほど $\hat\theta_1$ が効率的。
+- 最尤推定量は大標本で漸近的に有効（クラメール・ラオ下限を達成）。

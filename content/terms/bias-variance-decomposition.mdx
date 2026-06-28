@@ -1,0 +1,16 @@
+---
+title: バイアス分散分解
+definition: 平均二乗誤差を MSE=バイアス²+分散 と分ける恒等式。推定・予測の誤差を «系統的なズレ» と «ばらつき» に切り分ける。
+aliases: [bias-variance decomposition, バイアス・バリアンス分解, bias-variance tradeoff]
+seeAlso: [mean-squared-error, unbiasedness]
+---
+
+# バイアス分散分解
+
+$$
+\mathrm{MSE}=\underbrace{(E[\hat\theta]-\theta)^2}_{\text{バイアス}^2}+\underbrace{\mathrm{Var}[\hat\theta]}_{\text{分散}}
+$$
+
+- 誤差を «系統的なズレ（バイアス）» と «ばらつき（分散）» に分ける。
+- **トレードオフ**: モデルを複雑にするとバイアスは減るが分散が増える。逆も同様。両者の和[MSE](mean-squared-error)を最小化したい。
+- 機械学習の汎化誤差（過学習 vs 適合不足）を理解する基本枠組み。
