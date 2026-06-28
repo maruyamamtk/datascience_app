@@ -601,3 +601,19 @@ MVP 5トピック完了後、SPEC §3 のチェックリスト全項目（A〜S,
 - **変更概要**: 次元圧縮の代表PCAを4層実装。PcaLab は2変数の相関 corr スライダー→散布図・主成分軸(赤PC1/青PC2、長さ=√固有値)・寄与率バー・λ1/λ2・第1主成分寄与率（TermController）が同時連動、相関を強めると第1主成分にデータが集中し寄与率が上がる様子を可視化。MaxVarianceStepper は軸を0→180°回して各角度の射影分散を測り最大=第1主成分を探すコマ送り（«分散最大方向探し»を体感）。分散最大方向が共分散行列の固有ベクトルである導出（u'Σuの制約付き最大化→Σu=λu）・累積寄与率で残す次元を決める導出を網羅。2×2共分散行列の固有値分解は解析解（tr±√(tr²−4det))/2で堅牢。
 - **検証結果**: Vitest **544 passed**（+12: pca 8 / frames 4、registry リンク切れゼロ）。tsc / lint（警告0）/ build成功。`pnpm start` + Playwright 実機確認: corr=0.8 で 寄与率94.4%（λ1=7.57/λ2=0.45）、corr=0 で 82.6%（λ2=0.45→1.41）、分散最大方向ステッパーが角度20°で射影分散7.57=λ1を最大特定（ラボと一致）、コンソールエラー0件。
 - **設計判断**: «PCA=分散最大の方向探し»を MaxVarianceStepper の軸回転で直接体感させ、ラボの固有値分解（一発で求まる）と対応づけた（最重要の直観）。固有ベクトルの符号の自由度は射影分散・寄与率に影響しないので問題なし。frame は MaxVarianceStepper のみ使用で競合なし。次は H-2 判別分析へ。
+
+### コンテンツ拡充 #50 — [H-2] 判別分析
+
+優先度 24/82。前提=主成分分析。フィッシャー線形判別で2群を分ける軸と境界。
+
+- [x] 計算層 `lib/stats/discriminant.ts`（centroid/pooledWithinCovariance/fisherLda(w∝Σ_w⁻¹(μ1−μ2))/score/classify(混同行列)/generateTwoClasses、pca.covariance2 再利用）+ Vitest（8）
+- [x] 状態層 `lib/store/discriminant-analysis.ts`（controls {separation}・固定2クラスデータ）
+- [x] 描画層 `components/topics/discriminant-analysis/`（LdaLab=隔たり→2クラス散布図・判別境界・判別軸・混同行列・誤判別率の強連動 / FisherAxisStepper=軸を回し分離度最大=判別軸を探す＋1次元射影帯のコマ送り / LdaQuiz）+ frames.ts + Vitest（4）
+- [x] 用語ノード4件（discriminant-analysis / linear-discriminant / misclassification-rate / confusion-matrix）相互リンク
+- [x] MDX `content/topics/discriminant-analysis.mdx`（L0-L2 充実：2群を分ける軸→判別軸がΣ_w⁻¹(μ1−μ2)である導出→LDA/QDA/ベイズ判別＋LDAの直線境界がベイズ判別から出る導出、L3-L6 planned）
+- [x] `/topics` 一覧へ反映（status: published）
+
+#### レビュー: 判別分析トピック（2026-06-29）
+- **変更概要**: 教師あり分類のLDAを4層実装。LdaLab は2クラスの隔たり separation スライダー→2クラス散布図・判別境界(緑、wに直交)・判別軸(紫)・混同行列・誤判別率（TermController）が同時連動、誤分類点を縁取りで表示。FisherAxisStepper は軸を0→180°回し各角度の分離度J=(群間隔たり)²/(群内分散)を測り最大=判別軸を探す＋下に1次元射影帯をコマ送り（PCAのMaxVarianceと対の構成で«分散最大 vs 分離最大»を対比）。判別軸がΣ_w⁻¹(μ1−μ2)である導出・LDAの直線境界がベイズ判別の2次項相殺から出る導出を網羅。pca.covariance2を再利用。
+- **検証結果**: Vitest **556 passed**（+12: discriminant 8 / frames 4、registry リンク切れゼロ）。tsc / lint（警告0、三項演算子の式文をif/elseに修正）/ build成功。`pnpm start` + Playwright 実機確認: separation=4 で 誤判別率3.3%（よく分離）、separation=0.6 で 35.8%（重なりあり）、判別軸ステッパーが角度10°で分離度6.84を最大特定、コンソールエラー0件。
+- **設計判断 / つまずき**: PCA（分散最大・教師なし）と LDA（分離最大・教師あり）を対の可視化（軸回転ステッパー）で並べ、多変量解析の2大次元削減の違いを際立たせた。prettierが `(a>=b)===(c>=d)` の括弧を除去したが `>=`>`===` の優先順位で論理不変（実機で誤分類判定の正しさ確認）。lint警告（三項式文）は if/else に修正。frame は FisherAxisStepper のみ使用で競合なし。次は H-3 クラスター分析へ。

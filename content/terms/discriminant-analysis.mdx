@@ -1,0 +1,14 @@
+---
+title: 判別分析
+definition: あらかじめ分かっている群（クラス）に、新しい観測がどちらに属するかを判別する手法。フィッシャー線形判別が代表。群を最もよく分ける軸を見つけて分類する。
+aliases: [discriminant analysis, 判別分析, LDA, QDA]
+seeAlso: [linear-discriminant, confusion-matrix, principal-component]
+---
+
+# 判別分析
+
+既知の群（クラス）に、新しい観測がどちらに属するかを判別する «教師あり» 手法。
+
+- 代表が**[フィッシャー線形判別](linear-discriminant)（LDA）**：群を最もよく分ける軸を見つけ、しきい値で分類。
+- [主成分分析](principal-component)が «分散最大»（教師なし）を探すのに対し、判別分析は «クラス分離最大»（教師あり）を探す。
+- 各クラスの共分散が異なると2次判別（QDA）で境界が曲線に。結果は[混同行列](confusion-matrix)・[誤判別率](misclassification-rate)で評価。
