@@ -457,3 +457,19 @@ MVP 5トピック完了後、SPEC §3 のチェックリスト全項目（A〜S,
 - **変更概要**: «平均差は偶然か» を判断する t 検定を4層実装。TwoSampleTLab は平均差Δ・各群s・各群n のスライダー→t統計量・両側p値・棄却域（赤い裾）・数式（TermController）が同時連動。観測tが棄却域に入れば「有意（差あり）」と色分け判定。TtestStepper は «平均差→プールSD→標準誤差→t→p» の5手順を確定値とともにコマ送り（アルゴリズム図鑑スタイル）。tCDFはtPdfのシンプソン則数値積分で実装し既知臨界値で検証。なぜt=Δ/SEがt分布に従うか（正規÷√(χ²/df)）・無相関検定t=r√((n−2)/(1−r²))・等分散vsウェルチ・母分散χ²検定を導出＋用語で網羅。
 - **検証結果**: Vitest **430 passed**（+16: normal-tests 12 / frames 4、registry リンク切れゼロ）。tsc / lint（警告0）/ build（/topics/normal-tests・新用語4ページ出力）成功。`pnpm start` + Playwright 実機確認: 初期 Δ=1.2/n=15 で t=1.64・p=0.112（有意でない）、n=60 で t=3.29・p=0.001（有意＝同じ差でもnで有意に）、手順ステッパーが Δ1.2→sp2→SE0.365→t3.286→p0.001 と一致、コンソールエラー0件。
 - **設計判断**: «有意性を決めるのは効果量と精度の両方» を «n を増やすと同じ差が有意になる» で実感させた。無相関検定で «大標本では小さな相関でも有意»＝有意性と相関の強さは別、を強調。等分散の崩れにウェルチ、母分散にχ²、分散比にF と «統計量→対応する標本分布の裾» の共通骨格で整理（前トピック標本分布と接続）。frame は TtestStepper のみ使用で競合なし。
+
+### コンテンツ拡充 #41 — [E-4] 一般の分布に関する検定（適合度検定）
+
+優先度 15/82。前提=正規分布に関する検定・標本分布。カイ二乗適合度検定をサイコロで体感。
+
+- [x] 計算層 `lib/stats/goodness-of-fit.ts`（chiSquareGof / chiSquareCdf(シンプソン則, df=1は閉形式2Φ(√x)−1) / chiSquareGofPValue / expectedFromProbabilities / uniformExpected、chiSquarePdf・standardNormalCdf 再利用）+ Vitest（11, 既知臨界値3.841/11.07で検証）
+- [x] 状態層 `lib/store/goodness-of-fit.ts`（controls {observed[6]}）
+- [x] 描画層 `components/topics/goodness-of-fit-tests/`（GoodnessOfFitLab=観測度数の増減→観測vs期待の棒・χ²・p値＆数式の強連動＋有意判定 / ChiSquareStepper=各目の寄与(O−E)²/Eを1つずつ積み上げるコマ送り / GofQuiz）+ frames.ts + Vitest（4）
+- [x] 用語ノード2件（goodness-of-fit-test / chi-square-test）相互リンク
+- [x] MDX `content/topics/goodness-of-fit-tests.mdx`（L0-L2 充実：適合度検定→なぜ(O−E)²/Eがχ²か正規近似の導出・自由度→パラメータ推定/独立性検定の期待度数導出/正確検定、L3-L6 planned）
+- [x] `/topics` 一覧へ反映（status: published）
+
+#### レビュー: 一般の分布に関する検定トピック（2026-06-28）
+- **変更概要**: «観測度数は想定分布と整合するか» を4層実装。GoodnessOfFitLab はサイコロ6面の観測度数を+/−で増減→観測(青棒)vs期待(赤線, 一様)の差から χ²=Σ(O−E)²/E・p値・数式（TermController）が同時連動、p<0.05で「一様と言えない」色分け判定。ChiSquareStepper は各目の寄与 (O−E)²/E を1つずつ積み上げ合計がχ²になる過程をコマ送り。なぜ(O−E)²/Eがカイ二乗か（標準化した正規の二乗和）・自由度k−1・独立性検定の期待度数=行和×列和/総和を導出で網羅。
+- **検証結果**: Vitest **445 passed**（+15: goodness-of-fit 11 / frames 4、registry リンク切れゼロ）。tsc / lint（警告0）/ build（/topics/goodness-of-fit-tests・新用語2ページ出力）成功。`pnpm start` + Playwright 実機確認: 初期 観測[12,8,10,11,9,10] で χ²=1.0・p=0.963、目1を15に増やすと χ²=2.81・p=0.729（観測の偏りで連動）、χ²ステッパーが寄与[1.93,0.6,...]積み上げ合計2.81＝ラボ一致、コンソールエラー0件。
+- **設計判断 / つまずき**: **本物のバグを修正** — chiSquareCdf の数値積分が df=1（密度がx=0で発散）で χ²=∞ を拾い CDF=1 を返した→ df=1 は閉形式 2Φ(√x)−1 に切替え。lessons.md に «カイ二乗CDF数値積分のdf=1特異点» を追記。E で割って «相対的なずれ» にする点・期待度数5以上の目安・パラメータ推定で自由度が減る点を演習で強調。frame は ChiSquareStepper のみ使用で競合なし。これで検定ブロック（E-1〜E-4）が概ね完成（残 E-5 ノンパラメトリック）。
