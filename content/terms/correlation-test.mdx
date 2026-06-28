@@ -1,0 +1,17 @@
+---
+title: 無相関検定
+definition: 母相関係数 ρ=0 を検定する。標本相関 r から t=r√((n−2)/(1−r²))、自由度 n−2 の t 分布で判断する。
+aliases: [correlation test, 母相関係数の検定, 無相関の検定]
+seeAlso: [correlation-coefficient, t-distribution, t-test]
+---
+
+# 無相関検定（母相関係数の検定）
+
+[相関係数](correlation-coefficient) $r$ が «偶然 0 でないか» を検定する。
+
+$$
+t=\frac{r\sqrt{n-2}}{\sqrt{1-r^2}}\quad(\text{自由度}\ n-2)
+$$
+
+- $H_0:\rho=0$ のもとで t 分布に従う。$|r|$ が同じでも $n$ が大きいほど $t$ が大きく、有意になりやすい。
+- **大標本では小さな相関でも «有意»** になる。有意性（偶然でない）と相関の «強さ» は別物なので $r$ の大きさも見る。

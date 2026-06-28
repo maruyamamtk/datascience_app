@@ -441,3 +441,19 @@ MVP 5トピック完了後、SPEC §3 のチェックリスト全項目（A〜S,
 - **変更概要**: «検定をどう作るか» を4層実装。NeymanPearsonLab は2単純仮説 H0:μ=0 vs H1:μ=1.2（σ既知, n=20）で閾値 c スライダー→H0(灰)/H1(青)の分布上に α(赤面積)/検出力(青面積)＋数式（TermController）が同時連動。「α=5%NP閾値に合わせる」で最強力検定の境界へジャンプ。ThreeTestsStepper は対数尤度曲線上でワルド(水平距離)/スコア(μ0の傾き)/尤度比(高さの差)を1つずつ図示し、正規モデルで3つとも z² に一致することを実証。NP定理（尤度比>k=x̄>c）・3検定の2次近似による漸近等価を導出で網羅。
 - **検証結果**: Vitest **414 passed**（+10: test-derivation 7 / frames 3、registry リンク切れゼロ）。tsc / lint（警告0）/ build（/topics/test-derivation・新用語5ページ出力）成功。`pnpm start` + Playwright 実機確認: c=0.37 で α=0.049/検出力≈1、c=1.0 で α→0/検出力0.814（トレードオフ）、3検定ステッパーで Wald=Score=LRT=7.2=z²、コンソールエラー0件。
 - **設計判断**: 抽象的なNP定理を «αと検出力の面積のトレードオフ» と «尤度比>k=x̄>c の導出» で具体化。3検定の «同じ隔たりを別角度で測る» を対数尤度の幾何（横/傾き/高さ）で可視化し、2次近似で等価になる理屈を導出。正確検定は小標本での厳密計算として概念＋用語で反映。frame は ThreeTestsStepper のみ使用で競合なし。これで検定の «作り方» の理論が揃った（次は E-3 正規分布に関する検定）。
+
+### コンテンツ拡充 #40 — [E-3] 正規分布に関する検定（t検定・2標本）
+
+優先度 14/82。前提=検定法の導出・標本分布。2標本t検定の手順とt/p連動を体感。
+
+- [x] 計算層 `lib/stats/normal-tests.ts`（tCdf(シンプソン則数値積分)/tTestPValue/oneSampleT/twoSampleT/correlationT/varianceChiSquare/tCurve、sampling-distributions.tPdf/chiSquarePdf 再利用）+ Vitest（12, 既知臨界値2.228で両側p≈0.05検証）
+- [x] 状態層 `lib/store/normal-tests.ts`（controls {meanDiff,sd,n}）
+- [x] 描画層 `components/topics/normal-tests/`（TwoSampleTLab=平均差/s/n→t分布・観測t・棄却域・p値＆数式の強連動 / TtestStepper=平均差→sp→SE→t→p の5手順コマ送り / NormalTestQuiz）+ frames.ts + Vitest（4）
+- [x] 用語ノード4件（t-test / two-sample-t-test / welch-t-test / correlation-test）相互リンク
+- [x] MDX `content/topics/normal-tests.mdx`（L0-L2 充実：2標本t検定→なぜt=Δ/SEがt分布に従うか導出→等分散vsウェルチ/母分散χ²/無相関検定の導出、L3-L6 planned）
+- [x] `/topics` 一覧へ反映（status: published）
+
+#### レビュー: 正規分布に関する検定トピック（2026-06-28）
+- **変更概要**: «平均差は偶然か» を判断する t 検定を4層実装。TwoSampleTLab は平均差Δ・各群s・各群n のスライダー→t統計量・両側p値・棄却域（赤い裾）・数式（TermController）が同時連動。観測tが棄却域に入れば「有意（差あり）」と色分け判定。TtestStepper は «平均差→プールSD→標準誤差→t→p» の5手順を確定値とともにコマ送り（アルゴリズム図鑑スタイル）。tCDFはtPdfのシンプソン則数値積分で実装し既知臨界値で検証。なぜt=Δ/SEがt分布に従うか（正規÷√(χ²/df)）・無相関検定t=r√((n−2)/(1−r²))・等分散vsウェルチ・母分散χ²検定を導出＋用語で網羅。
+- **検証結果**: Vitest **430 passed**（+16: normal-tests 12 / frames 4、registry リンク切れゼロ）。tsc / lint（警告0）/ build（/topics/normal-tests・新用語4ページ出力）成功。`pnpm start` + Playwright 実機確認: 初期 Δ=1.2/n=15 で t=1.64・p=0.112（有意でない）、n=60 で t=3.29・p=0.001（有意＝同じ差でもnで有意に）、手順ステッパーが Δ1.2→sp2→SE0.365→t3.286→p0.001 と一致、コンソールエラー0件。
+- **設計判断**: «有意性を決めるのは効果量と精度の両方» を «n を増やすと同じ差が有意になる» で実感させた。無相関検定で «大標本では小さな相関でも有意»＝有意性と相関の強さは別、を強調。等分散の崩れにウェルチ、母分散にχ²、分散比にF と «統計量→対応する標本分布の裾» の共通骨格で整理（前トピック標本分布と接続）。frame は TtestStepper のみ使用で競合なし。
