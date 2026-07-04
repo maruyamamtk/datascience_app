@@ -1,0 +1,129 @@
+---
+title: 時系列予測と評価
+summary: 過去から先を予測し «当たり具合» を数値で測る。指数平滑化の重み減衰、素朴・平均・ドリフトのベースライン、RMSE/MAE/MAPE、訓練/検証を時間順に分けるバックテストを操作で体感する。
+status: published
+---
+
+import { ForecastLab } from "@/components/topics/time-series-forecasting/ForecastLab";
+import { ForecastEvalStepper } from "@/components/topics/time-series-forecasting/ForecastEvalStepper";
+import { ForecastQuiz } from "@/components/topics/time-series-forecasting/ForecastQuiz";
+
+<Topic title="時系列予測と評価" summary="過去から先を予測し «当たり具合» を数値で測る。指数平滑化の重み減衰、素朴・平均・ドリフトのベースライン、RMSE/MAE/MAPE、訓練/検証を時間順に分けるバックテストを操作で体感する。">
+
+<ReaderGuide>
+
+- **初学者** → L0〜L1（指数平滑化で予測する・素朴/平均/ドリフトを RMSE で当て比べ）
+- **一通り使える人** → L2（評価指標の使い分け・バックテスト・データリーク・予測区間）
+- **「完全に理解した」人** → L3 以降（Holt-Winters・確率的予測・機械学習予測は到達途上）
+
+前提: [時系列モデル](/topics/time-series-models)（AR/MA/ARIMA・定常性）。
+
+</ReaderGuide>
+
+<Level level={0} title="ブラックボックス（指数平滑化で先を読む）">
+  <Concept>
+
+一番手軽な予測の一つが**<Term id="exponential-smoothing">指数平滑化</Term>**。次の予測を «前の予測» と «新しい実測» の重み付き平均で更新する：
+
+$$
+\ell_t=\alpha\,y_t+(1-\alpha)\,\ell_{t-1},\qquad \hat y_{t+1}=\ell_t.
+$$
+
+$\alpha$ が大きいほど直近の実測を強く取り込み、小さいほど滑らかに過去を引きずる。展開すると過去の観測に $\alpha(1-\alpha)^j$ の重みがかかり、古いほど指数的に軽くなる。
+
+  </Concept>
+  <Interact>
+
+下のラボで平滑化係数 $\alpha$ を変えると、観測系列・平滑化線（＝1期先予測）・過去への重み減衰・RMSE・数式が同時に追従する（操作→図→数式の強連動）。$\alpha$ を上げると直近に速く反応し、下げると滑らかになることを確かめよう。
+
+<ForecastLab />
+
+  </Interact>
+  <Exercise>
+
+確認: 「指数平滑化で α を小さくすると、予測は滑らかになるが変化への追従が遅れる」——○か×か。
+（答: ○。α が小さいと新しい実測の取り込みが弱く、過去を長く引きずる。滑らかだがトレンドの転換などに遅れて反応する）
+
+  </Exercise>
+</Level>
+
+<Level level={1} title="古典的理解（ベースラインを RMSE で当て比べ）">
+  <Concept>
+
+予測の良し悪しは **検証データでの誤差** で測る。まず単純な**<Term id="forecast-baseline">ベースライン</Term>**を基準にする：
+
+- **素朴予測**：最後の値を水平に伸ばす（«明日は今日と同じ»）。
+- **平均予測**：訓練期間の平均を伸ばす。
+- **ドリフト法**：最初と最後を結ぶ傾きで外挿（トレンドを捉える）。
+
+これらを訓練で作り、隠しておいた検証区間にぶつけて **<Term id="forecast-evaluation">RMSE</Term>** を比べる。高度なモデルはこのベースラインを上回って初めて «使う価値» がある。
+
+  </Concept>
+  <Derivation title="なぜ RMSE は MAE より «大きな外れ» に敏感なのか">
+
+予測誤差を $r_i=y_i-\hat y_i$ とする。2つの指標は
+
+$$
+\mathrm{MAE}=\frac1n\sum_i|r_i|,\qquad \mathrm{RMSE}=\sqrt{\frac1n\sum_i r_i^2}.
+$$
+
+RMSE は誤差を **二乗** してから平均する。誤差が2倍になると MAE への寄与は2倍だが、RMSE の中身（二乗和）への寄与は **4倍**。だから少数の «大外し» が RMSE を大きく押し上げる——外れ値に敏感。イェンセンの不等式から常に $\mathrm{RMSE}\ge\mathrm{MAE}$ で、両者が離れているほど «誤差のばらつきが大きい（時々大きく外す）» ことを意味する。大外しを特に避けたいなら RMSE、外れ値に振り回されたくないなら MAE を主指標にする。
+
+  </Derivation>
+  <Interact>
+
+<ForecastEvalStepper />
+
+  </Interact>
+  <Exercise>
+
+<ForecastQuiz />
+
+  </Exercise>
+</Level>
+
+<Level level={2} title="仮定体系（評価指標・バックテスト・データリーク）">
+  <Concept>
+
+«公平な» 予測評価の作法を整理する。
+
+- **指標の使い分け**: RMSE（大外しを罰する）・MAE（頑健）・MAPE（%で規模比較、実測0付近で不安定）。目的に合わせて主指標を選ぶ。
+- **<Term id="backtesting">バックテスト</Term>**: 訓練/検証を**時間順**に分け、予測の原点をずらしながら繰り返す（時系列交差検証）。1回のホールドアウトより安定。
+- **データリーク厳禁**: 未来のデータを学習・前処理（標準化・特徴量）に使わない。普通の $k$-分割交差検証は行をシャッフルするので時系列には不適。
+- **予測区間**: 点予測だけでなく «どれくらい外れうるか» の幅（例 95%予測区間）を出す。地平線が遠いほど不確実性は広がる。
+
+«過去のデータだけで作った予測を、まだ見ぬ未来にぶつける» を忠実に再現することが、実運用での性能を保証する。
+
+  </Concept>
+  <Derivation title="なぜシャッフルした交差検証は時系列で楽観的になるのか">
+
+普通の $k$-分割交差検証は行をランダムに訓練/検証へ振り分ける。すると検証したい時点 $t$ の «両隣» $t-1,t+1$ が訓練に入りうる。時系列は自己相関で隣接点が強く似ているため、モデルは «ほぼ答えを知った» 状態で $t$ を当てることになる——実質的な**データリーク**。
+
+本番では時点 $t$ を予測する際に使えるのは «$t$ より前» だけ。だからシャッフル評価は本番より誤差を小さく見せる（楽観バイアス）。これを避けるのがバックテスト：訓練は必ず検証より過去に置き、$\{1,\dots,c\}$ で学習して $\{c+1,\dots\}$ を予測、原点 $c$ を前進させる。こうして «未来を知らない» 条件を守った評価だけが、運用性能の正しい見積もりになる。
+
+  </Derivation>
+  <Exercise>
+
+確認: 「時系列予測の評価では、データを行ごとにシャッフルして $k$-分割交差検証するのが最も適切だ」——○か×か。
+（答: ×。シャッフルすると未来の点が訓練に混じり（データリーク）、本番より楽観的な評価になる。訓練を過去・検証を未来に置く時間順の分割＝バックテストを使う）
+
+  </Exercise>
+</Level>
+
+<Level level={3} title="Holt-Winters と季節予測" status="planned">
+  傾きを平滑化する Holt 法・季節を加えた Holt-Winters 法、加法/乗法季節、状態空間表現（ETS）（前提: 指数平滑化）。
+</Level>
+
+<Level level={4} title="確率的予測と予測区間" status="planned">
+  予測分布・予測区間の構成（残差の分布・シミュレーション）、分位点予測、ピンボールロス・CRPS による確率予測の評価。
+</Level>
+
+<Level level={5} title="機械学習による予測" status="planned">
+  特徴量設計（ラグ・窓統計）、勾配ブースティング・RNN/Transformer、大域モデル（多系列一括学習）、リーク防止の時系列分割。
+</Level>
+
+<Level level={6} title="フロンティア" status="planned">
+  基盤モデル（時系列 foundation model）・ゼロショット予測、階層予測の整合、需要予測の実務は研究が活発（到達途上）。
+</Level>
+
+</Topic>
