@@ -1,0 +1,23 @@
+---
+title: 標本サイズ設計
+definition: 目標の検出力・有意水準・最小検出可能効果から、実験に必要な1群あたりの標本数を事前に決めること。A/Bテストを始める前に行う。
+aliases: [sample size determination, 標本サイズ設計, サンプルサイズ設計, power analysis, 検出力分析]
+seeAlso: [minimum-detectable-effect, power, significance-level, type-i-error]
+---
+
+# 標本サイズ設計
+
+実験を **始める前** に、必要な1群あたりの標本数を決める作業。2標本比率の検定では
+
+$$
+n=\frac{\left(z_{\alpha/2}\sqrt{2\bar p\bar q}+z_{\beta}\sqrt{p_0q_0+p_1q_1}\right)^2}{\delta^2}
+$$
+
+4つの量が絡み合う：
+
+- **[有意水準](significance-level) α**（[第一種の過誤](type-i-error)）: 小さくするほど $z_{\alpha/2}$ が大きく、必要 n 増。
+- **[検出力](power) 1−β**: 高くするほど $z_\beta$ が大きく、必要 n 増。
+- **[最小検出可能効果](minimum-detectable-effect) δ**: 小さくするほど $n\propto1/\delta^2$ で急増。
+- **ベースライン率 p₀**: 分散を通じて効く。
+
+事前に n を固定することが «途中で覗いて止める» 誘惑（[覗き見問題](peeking-problem)）を防ぐ実務上の要。どれか3つを決めれば残り1つが定まる関係。

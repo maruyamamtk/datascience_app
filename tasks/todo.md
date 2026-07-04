@@ -825,3 +825,19 @@ MVP 5トピック完了後、SPEC §3 のチェックリスト全項目（A〜S,
 - **変更概要**: 無作為化できない観察データで因果効果を «識別» する3準実験デザインを4層実装。DidLab は真の効果・共通トレンド・平行トレンドの破れスライダー→処置群(赤)/対照群(青)/反事実(灰破線)の2期折れ線・DIDギャップの縦線・«DID=(処置群の変化)−(対照群の変化)» 分解数式が同時連動、破れを入れるとそのままバイアスに。RddStepper は固定60点で «散布→閾値の左を線形フィット→右を線形フィット→閾値のジャンプ» をSVGコマ送り、閾値ぎりぎりの局所効果を可視化。IV は計算層(Wald 推定)＋MDX導出で扱い、3手法横断のクイズ。DIDで固定交絡が消える固定効果分解・IV Wald が未観測交絡を迂回する導出を収録。
 - **検証結果**: Vitest **758 passed**（+12: identification 8 / RDD frames 4、registry リンク切れゼロ）。tsc / lint（警告0）/ build成功。`npm run dev` + Playwright 実機確認: 既定で DID=3（真値一致, ta=27/tb=20/ca=14/cb=10）、破れ+2 で DID=5・ta=29（バイアス2が乗る）と強連動、RDDステッパー最終フレームで «ジャンプ 3.93»（真値+4を復元）・左右フィット＋ジャンプ線描画、コンソールエラー0件。
 - **設計判断 / つまずき**: 3手法のうち視覚的な DID・RDD を Lab/Stepper に、IV は計算層＋MDX 導出に配分（前トピック同様 1 Lab + 1 Stepper のカデンツを維持しつつ3手法を網羅）。RDD の局所線形フィットは既存 regression.ts の olsFit を cutoff シフトして再利用し重複回避。MDX は数式を全て $...$ 内に閉じ（$Z\perp U$ 等）、L2 Concept のリスト後に段落を挟んで閉じタグ不整合を回避（前回教訓を適用）。**N群 因果推論の中核（N-1/N-2）完了**、次は N-3 A/Bテスト実務へ。
+
+### コンテンツ拡充 #64 — [N-3] A/Bテスト実務
+
+優先度 38/82。前提=仮説検定の基礎・因果推論の枠組み。2標本比率の検定／検出力分析（α・1−β・MDE・n の綱引き）／必要標本サイズ n∝1/δ²／覗き見問題（peeking）／SRM・新奇性効果・実用的有意。
+
+- [x] 計算層 `lib/stats/ab-test.ts`（twoProportionTest=プールz検定/両側p、diffConfidenceInterval、requiredSampleSize、power、peekingFalsePositiveRate=A/Aシミュ）+ Vitest（7）（normal.ts の standardNormalCdf/zQuantile 再利用）
+- [x] 状態層 `lib/store/ab-testing.ts`（controls {baseline, mde, alpha, targetPower, n}・p1/relativeLift/requiredN/achievedPower/sufficient/z を派生）
+- [x] 描画層 `components/topics/ab-testing/`（AbTestLab=必要n vs 実際nバー・検出力ゲージ（目標破線）・n∝1/δ²数式の強連動 / PeekingStepper=A/A実験でチェック1→2→5→10→20回と過誤バーが名目5%を超えて伸びるコマ送り / AbTestQuiz=MDE/覗き見/検出力/SRM 4問）+ frames.ts（peeking）+ Vitest（5）
+- [x] 用語ノード4件（minimum-detectable-effect / sample-size-determination / peeking-problem / sample-ratio-mismatch）相互リンク（既存 power / type-i-error / multiple-comparison / significance-level / randomization へ接続）
+- [x] MDX `content/topics/ab-testing.mdx`（L0-L2 充実：2案比較→比率のz検定/検出力/覗き見→検出力分析4量と落とし穴＋n∝1/δ²の導出/覗き見が和集合で過誤を膨らませる導出、L3-L6 planned）
+- [x] `/topics` 一覧へ反映（status: published）
+
+#### レビュー: A/Bテスト実務トピック（2026-07-04）
+- **変更概要**: オンライン実験の «設計と運用で過誤を制御する» 実務を4層実装。AbTestLab は baseline・MDE・α・目標検出力・実際n スライダー→必要標本サイズ(1群)と実際nの充足バー・検出力ゲージ（目標破線）・«n=(z_{α/2}√2p̄q̄+z_β√…)²/δ²» 数式が同時連動、MDEを小さくすると必要nが急増、nが足りないと検出力が落ちる。PeekingStepper は真に差がないA/A実験でチェック回数1→2→5→10→20回と増やすと «一度でも有意» の実効過誤が名目5%線を超えて伸びる様子をコマ送り。n∝1/δ²の導出・覗き見が事象の和集合で過誤を膨らませる導出を収録。
+- **検証結果**: Vitest **770 passed**（+12: ab-test 7 / peeking frames 5、registry リンク切れゼロ）。tsc / lint（警告0）/ build成功。`npm run dev` + Playwright 実機確認: 既定(p0=10%,MDE=2%,α=.05,power=.8)で必要n=3,841・n=3000での検出力69.7%（未達）、n=6000で検出力93.8%と強連動、覗き見ステッパーで1回=5.2%→20回=25.0%と過誤膨張、コンソールエラー0件。
+- **設計判断 / つまずき**: 既存 normal.ts（standardNormalCdf/zQuantile）・既存用語（power/type-i-error/multiple-comparison）を再利用し重複回避。必要n/検出力の整合性（必要nで計算した検出力≈目標）をテストで担保。覗き見シミュは決定的シード(mulberry32)で単調性をテスト。MDX は数式（\bigcup・|z|>z_{α/2}等）を全て $...$/$$...$$ 内に閉じ、L2 Concept のリスト後に段落を挟んで閉じタグ不整合を回避（既存教訓を適用）。次は N-4 グラフィカルモデリングへ。
