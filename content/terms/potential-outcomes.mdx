@@ -1,0 +1,19 @@
+---
+title: 潜在的結果（ルービン因果モデル）
+definition: 各個体に «処置を受けた場合 Y(1)» と «受けなかった場合 Y(0)» の2つの潜在的な結果を想定し、因果効果を Y(1)−Y(0) と定義する枠組み。実際に観測できるのは片方だけ。
+aliases: [potential outcomes, Rubin causal model, ルービン因果モデル, ネイマン・ルービンモデル, potential outcome framework]
+seeAlso: [counterfactual, average-treatment-effect, confounding, randomization]
+---
+
+# 潜在的結果（ルービン因果モデル）
+
+各個体 $i$ に、処置を受けた場合の結果 $Y_i(1)$ と受けなかった場合の結果 $Y_i(0)$ の **2つの潜在的結果** を置く。因果効果（個体処置効果）は
+
+$$
+\tau_i = Y_i(1) - Y_i(0)
+$$
+
+- 実際に観測できるのは «実際に受けた方» だけ：$Y_i^{obs}=T_i\,Y_i(1)+(1-T_i)\,Y_i(0)$。もう一方は[反事実](counterfactual)で欠測（**因果推論の根本問題**）。
+- 個体効果は直接測れないので、集団平均の[平均処置効果](average-treatment-effect) $\text{ATE}=E[Y(1)-Y(0)]$ を推定する。
+- 素朴な群間比較 $E[Y\mid T=1]-E[Y\mid T=0]$ が ATE に一致するには «割り当てが潜在結果と独立»（[無作為化](randomization)、または[交絡](confounding)の調整）が要る。
+- SUTVA（他個体の処置が自分の結果に影響しない・処置の版が1つ）を仮定に置く。

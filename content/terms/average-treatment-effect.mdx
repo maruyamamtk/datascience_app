@@ -1,0 +1,19 @@
+---
+title: 平均処置効果（ATE）
+definition: 集団全体での潜在的結果の差の平均 ATE=E[Y(1)−Y(0)]。個体効果が測れない代わりに推定する «平均的な因果効果»。関連量に ATT（処置群での平均効果）がある。
+aliases: [average treatment effect, ATE, 平均処置効果, ATT, average treatment effect on the treated]
+seeAlso: [potential-outcomes, counterfactual, confounding, randomization]
+---
+
+# 平均処置効果（ATE）
+
+集団全体での[潜在的結果](potential-outcomes)の差の平均：
+
+$$
+\text{ATE}=E\big[Y(1)-Y(0)\big]
+$$
+
+- 個体効果 $Y_i(1)-Y_i(0)$ は[反事実](counterfactual)のため測れないが、その **平均** なら推定できる。
+- 素朴な群間差 $E[Y\mid T=1]-E[Y\mid T=0]$ は、割り当てが潜在結果と独立（[無作為化](randomization)や[交絡](confounding)の調整）でないと ATE からズレる。ズレが交絡バイアス。
+- **ATT**（処置群における平均効果 $E[Y(1)-Y(0)\mid T=1]$）は «実際に処置を受けた人にとっての効果» で、政策評価では ATE より ATT が問われることも多い。
+- 二値結果ではリスク差・リスク比・オッズ比など尺度によって «効果» の表し方が変わる。

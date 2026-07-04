@@ -1,0 +1,19 @@
+---
+title: 無作為化（ランダム化）
+definition: 処置の割り当てをくじ引き（乱数）で決めること。割り当てが潜在的結果・共変量と独立になり、処置群と対照群が平均的に同質になるため、素朴な群間差が因果効果になる。
+aliases: [randomization, ランダム化, 無作為割り当て, RCT, randomized controlled trial, ランダム化比較試験]
+seeAlso: [potential-outcomes, confounding, average-treatment-effect, statistical-independence]
+---
+
+# 無作為化（ランダム化）
+
+処置の割り当て $T$ を **乱数** で決めること。すると割り当てが[潜在的結果](potential-outcomes)や共変量と[独立](statistical-independence)になる：
+
+$$
+\{Y(0),Y(1)\}\ \perp\!\!\!\perp\ T
+$$
+
+- 処置群と対照群が **平均的に同質**（観測・未観測の共変量も含めて交換可能）になるので、[交絡](confounding)が消え、素朴な群間差 $E[Y\mid T=1]-E[Y\mid T=0]$ がそのまま[平均処置効果](average-treatment-effect)になる。
+- これを実装したのが **ランダム化比較試験（RCT）**。因果推論の «ゴールドスタンダード»。
+- 未観測交絡まで均衡させられるのが観察研究にない強み。ただし倫理・費用・実現可能性で使えない場面も多い。
+- 観察データでは無作為化を «近似» するため、層別・回帰・傾向スコア・操作変数・DID などで «同じ条件で比べる» を作る。
