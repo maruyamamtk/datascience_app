@@ -729,3 +729,19 @@ MVP 5トピック完了後、SPEC §3 のチェックリスト全項目（A〜S,
 - **変更概要**: «計算資源で押し切る» モンテカルロ法とブートストラップを4層実装。MonteCarloLab はダーツ数 n スライダー→[-1,1]²への散布図(円内緑/外赤)・π̂=4k/n（TermController で k・n・π̂ を差し込み）・|誤差| が同時連動、n を増やすと誤差が 1/√n で縮む。BootstrapStepper は元標本(n=8)→復元抽出を1つずつ見せ→600回まで積み上げてブートストラップ分布(ヒストグラム)を構築→パーセンタイル95%信頼区間を帯で提示するコマ送り。経験分布 F̂ を母集団の代わりにする→復元抽出の標準偏差が標準誤差になる導出・モンテカルロ誤差が次元に依らず1/√nで縮む導出を網羅。
 - **検証結果**: Vitest **656 passed**（+17: monte-carlo 12 / frames 5、registry リンク切れゼロ）。tsc / lint（警告0）/ build成功。`next start` + Playwright 実機確認: n=200 で π̂=3.2・誤差0.0584、n=12800 で π̂=3.1375・誤差0.0041（1/√n収束）、ブートストラップ最終フレームで 600再標本・SE=1.140・95%CI[5.50,9.75]（標本平均7.625を含む）、コンソールエラー0件。
 - **設計判断 / つまずき**: モンテカルロ(乱数で面積/積分)とブートストラップ(標本の引き直し)を «乱数を大量に発生させて試す» 計算多用手法として1トピックに統合、L0=π推定・L1=ブートストラップと段階配置。前回同様に未作成トピックslug(mcmc-methods #86)へのリンクは張らず、既存 mcmc 用語で MCMC への接続を予告。BootstrapStepper の stats を useMemo でラップし exhaustive-deps 警告を解消。**これで L群(L1-L3)完了**、次は M群 時系列解析へ（M-1 時系列解析の基礎）。
+
+### コンテンツ拡充 #58 — [M-1] 時系列解析の基礎
+
+優先度 32/82（M群 時系列の起点）。前提=分布の特性値。トレンド・季節・不規則分解／移動平均／自己相関(ACF)／定常性／ホワイトノイズ。
+
+- [x] 計算層 `lib/stats/time-series.ts`（generateSeries(3成分分解)/movingAverage/autocovariance/autocorrelation/acf/difference/acfConfidenceBound）+ Vitest（11）
+- [x] 状態層 `lib/store/time-series-basics.ts`（controls {slope, amp, noiseSd, window}・分散の平滑化前後を派生）
+- [x] 描画層 `components/topics/time-series-basics/`（TimeSeriesLab=傾き/振幅/ノイズ/窓→系列・移動平均線・分散・成分ハイライトの強連動 / AcfStepper=ラグkずらし重ね→コレログラム積み上げのコマ送り / TimeSeriesQuiz）+ frames.ts + Vitest（6）
+- [x] 用語ノード6件（time-series / trend-seasonal-decomposition / autocorrelation / stationarity / white-noise / moving-average）相互リンク
+- [x] MDX `content/topics/time-series-basics.mdx`（L0-L2 充実：3成分分解→季節周期でACFピークが立つ導出（cos振動）→定常性/階差/ホワイトノイズ＋階差でトレンドが消える導出、L3-L6 planned）
+- [x] `/topics` 一覧へ反映（status: published）
+
+#### レビュー: 時系列解析の基礎トピック（2026-07-04）
+- **変更概要**: «時間順に並んだデータの構造» を4層実装。TimeSeriesLab はトレンド傾き・季節振幅・ノイズ・移動平均窓の4スライダー→系列プロット・移動平均線・トレンド線・分散(平滑化前後)・数式の成分ハイライトが同時連動、窓を広げるとノイズが均され分散が下がる。AcfStepper はラグ k を0→24と増やし «系列をk期ずらして重ねる» 様子（破線）と、各ρ(k)をコレログラムに積み上げるコマ送り。季節周期(12,24)で信頼限界±1.96/√nを超える正のピークが立つ。季節波のcos振動でACFピークが立つ導出・階差 Δx_t でトレンド(a+bt)が定数bに消える導出を収録。
+- **検証結果**: Vitest **673 passed**（+17: time-series 11 / frames 6、registry リンク切れゼロ）。tsc / lint（警告0）/ build成功。`next start` + Playwright 実機確認: 分散が平滑化で30.92→26.88、ノイズ3・窓21で39.75→26.07、ACFステッパーが lag12 で ρ(12)=0.787（有意・信頼限界±0.200超）とラグずらし重ね表示、コンソールエラー0件。
+- **設計判断 / つまずき**: «並び順に情報がある→自己相関» を軸に、L0=分解＋移動平均、L1=ACF＋コレログラム、L2=定常性＋階差＋ホワイトノイズと段階配置。ACFのコレログラムをコマ送りで «積み上げる» ことで «ラグごとに1本ずつ計算» の手順を可視化。用語リンクで階差・予測をトピックslug化しないよう平文に留めた（[[lessons: 用語リンクは実在slugのみ]]）。M群の起点完了、次は M-2 時系列モデル（ARIMA・状態空間）へ。

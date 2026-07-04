@@ -1,0 +1,20 @@
+---
+title: 自己相関
+definition: 時系列を k 期ずらした自分自身との相関 ρ(k)=γ(k)/γ(0)。ラグ k ごとの ρ(k) を並べた自己相関関数（ACF）・その図（コレログラム）で周期性や記憶の強さを読む。ρ(0)=1。
+aliases: [autocorrelation, ACF, 自己相関関数, コレログラム, correlogram]
+seeAlso: [time-series, white-noise, stationarity]
+---
+
+# 自己相関（ACF）
+
+[時系列](time-series)を **$k$ 期ずらした自分自身**との相関。
+
+$$
+\rho(k)=\frac{\gamma(k)}{\gamma(0)},\qquad \gamma(k)=\frac1n\sum_{t}(x_t-\bar x)(x_{t+k}-\bar x)
+$$
+
+- $\gamma(k)$ は **自己共分散**、$\gamma(0)$ は分散。よって $\rho(0)=1$。
+- ラグ $k$ ごとの $\rho(k)$ を並べたものが **自己相関関数（ACF）**、それを棒で描いた図が **コレログラム**。
+- 季節周期のラグで大きな正のピーク → 周期性。ゆっくり減衰 → 強いトレンド/持続性。
+- 近似95%信頼限界 $\pm 1.96/\sqrt n$ を超えるラグは «有意な自己相関»。全ラグが内側なら[ホワイトノイズ](white-noise)（無相関）に近い。
+- ARモデルの次数の見当付けなど、時系列モデリングの出発点。
