@@ -1,0 +1,15 @@
+---
+title: ポアソン過程
+definition: まれな事象の «到着» を数える計数過程。強度 λ で、時刻 t までの到着数は Po(λt)、到着間隔は指数分布 Exp(λ)。独立増分で階段状に+1ずつ増える。
+aliases: [Poisson process, ポアソン過程, 計数過程]
+seeAlso: [stochastic-process, poisson-distribution, exponential-distribution]
+---
+
+# ポアソン過程
+
+イベントの «到着回数» を数える計数[確率過程](stochastic-process) $N(t)$。
+
+- 強度（レート）$\lambda$ で、時刻 $t$ までの到着数は[ポアソン分布](poisson-distribution) $\mathrm{Po}(\lambda t)$（平均 $\lambda t$）。
+- 連続する到着の **間隔は[指数分布](exponential-distribution)** $\mathrm{Exp}(\lambda)$（無記憶性）。
+- 独立増分で、重ならない区間の到着数は独立。階段状に $+1$ ずつジャンプする。
+- 電話の着信・アクセス・故障など «独立にまれに起こる事象» のモデル。強度が時刻で変わる非斉次版もある。
