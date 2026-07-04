@@ -1,0 +1,20 @@
+---
+title: 覗き見問題（peeking）
+definition: A/Bテストの途中経過を何度も見て «有意になったら止める» と、実効的な第一種の過誤が名目水準を大きく超える問題。多重比較の一種。
+aliases: [peeking, 覗き見問題, ピーキング, optional stopping, 逐次的覗き見]
+seeAlso: [type-i-error, multiple-comparison, significance-level, sample-size-determination]
+---
+
+# 覗き見問題（peeking）
+
+検定は «1回の判断» で[第一種の過誤](type-i-error)が名目 $\alpha$ に制御されるよう作られている。ところが途中経過を繰り返し見て «有意になったら即停止» すると——
+
+- 何度も見ることは «統計量の最大値» を見ているのに近く、[多重比較](multiple-comparison)と同じ問題。一度でも5%線を跨ぐ確率が積み上がる。
+- 真に差がない（A/A）実験でも、覗く回数が増えるほど実効的な過誤が膨張（例：連続モニタリングで数十%まで）。
+- 結果として «差がないのに勝った» と誤検出しやすくなる。
+
+対策：
+
+- **事前に[標本サイズ](sample-size-determination)を固定** し、そこに達するまで結論を出さない（覗いても止めない）。
+- **群逐次デザイン**（O'Brien-Fleming 等）で、各中間解析に有意水準を配分する。
+- **常時有効な逐次検定**（mixture SPRT・信頼系列）で «いつ見ても妥当» な推測にする。

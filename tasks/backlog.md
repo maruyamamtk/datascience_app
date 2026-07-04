@@ -86,7 +86,7 @@
 | 35 | #61 | N-5 | 分割表の解析 | contingency-tables | goodness-of-fit-tests | ✅ done |
 | 36 | #62 | N-1 | 因果推論の枠組み | causal-inference-models | multiple-regression | ✅ done |
 | 37 | #63 | N-2 | 識別戦略（DID・IV・RDD） | causal-identification | causal-inference-models | ✅ done |
-| 38 | #64 | N-3 | A/Bテスト実務 | ab-testing | causal-inference-models | pending |
+| 38 | #64 | N-3 | A/Bテスト実務 | ab-testing | causal-inference-models | ✅ done |
 | 39 | #65 | N-4 | グラフィカルモデリング | graphical-models | contingency-tables | pending |
 | 40 | #66 | N-6 | 質的データ解析 | qualitative-data-analysis | contingency-tables | pending |
 | 41 | #67 | O-1 | 欠測値の処理 | missing-data | estimation-methods | pending |
