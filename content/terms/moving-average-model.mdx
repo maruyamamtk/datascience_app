@@ -1,0 +1,19 @@
+---
+title: 移動平均モデル（MA）
+definition: 現在値を «直近のショック（誤差）» の線形和で説明する時系列モデル。MA(1) は x_t = e_t + θ·e_{t-1}。自己相関が次数 q でぴたりと0に切れる（有限の記憶）のが特徴。
+aliases: [moving average model, MA model, MA過程, MA(q)]
+seeAlso: [autoregressive-model, arima-model, autocorrelation, white-noise]
+---
+
+# 移動平均モデル（MA）
+
+現在の値を **直近のショック（[ホワイトノイズ](white-noise) $e_t$）の線形和** で表す時系列モデル。MA(q)：
+
+$$
+x_t=e_t+\theta_1 e_{t-1}+\dots+\theta_q e_{t-q}
+$$
+
+- 最も単純な **MA(1)** は $x_t=e_t+\theta e_{t-1}$。直近2つのショックを混ぜる。
+- 記憶が **有限**：[自己相関](autocorrelation)はラグ $q$ まで非0で、**ラグ $q+1$ 以降ぴたりと0に切れる**（MA の指紋）。MA(1) のラグ1自己相関は $\theta/(1+\theta^2)$。
+- [自己回帰モデル](autoregressive-model)（ACF がだらだら減衰）との **ACF / PACF の切れ方の対比** が次数決定の鍵。
+- 定義より常に[定常](stationarity)。AR と組み合わせたのが ARMA。

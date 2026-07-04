@@ -1,0 +1,19 @@
+---
+title: 自己回帰モデル（AR）
+definition: 現在値を «過去の自分自身» の線形和で説明する時系列モデル。AR(1) は x_t = φ·x_{t-1} + e_t。自己相関 ρ(k)=φ^k が指数的に減衰し、φ が1に近いほど長い記憶を持つ。
+aliases: [autoregressive model, AR model, AR過程, 自己回帰過程, AR(p)]
+seeAlso: [moving-average-model, arima-model, autocorrelation, stationarity]
+---
+
+# 自己回帰モデル（AR）
+
+現在の値を **過去の自分自身の線形和** で表す時系列モデル。AR(p)：
+
+$$
+x_t=\phi_1 x_{t-1}+\dots+\phi_p x_{t-p}+e_t
+$$
+
+- 最も単純な **AR(1)** は $x_t=\phi x_{t-1}+e_t$。直前の値を $\phi$ 倍して受け継ぐ。
+- $|\phi|<1$ で[定常](stationarity)。理論[自己相関](autocorrelation)は $\rho(k)=\phi^k$ で **指数的にだらだら減衰**（AR の指紋）。$\phi$ が1に近いほど長い記憶。
+- 理論分散は $\sigma^2/(1-\phi^2)$。$\phi\to1$ で発散し、$\phi=1$ はランダムウォーク（非定常）。
+- 次数 $p$ は **偏自己相関（PACF）が $p$ 次で切れる** ことで見当を付ける。係数は Yule-Walker 方程式で推定。

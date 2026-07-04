@@ -1,0 +1,139 @@
+---
+title: 時系列モデル（ARIMA・状態空間）
+summary: 過去の値・過去のショックから次の値を作る漸化式として時系列を捉える。AR・MA・ARIMA の自己相関の «指紋»、φで変わる記憶の長さ、和分による定常化、状態空間モデルを操作で体感する。
+status: published
+---
+
+import { TSModelLab } from "@/components/topics/time-series-models/TSModelLab";
+import { ModelGalleryStepper } from "@/components/topics/time-series-models/ModelGalleryStepper";
+import { TSModelQuiz } from "@/components/topics/time-series-models/TSModelQuiz";
+
+<Topic title="時系列モデル（ARIMA・状態空間）" summary="過去の値・過去のショックから次の値を作る漸化式として時系列を捉える。AR・MA・ARIMA の自己相関の «指紋»、φで変わる記憶の長さ、和分による定常化、状態空間モデルを操作で体感する。">
+
+<ReaderGuide>
+
+- **初学者** → L0〜L1（AR(1)＝前の値を φ 倍で受け継ぐ・AR/MA の自己相関の違い）
+- **一通り使える人** → L2（ARIMA(p,d,q)・和分で定常化・状態空間モデル・モデル選択と診断）
+- **「完全に理解した」人** → L3 以降（推定・スペクトル・カルマンフィルタは到達途上）
+
+前提: [時系列解析の基礎](/topics/time-series-basics)（自己相関・定常性・階差・ホワイトノイズ）。
+
+</ReaderGuide>
+
+<Level level={0} title="ブラックボックス（AR(1)＝前の値を引きずる）">
+  <Concept>
+
+時系列モデルは «次の値をどう作るか» の漸化式。最も基本の**<Term id="autoregressive-model">自己回帰</Term>** AR(1)：
+
+$$
+x_t=\phi\,x_{t-1}+e_t.
+$$
+
+直前の値 $x_{t-1}$ を $\phi$ 倍して受け継ぎ、新しいショック $e_t$ を足す。$\phi$ が1に近いほど «前を強く引きずる»＝長い記憶になり、理論自己相関は $\rho(k)=\phi^k$ で減衰する。
+
+  </Concept>
+  <Interact>
+
+下のラボで $\phi$（AR係数）とショック $\sigma$ を変えると、標本パス・自己相関（理論 $\phi^k$ の線と標本の棒）・予測・数式が同時に追従する（操作→図→数式の強連動）。$\phi$ を1に近づけると自己相関の減衰が緩やかになり «長い記憶» になることを確かめよう。
+
+<TSModelLab />
+
+  </Interact>
+  <Exercise>
+
+確認: 「AR(1) で φ を1に近づけると、自己相関はゆっくり減衰し «長い記憶» になる」——○か×か。
+（答: ○。ρ(k)=φ^k なので φ が1に近いほど減衰が遅い。φ=1 で減衰せず非定常＝ランダムウォークになる）
+
+  </Exercise>
+</Level>
+
+<Level level={1} title="古典的理解（AR と MA の自己相関の指紋）">
+  <Concept>
+
+モデルの型は **自己相関の «指紋»** で見分ける。
+
+- **<Term id="autoregressive-model">AR</Term>**：ACF が指数的に**だらだら減衰**（長く尾を引く）。
+- **<Term id="moving-average-model">MA</Term>**：$x_t=e_t+\theta e_{t-1}$ のように直近ショックの重ね合わせ。ACF が次数で**ぴたりと切れる**（有限の記憶）。
+- **ランダムウォーク**：$x_t=x_{t-1}+e_t$（φ=1）。ACF が**減衰しない**非定常。
+
+下のギャラリーで4つの型の標本パスと ACF を並べ、指紋の違いを見比べよう。
+
+  </Concept>
+  <Derivation title="なぜ AR(1) の自己相関は φ^k になるのか">
+
+AR(1) $x_t=\phi x_{t-1}+e_t$（$|\phi|<1$、$e_t$ は分散 $\sigma^2$ のホワイトノイズ）を考える。両辺に $x_{t-k}$（$k\ge1$）を掛けて期待値を取ると、$e_t$ は過去の $x_{t-k}$ と無相関なので
+
+$$
+\gamma(k)=\mathbb E[x_t x_{t-k}]=\phi\,\mathbb E[x_{t-1}x_{t-k}]=\phi\,\gamma(k-1).
+$$
+
+自己共分散が $\gamma(k)=\phi\,\gamma(k-1)$ という等比の漸化式になる。$\gamma(0)$ から始めて解くと $\gamma(k)=\phi^k\gamma(0)$、両辺を $\gamma(0)$ で割って
+
+$$
+\rho(k)=\phi^k.
+$$
+
+$|\phi|<1$ なので指数的に減衰する。$\phi>0$ は滑らかに0へ、$\phi<0$ は符号が交互に振れながら0へ。MA(1) では同じ計算をすると $\gamma(k)=0\ (k\ge2)$ となり、ACF がラグ1で切れる——これが AR と MA の指紋の違いの源。
+
+  </Derivation>
+  <Interact>
+
+<ModelGalleryStepper />
+
+  </Interact>
+  <Exercise>
+
+<TSModelQuiz />
+
+  </Exercise>
+</Level>
+
+<Level level={2} title="仮定体系（ARIMA・和分による定常化・状態空間）">
+  <Concept>
+
+AR・MA・和分を統合し、非定常にも対応する枠組みを整理する。
+
+- **<Term id="arima-model">ARIMA(p,d,q)</Term>**: AR($p$)＋I($d$＝$d$回階差で定常化)＋MA($q$)。トレンドで非定常な系列を階差してから ARMA を当てる。ランダムウォークは ARIMA(0,1,0)。
+- **モデル選択**: ACF/PACF の切れ方で $(p,q)$ を、単位根検定で $d$ を決め、AIC 等で比較。最後に**残差がホワイトノイズか**を診断（まだ自己相関が残れば不十分）。
+- **季節性**: 季節差と季節ARMA を加えた SARIMA。
+- **<Term id="state-space-model">状態空間モデル</Term>**: 観測の裏に潜在状態の遷移を置き、カルマンフィルタで逐次推定。欠測・時変・多変量に強く ARIMA を包含する。
+
+«過去の値・過去のショックから次を作る» という漸化式の言葉で、平滑化から予測まで一貫して扱える。
+
+  </Concept>
+  <Derivation title="なぜ階差(I)で非定常が定常になるのか">
+
+ランダムウォーク $x_t=x_{t-1}+e_t$ は $x_t=\sum_{s\le t}e_s$ と書け、分散 $\mathrm{Var}[x_t]=\sigma^2 t$ が時間で増える**非定常**。ところが1階の階差を取ると
+
+$$
+\Delta x_t=x_t-x_{t-1}=e_t
+$$
+
+と**ホワイトノイズ**（定常）に戻る。より一般に、$d$ 次のトレンドを持つ系列は $d$ 回階差すればトレンド項が消えて定常に近づく。ARIMA の I はこの «階差で定常化してから ARMA を当てる» 前処理そのもの。定常化して初めて «過去から推定した自己相関構造が将来にも通用» し、安定した予測ができる。
+
+  </Derivation>
+  <Exercise>
+
+確認: 「ランダムウォークは ARIMA(0,1,0) であり、1回階差するとホワイトノイズ（定常）になる」——○か×か。
+（答: ○。$x_t-x_{t-1}=e_t$。非定常な系列も適切な回数だけ階差すれば定常化でき、その上で ARMA を当てるのが ARIMA の考え方）
+
+  </Exercise>
+</Level>
+
+<Level level={3} title="推定と次数選択" status="planned">
+  Yule-Walker・最尤推定・条件付き最小二乗、AIC/BIC による次数選択、残差診断（Ljung-Box 検定）（前提: 自己相関）。
+</Level>
+
+<Level level={4} title="状態空間とカルマンフィルタ" status="planned">
+  状態方程式＋観測方程式、カルマンフィルタの予測・更新、平滑化、局所水準・基本構造時系列モデル。
+</Level>
+
+<Level level={5} title="スペクトル・多変量" status="planned">
+  スペクトル密度・ペリオドグラム、VAR（ベクトル自己回帰）・共和分・グレンジャー因果、GARCH（分散変動）。
+</Level>
+
+<Level level={6} title="フロンティア" status="planned">
+  非線形・非ガウス状態空間（粒子フィルタ）、深層学習（RNN/Transformer）による予測は研究が活発（到達途上）。
+</Level>
+
+</Topic>
