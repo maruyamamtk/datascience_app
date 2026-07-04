@@ -793,3 +793,19 @@ MVP 5トピック完了後、SPEC §3 のチェックリスト全項目（A〜S,
 - **変更概要**: «2つのカテゴリ変数の関連» を期待度数とのズレで測る手法を4層実装。ContingencyLab は2×2の4セルスライダー→観測/期待を並べた表・標準化残差の青赤ヒートマップ・χ²/p値/Cramér's V/オッズ比（TermController）が同時連動、対角を増やすと連関が強まる。IndependenceStepper は 3×2 表で «観測→周辺和→期待度数→セル寄与(O−E)²/E→判定» の5段階を、寄与の大きいセルを濃く塗ってコマ送り。独立なら E=行和·列和/N になる導出（周辺確率の積）・自由度が rc−(r+c−1)=(r−1)(c−1) になる制約数え上げの導出を収録。有意性(p)と強さ(V)を分けて評価する作法を強調。
 - **検証結果**: Vitest **732 passed**（+21: contingency 14 / frames 7、registry リンク切れゼロ）。tsc / lint（警告0）/ build成功。`next start` + Playwright 実機確認: [[40,20],[20,40]]で χ²=13.33・p=0.0003・V=0.333・OR=4、独立表[[40,40],[20,20]]で χ²=0・p=1・V=0、ステッパー判定フレームで χ²=20.00・df=2・p≈0・独立棄却、コンソールエラー0件。
 - **設計判断 / つまずき**: χ² CDF を既存 goodness-of-fit から再利用し重複を避けた。既存用語(chi-square-test/statistical-independence/odds-ratio)へ接続し新規4語のみ追加。**lint 2件を修正** — 未使用の CELLS 定数を削除、JSXテキスト内 "Cramér's V" のアポストロフィが react/no-unescaped-entities で落ちる→「クラメールの V」に変更。次は N-1 因果推論の枠組みへ。
+
+### コンテンツ拡充 #62 — [N-1] 因果推論の枠組み
+
+優先度 36/82。前提=重回帰分析。潜在的結果（ルービン因果モデル）／反事実／因果推論の根本問題／平均処置効果 ATE・ATT／交絡と «相関≠因果»／無作為化・層別調整（交換可能性・正値性・SUTVA）。
+
+- [x] 計算層 `lib/stats/causal.ts`（generateUnits=潜在結果 Y(0)=base+交絡·x+雑音, Y(1)=Y(0)+τ, 割り当ては randomized:P=0.5 / 非無作為:0.5+selection·(x−0.5) / observedOutcome / ate=E[Y(1)−Y(0)] / naiveDifference / confoundingBias / stratifiedAte / covariateBalance）+ Vitest（8）
+- [x] 状態層 `lib/store/causal-inference-models.ts`（controls {tau, confounderEffect, selection, randomized}・trueAte/naive/bias/adjusted/balance を派生、N=600・mulberry32 固定）
+- [x] 描画層 `components/topics/causal-inference-models/`（CausalLab=真の効果/交絡/偏りスライダー＋無作為化トグル→素朴比較 vs 真のATE vs 層別調整の3バー（緑破線=真値）・共変量バランス・素朴比較=ATE+交絡バイアスの強連動数式 / PotentialOutcomesStepper=6個体固定例で神の視点→根本問題→交絡→素朴比較のバイアス→層別調整の5段階コマ送り、観測できない反事実を淡色化 / CausalQuiz）+ frames.ts + Vitest（6）
+- [x] 用語ノード5件（potential-outcomes / counterfactual / average-treatment-effect / confounding / randomization）相互リンク（既存 statistical-independence へ接続）
+- [x] MDX `content/topics/causal-inference-models.mdx`（L0-L2 充実：相関≠因果→潜在結果と根本問題→素朴比較=ATT+選択バイアスの分解導出→識別の仮定（交換可能性/正値性/SUTVA）＋層別で交絡が消える標準化(g-公式)の導出、L3-L6 planned）
+- [x] `/topics` 一覧へ反映（status: published）
+
+#### レビュー: 因果推論の枠組みトピック（2026-07-04）
+- **変更概要**: «相関≠因果» を潜在的結果で厳密化する枠組みを4層実装。CausalLab は真の効果τ・交絡の強さ・割り当ての偏りスライダー＋無作為化(RCT)トグル→«素朴比較(赤)/真のATE(緑)/層別調整(青)» の3バーに真値の緑破線を重ね、共変量バランス（処置群/対照群の交絡平均）と «素朴比較=真のATE+交絡バイアス» の分解数式（TermController）が同時連動。PotentialOutcomesStepper は6個体の固定例で «神の視点(両潜在結果)→根本問題(片方が反事実で淡色化)→交絡(重症ほど治療)→素朴比較のバイアス→層別調整» を1コマ送り。素朴比較=ATT+選択バイアスの分解導出・交換可能性下で層別(標準化/g-公式)が交絡を断つ導出を収録。
+- **検証結果**: Vitest **746 passed**（+14: causal 8 / frames 6、registry リンク切れゼロ）。tsc / lint（警告0）/ build成功。`npm run dev` + Playwright 実機確認: 既定(交絡6・偏り0.8・非無作為)で naive=6.72・ATE=2.00・bias=4.72（上振れ）、無作為化トグルON で naive=2.16・bias=0.16（交絡消失）と強連動、コンソールエラー0件。
+- **設計判断 / つまずき**: Lab は連続シミュレーション（交絡＝結果を悪化させ治療も受けやすい→素朴比較が上振れ）、Stepper は手作り6個体（severe=低ベースライン→過小評価）で符号が逆になるため、Lab コールアウトを bias の符号で «上振れ/下振れ» を動的表示に変更（固定文言の矛盾を回避）。**MDX 2件を修正** — 正値性の $0<P(...)<1$ の `<P` がJSXタグ開始と誤解される→`< ` にスペース挿入、L2 Concept のリスト直後に `</Concept>` が続くと list item に取り込まれ閉じタグ不整合→リスト後に段落を1つ挟んで解消。次は N-2 識別戦略（DID・IV・RDD）へ。

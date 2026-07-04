@@ -1,0 +1,19 @@
+---
+title: 交絡
+definition: 処置（原因）と結果の両方に影響する第3の変数（交絡変数）があるために、素朴な群間比較が真の因果効果からズレる現象。相関≠因果の主因。
+aliases: [confounding, 交絡変数, confounder, 交絡バイアス, confounding bias, 共通原因]
+seeAlso: [potential-outcomes, average-treatment-effect, randomization, statistical-independence]
+---
+
+# 交絡
+
+**交絡変数**（例：重症度）が «処置の受けやすさ» と «結果» の **両方** に影響すると、処置群と対照群がそもそも別物の集団になり、素朴な群間差が真の[平均処置効果](average-treatment-effect)からズレる。
+
+$$
+\underbrace{E[Y\mid T=1]-E[Y\mid T=0]}_{\text{素朴比較（相関）}}=\underbrace{\text{ATE}}_{\text{因果}}+\underbrace{\text{交絡バイアス}}_{\ne 0}
+$$
+
+- «重症ほど治療されやすい» と、処置群に低ベースラインが偏り、効果が薄まって（あるいは逆転して）見える。**相関≠因果** の代表的な原因。
+- 交絡変数は処置と結果の **共通原因**。中間変数（処置→X→結果）や合流点とは区別する（それらは調整するとむしろ歪む）。
+- 対処：①[無作為化](randomization)で割り当てを交絡から[独立](statistical-independence)にする、②観測データでは交絡変数で層別・回帰・傾向スコアにより «同じ条件で比べる»（バックドア基準）。
+- 未観測交絡は調整できないため、感度分析や操作変数などが必要になる。
