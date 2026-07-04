@@ -697,3 +697,19 @@ MVP 5トピック完了後、SPEC §3 のチェックリスト全項目（A〜S,
 - **変更概要**: «記憶のない» 確率過程マルコフ連鎖を4層実装。MarkovLab は雨の続きやすさ P(雨→雨) スライダー→3×3遷移行列ヒートマップ・定常分布バー（晴/曇/雨）・π_雨（TermController）が同時連動、雨が続きやすいほど定常分布の雨が増える。DistributionStepper は初期分布(晴100%)から πP を反復し定常分布(破線)へ収束する過程を棒でコマ送り。固有値分解で初期状態依存の項(|λ|<1)が指数的に消え定常分布に収束する導出・詳細釣り合いπ_iP_ij=π_jP_jiが定常分布を与える導出(MCMC設計原理)を網羅。samplePathで長期滞在割合が定常分布に一致することも検証。
 - **検証結果**: Vitest **626 passed**（+16: markov 12 / frames 4、registry リンク切れゼロ）。tsc / lint（警告0）/ build成功。`pnpm start` + Playwright 実機確認: P(雨→雨)=0.6 で 定常π_雨=0.294、0.9 で 0.625（雨がちな気候）、分布推移ステッパーが t=14 で定常への距離0.011に収束、コンソールエラー0件。
 - **設計判断 / つまずき**: «記憶のなさ→遷移行列だけで長期挙動が決まる» を定常分布バーの連動で体感、収束を固有値分解の導出で裏づけて MCMC（詳細釣り合い）へ橋渡し。mcmc用語の seeAlso/本文が未作成の monte-carlo(トピック#57)を指していたので除去（[[lessons: 用語リンクは実在slugのみ]]の再確認）。frame は DistributionStepper のみ使用で競合なし。**これでH群完了**、L群（確率過程）に前進。次は L-2 確率過程へ。
+
+### コンテンツ拡充 #56 — [L-2] 確率過程
+
+優先度 30/82。前提=マルコフ連鎖。ブラウン運動・分散∝t・ランダムウォーク・ポアソン過程。
+
+- [x] 計算層 `lib/stats/stochastic.ts`（randomWalk/brownianMotion/poissonProcess/ensembleVariance/ensembleMean/brownianEnsemble）+ Vitest（9）
+- [x] 状態層 `lib/store/stochastic-processes.ts`（controls {sigma, mu}・T=1のブラウン運動アンサンブル）
+- [x] 描画層 `components/topics/stochastic-processes/`（BrownianLab=σ・μ→標本パス・±2σ√t拡散帯・平均ドリフト線・終端分散σ²Tの強連動 / ProcessGalleryStepper=ランダムウォーク→ブラウン運動→ポアソン過程のギャラリーコマ送り / StochasticQuiz）+ frames.ts + Vitest（4）
+- [x] 用語ノード4件（stochastic-process / brownian-motion / random-walk / poisson-process）相互リンク
+- [x] MDX `content/topics/stochastic-processes.mdx`（L0-L2 充実：時間で広がるランダムさ→独立増分の加算で分散∝tの導出→独立増分/マルコフ性/不変原理/SDE＋ランダムウォーク→ブラウン運動の不変原理の導出、L3-L6 planned）
+- [x] `/topics` 一覧へ反映（status: published）
+
+#### レビュー: 確率過程トピック（2026-07-04）
+- **変更概要**: «時間とともにランダムに変化する量» をブラウン運動中心に4層実装。BrownianLab は σ(ボラティリティ)・μ(ドリフト)スライダー→16本の標本パス・±2σ√t の拡散帯(放物線状に開く)・平均ドリフト線・終端分散σ²T（TermController）が同時連動、σを上げると帯が√tで広がる «拡散» を可視化。ProcessGalleryStepper はランダムウォーク(±1折れ線)→ブラウン運動(正規増分)→ポアソン過程(指数間隔の階段)を «増分の種類» つきでコマ送り。独立増分の分散加算で Var[B_t]=σ²t になる導出・ランダムウォーク→ブラウン運動の不変原理(CLTの過程版)の導出を網羅。ポアソン過程は指数間隔生成で N(t)〜Po(λt) を検証。
+- **検証結果**: Vitest **639 passed**（+13: stochastic 9 / frames 4、registry リンク切れゼロ）。tsc / lint（警告0）/ build成功。`pnpm start` + Playwright 実機確認: σ=1 で 終端分散=1、σ=2 で 4（σ²Tで拡散帯が広がる）、過程ギャラリーが3過程を循環表示（③ポアソン=指数間隔ジャンプ）、コンソールエラー0件。
+- **設計判断 / つまずき**: «独立増分の積み重ね→分散∝t→√tで広がる拡散» を拡散帯の連動で体感させ、不変原理でランダムウォーク・CLTと接続、増分の種類で3過程を対比した。**MDXのバグ2件を修正** — L2でConcept閉じタグを誤って `</Derivation>` と書きJSXネスト崩れ→`</Concept>`に、用語リンクにトピックslug(central-limit-theorem)混入・topic MDXの<Term>が未作成用語を指す問題→平文/実在用語(standard-normal-distribution)に修正。frame は ProcessGalleryStepper のみ使用で競合なし。次は L-3 計算多用手法（ブートストラップ・モンテカルロ）へ。

@@ -1,0 +1,142 @@
+---
+title: 確率過程
+summary: 時間とともにランダムに変化する量。ブラウン運動を中心に、分散が時間に比例して広がる «拡散»・独立増分・ランダムウォークやポアソン過程との関係を操作で体感する。
+status: published
+---
+
+import { BrownianLab } from "@/components/topics/stochastic-processes/BrownianLab";
+import { ProcessGalleryStepper } from "@/components/topics/stochastic-processes/ProcessGalleryStepper";
+import { StochasticQuiz } from "@/components/topics/stochastic-processes/StochasticQuiz";
+
+<Topic title="確率過程" summary="時間とともにランダムに変化する量。ブラウン運動を中心に、分散が時間に比例して広がる «拡散»・独立増分・ランダムウォークやポアソン過程との関係を操作で体感する。">
+
+<ReaderGuide>
+
+- **初学者** → L0〜L1（ブラウン運動、分散が時間に比例して広がる、増分の積み重ね）
+- **一通り使える人** → L2（独立増分・マルコフ性・不変原理・ポアソン過程・確率微分方程式）
+- **「完全に理解した」人** → L3 以降（伊藤積分・確率微分方程式は到達途上）
+
+前提: [マルコフ連鎖](/topics/markov-chains)、[大数の法則と正規近似](/topics/law-of-large-numbers)の中心極限定理。
+
+</ReaderGuide>
+
+<Level level={0} title="ブラックボックス（時間とともに広がるランダムさ）">
+  <Concept>
+
+株価やノイズのように «時間とともにランダムに変化する量» が**<Term id="stochastic-process">確率過程</Term>**。
+代表が**<Term id="brownian-motion">ブラウン運動</Term>**——各微小時間に独立な正規の増分を足し続ける連続過程。
+
+出発点は0でも、時間が経つほど «取りうる幅» が広がっていく。この広がり（拡散）は分散が時間に比例して起こる。
+
+  </Concept>
+  <Interact>
+
+下のラボでボラティリティ $\sigma$（拡散の速さ）とドリフト $\mu$（偏り）を変えると、標本パス・拡散帯（±2σ√t）・平均の傾き・終端分散 $\sigma^2 T$ が変わり、数式が同時に追従する（操作→図→数式の強連動）。
+$\sigma$ を上げると帯が $\sqrt t$ で放物線状に開くことを確かめよう。
+
+<BrownianLab />
+
+  </Interact>
+  <Exercise>
+
+確認: 「ブラウン運動の «取りうる幅»（標準偏差）は、時間に比例して直線的に広がる」——○か×か。
+（答: ×。分散が時間に比例（Var=σ²t）するので、標準偏差は √t に比例。だから拡散帯は直線でなく放物線状に開く）
+
+  </Exercise>
+</Level>
+
+<Level level={1} title="古典的理解（独立増分と分散の加算）">
+  <Concept>
+
+ブラウン運動は **独立な増分の積み重ね**。重ならない時間区間の増分が互いに独立で、各増分の分散が足し合わさる。
+
+<Math tex="\operatorname{Var}[B_t]=\sigma^2 t" />
+
+下のステッパーで «ランダムウォーク→ブラウン運動→ポアソン過程» を見比べ、«増分の種類» が過程の性格を決めることを追える。
+
+  </Concept>
+  <Derivation title="なぜ分散が時間に比例するのか（独立増分の加算）">
+
+時間 $[0,t]$ を $n$ 個の微小区間 $\Delta t=t/n$ に分ける。各区間の増分 $\Delta B_k$ は独立で、分散 $\sigma^2\Delta t$。
+ブラウン運動はこれらの和：
+
+$$
+B_t=\sum_{k=1}^n \Delta B_k.
+$$
+
+**独立** な確率変数の和の分散は分散の和なので、
+
+$$
+\operatorname{Var}[B_t]=\sum_{k=1}^n \operatorname{Var}[\Delta B_k]=n\cdot\sigma^2\Delta t=n\cdot\sigma^2\frac{t}{n}=\sigma^2 t.
+$$
+
+刻み方 $n$ によらず $\operatorname{Var}[B_t]=\sigma^2 t$。だから標準偏差（広がり）は $\sigma\sqrt t$ で、$\sqrt t$ に比例して開く «拡散» になる。
+同じ論理で[ランダムウォーク](/topics/stochastic-processes)の $\operatorname{Var}[S_n]=n\sigma^2$（ステップ数に比例）が出る。«独立増分の分散が足し算される» のが拡散の正体。
+
+  </Derivation>
+  <Interact>
+
+<ProcessGalleryStepper />
+
+  </Interact>
+  <Exercise>
+
+<StochasticQuiz />
+
+  </Exercise>
+</Level>
+
+<Level level={2} title="仮定体系（独立増分・マルコフ性・不変原理・SDE）">
+  <Concept>
+
+確率過程を分類・接続する道具を整理する。
+
+- **独立増分・定常増分**: 重ならない区間の増分が独立（ブラウン運動・ポアソン過程）。増分の分布が時間差だけで決まれば定常増分。
+- **マルコフ性**: 将来は «現在» だけで決まる（[マルコフ連鎖](/topics/markov-chains)の連続版）。ブラウン運動もマルコフ的。
+- **不変原理**: <Term id="random-walk">ランダムウォーク</Term>を細かくスケールした極限がブラウン運動（[中心極限定理](/topics/law-of-large-numbers)の «過程版»）。
+- **<Term id="poisson-process">ポアソン過程</Term>**: 到着を数える計数過程。到着間隔は指数分布、$N(t)\sim\mathrm{Po}(\lambda t)$。
+- **確率微分方程式（SDE）**: $dX=\mu\,dt+\sigma\,dW$。ドリフト＋ブラウン増分で連続なランダム系を記述（幾何ブラウン運動など）。
+
+«増分をどう積むか» が過程の性格を決める——これが確率過程を貫く見方。
+
+  </Concept>
+  <Derivation title="ランダムウォークからブラウン運動へ（不変原理）">
+
+歩幅 $\pm1$ のランダムウォーク $S_n$ は $\operatorname{Var}[S_n]=n$。これを時間 $[0,1]$ に $n$ ステップ詰め込み、値を $\sqrt n$ で割ってスケールする：
+
+$$
+W^{(n)}_t=\frac{1}{\sqrt n}S_{\lfloor nt\rfloor}.
+$$
+
+各時刻の $W^{(n)}_t$ は独立増分の和なので、[中心極限定理](/topics/law-of-large-numbers)により $n\to\infty$ で正規 $N(0,t)$ に収束。さらに «過程全体» としてブラウン運動 $B_t$ に収束する（ドンスカーの不変原理）。
+
+だから «たくさんの小さな独立なランダムネスの積み重ね» は、細かく見るとブラウン運動になる。
+中心極限定理が «和の分布» を正規にするのに対し、不変原理は «積み重ねの過程» をブラウン運動にする——同じ現象の過程版。
+
+  </Derivation>
+  <Exercise>
+
+確認: 「ランダムウォークの歩幅を小さく・歩数を多くしてスケールすると、その極限はブラウン運動になる（不変原理）」——○か×か。
+（答: ○。中心極限定理の過程版（ドンスカーの不変原理）。独立増分の積み重ねの連続極限がブラウン運動）
+
+  </Exercise>
+</Level>
+
+<Level level={3} title="伊藤積分・確率微分方程式" status="planned">
+  ブラウン運動に関する伊藤積分・伊藤の補題、確率微分方程式（SDE）と幾何ブラウン運動（前提:
+  微積分）。
+</Level>
+
+<Level level={4} title="連続時間マルコフ過程" status="planned">
+  連続時間マルコフ連鎖・生成作用素、拡散過程とコルモゴロフ方程式、待ち行列理論。
+</Level>
+
+<Level level={5} title="定常過程・スペクトル" status="planned">
+  弱定常過程・自己共分散・スペクトル密度、時系列解析との接続（時系列トピックへ）。
+</Level>
+
+<Level level={6} title="フロンティア" status="planned">
+  確率過程を生成モデルに使う拡散モデル（スコアベース生成）との接続は研究が活発（到達途上）。
+</Level>
+
+</Topic>

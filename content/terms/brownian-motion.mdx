@@ -1,0 +1,15 @@
+---
+title: ブラウン運動
+definition: 独立な正規増分を積み重ねる連続時間の確率過程（ウィーナー過程）。B_0=0、増分 B_{t+s}−B_t 〜 N(0,σ²s)、分散が時間に比例。連続だが至る所微分不可能。
+aliases: [Brownian motion, ブラウン運動, ウィーナー過程, Wiener process]
+seeAlso: [stochastic-process, random-walk, standard-normal-distribution]
+---
+
+# ブラウン運動（ウィーナー過程）
+
+独立な[正規](standard-normal-distribution)増分を積み重ねる連続時間の[確率過程](stochastic-process)。
+
+- $B_0=0$、増分 $B_{t+s}-B_t\sim N(0,\sigma^2 s)$（独立増分・定常増分）。
+- **分散が時間に比例** $\operatorname{Var}[B_t]=\sigma^2 t$ → 標準偏差は $\sqrt t$ で広がる «拡散»。
+- 連続だが **至る所で微分不可能**（ギザギザ）。[ランダムウォーク](random-walk)の連続極限（不変原理）。
+- ドリフト付き $dB=\mu\,dt+\sigma\,dW$ は株価（幾何ブラウン運動）・拡散・ノイズのモデルの基礎。

@@ -1,0 +1,18 @@
+---
+title: ランダムウォーク
+definition: 各時刻に独立な増分（例±1）を足していく離散時間の確率過程。歩幅を小さく歩数を増やす極限でブラウン運動に収束する。
+aliases: [random walk, ランダムウォーク, 酔歩]
+seeAlso: [brownian-motion, stochastic-process, standard-normal-distribution]
+---
+
+# ランダムウォーク
+
+各時刻に独立・同分布な増分（最も単純には $\pm1$）を足していく離散時間の[確率過程](stochastic-process)。
+
+$$
+S_n=\sum_{i=1}^n \xi_i,\qquad \xi_i=\pm1
+$$
+
+- 増分が独立なので、$\operatorname{Var}[S_n]=n\cdot\operatorname{Var}[\xi]$（分散はステップ数に比例）。
+- 歩幅を $1/\sqrt n$、歩数を増やす極限で[ブラウン運動](brownian-motion)に収束（中心極限定理の過程版＝不変原理）。
+- 株価・拡散・探索アルゴリズムなど «積み重ねのランダムネス» のモデル。ドリフトを入れると偏った歩み。
