@@ -80,7 +80,7 @@
 | 29 | #55 | L-1 | マルコフ連鎖 | markov-chains | probability-basics | ✅ done |
 | 30 | #56 | L-2 | 確率過程 | stochastic-processes | markov-chains | ✅ done |
 | 31 | #57 | L-3 | 計算多用手法（ブートストラップ・モンテカルロ） | monte-carlo-methods | markov-chains, estimation-methods | ✅ done |
-| 32 | #58 | M-1 | 時系列解析の基礎 | time-series-basics | distribution-characteristics | pending |
+| 32 | #58 | M-1 | 時系列解析の基礎 | time-series-basics | distribution-characteristics | ✅ done |
 | 33 | #59 | M-2 | 時系列モデル（ARIMA・状態空間） | time-series-models | time-series-basics | pending |
 | 34 | #60 | M-3 | 時系列予測と評価 | time-series-forecasting | time-series-models | pending |
 | 35 | #61 | N-5 | 分割表の解析 | contingency-tables | goodness-of-fit-tests | pending |

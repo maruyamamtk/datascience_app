@@ -1,0 +1,133 @@
+---
+title: 時系列解析の基礎
+summary: 時間順に並んだデータを «トレンド＋季節＋不規則» に分解し、移動平均で平滑化、自己相関（ACF）で周期性・記憶を読む。定常性とホワイトノイズを操作とコレログラムで体感する。
+status: published
+---
+
+import { TimeSeriesLab } from "@/components/topics/time-series-basics/TimeSeriesLab";
+import { AcfStepper } from "@/components/topics/time-series-basics/AcfStepper";
+import { TimeSeriesQuiz } from "@/components/topics/time-series-basics/TimeSeriesQuiz";
+
+<Topic title="時系列解析の基礎" summary="時間順に並んだデータを «トレンド＋季節＋不規則» に分解し、移動平均で平滑化、自己相関（ACF）で周期性・記憶を読む。定常性とホワイトノイズを操作とコレログラムで体感する。">
+
+<ReaderGuide>
+
+- **初学者** → L0〜L1（トレンド＋季節＋不規則の分解・移動平均・自己相関の読み方）
+- **一通り使える人** → L2（弱定常の定義・階差による定常化・ホワイトノイズ・ACFの信頼限界）
+- **「完全に理解した」人** → L3 以降（ARMA・スペクトル・単位根検定は時系列モデルトピックへ）
+
+前提: [分布の特性値](/topics/distribution-characteristics)（平均・分散・共分散・相関）。
+
+</ReaderGuide>
+
+<Level level={0} title="ブラックボックス（時系列は3成分の重ね合わせ）">
+  <Concept>
+
+売上や気温のように **時間順に並んだ**データが[時系列](time-series)。各点はバラバラではなく «前後の値と関係» を持つ。まず時系列を分かりやすい形に切り分ける——
+
+$$
+x_t = \underbrace{T_t}_{\text{トレンド}} + \underbrace{S_t}_{\text{季節}} + \underbrace{e_t}_{\text{不規則}}.
+$$
+
+**<Term id="trend-seasonal-decomposition">トレンド・季節分解</Term>**。長期の傾向（トレンド）・一定周期の波（季節）・残りのランダムなゆらぎ（不規則）に分けて考える。
+
+  </Concept>
+  <Interact>
+
+下のラボでトレンド傾き・季節振幅・ノイズ・**<Term id="moving-average">移動平均</Term>**の窓幅を変えると、系列プロット・平滑化線・分散・数式のハイライトが同時に追従する（操作→図→数式の強連動）。移動平均がノイズを均して分散を下げる様子を確かめよう。
+
+<TimeSeriesLab />
+
+  </Interact>
+  <Exercise>
+
+確認: 「移動平均の窓幅を広げるほど、系列は滑らかになり分散は下がる」——○か×か。
+（答: ○。周辺の値を平均するほどランダムなノイズが打ち消し合い、平滑化が強まる。ただし広げすぎると季節の山も削れてしまう）
+
+  </Exercise>
+</Level>
+
+<Level level={1} title="古典的理解（自己相関 ACF で周期と記憶を読む）">
+  <Concept>
+
+時系列の «並び順の情報» は**<Term id="autocorrelation">自己相関</Term>**に現れる。系列を $k$ 期ずらして自分自身と重ね、その相関を測ったのが $\rho(k)$：
+
+$$
+\rho(k)=\frac{\gamma(k)}{\gamma(0)},\qquad \gamma(k)=\frac1n\sum_t (x_t-\bar x)(x_{t+k}-\bar x).
+$$
+
+$\rho(0)=1$ から始まり、季節周期のラグで正のピークが立つ。ラグごとの $\rho(k)$ を並べた図がコレログラム。
+
+  </Concept>
+  <Derivation title="なぜ季節周期のラグで自己相関のピークが立つのか">
+
+季節成分を周期 $p$ の波 $S_t=A\sin(2\pi t/p)$ とする。ラグ $k$ ずらすと $S_{t+k}=A\sin(2\pi(t+k)/p)$。積の時間平均は三角関数の公式から
+
+$$
+\frac1n\sum_t S_t S_{t+k}\ \approx\ \frac{A^2}{2}\cos\!\Big(\frac{2\pi k}{p}\Big).
+$$
+
+つまり自己共分散は $\cos(2\pi k/p)$ で振動する。$k=p$（1周期ずれ）で $\cos(2\pi)=1$ → **山と山が揃い正の最大**。$k=p/2$（半周期ずれ）で $\cos(\pi)=-1$ → **山と谷が重なり負**。不規則成分 $e_t$ は $k\ge1$ で相関0なので、季節の振動だけが ACF に残る。だからコレログラムの «周期 $p$ ごとのピーク» が季節性の指紋になる。
+
+  </Derivation>
+  <Interact>
+
+<AcfStepper />
+
+  </Interact>
+  <Exercise>
+
+<TimeSeriesQuiz />
+
+  </Exercise>
+</Level>
+
+<Level level={2} title="仮定体系（定常性・階差・ホワイトノイズ）">
+  <Concept>
+
+時系列モデルの土台となる «性質が時間で変わらない» 前提を整理する。
+
+- **<Term id="stationarity">定常性</Term>（弱定常）**: ①平均が一定、②分散が一定、③自己共分散 $\gamma(k)$ が時点によらずラグ $k$ だけで決まる。多くのモデルの前提。
+- **非定常の原因と対処**: トレンドがあると平均が動く＝非定常。**階差** $\Delta x_t=x_t-x_{t-1}$ でトレンドを除くと定常に近づく（傾き一定の直線は階差で定数になる）。季節差 $x_t-x_{t-p}$ で季節を除く。
+- **<Term id="white-noise">ホワイトノイズ</Term>**: 平均0・分散一定・無相関（$\rho(k)=0,\ k\ge1$）の «構造ゼロ» の系列。モデリングの目標は残差をここまで白色化すること。
+- **ACFの信頼限界**: ホワイトノイズなら自己相関はほぼ $\pm1.96/\sqrt n$ に収まる。これを超えるラグは «有意な構造が残っている» サイン。
+
+«時間で性質が変わらない（定常）» を確保して初めて、過去から推定した性質が将来にも通用する。
+
+  </Concept>
+  <Derivation title="なぜ階差でトレンドが消えるのか">
+
+トレンドを直線 $T_t=a+bt$ とし、観測を $x_t=a+bt+e_t$ とする（$e_t$ は定常なゆらぎ）。1階の階差を取ると
+
+$$
+\Delta x_t = x_t-x_{t-1} = \big(a+bt\big)-\big(a+b(t-1)\big) + (e_t-e_{t-1}) = b + (e_t-e_{t-1}).
+$$
+
+時間に依存する項 $bt$ が消え、**定数 $b$ ＋定常なゆらぎ** になる——平均が時間で動かない。2次のトレンドなら階差を2回取れば消える。こうして非定常な系列を定常に «前処理» してからモデル化するのが時系列解析の定石（この考えが ARIMA の "I"＝和分の階差）。
+
+  </Derivation>
+  <Exercise>
+
+確認: 「右上がりのトレンドを持つ系列は弱定常である」——○か×か。
+（答: ×。トレンドがあると平均 $\mathbb E[x_t]$ が時間とともに動くので «平均一定» を満たさず非定常。階差を取ると定常に近づく）
+
+  </Exercise>
+</Level>
+
+<Level level={3} title="ARモデルと偏自己相関" status="planned">
+  自己回帰 AR(p)・偏自己相関（PACF）による次数決定・Yule-Walker 方程式（時系列モデルトピックへ）。
+</Level>
+
+<Level level={4} title="ARIMA・状態空間" status="planned">
+  ARMA/ARIMA・SARIMA・状態空間表現とカルマンフィルタ（前提: 定常性・階差）。
+</Level>
+
+<Level level={5} title="スペクトル解析" status="planned">
+  周波数領域からの見方（フーリエ変換・ペリオドグラム・スペクトル密度）と自己相関の対応。
+</Level>
+
+<Level level={6} title="フロンティア" status="planned">
+  非線形・非定常時系列、長期記憶、深層学習（RNN/Transformer）による予測は研究が活発（到達途上）。
+</Level>
+
+</Topic>
