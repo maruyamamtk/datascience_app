@@ -809,3 +809,19 @@ MVP 5トピック完了後、SPEC §3 のチェックリスト全項目（A〜S,
 - **変更概要**: «相関≠因果» を潜在的結果で厳密化する枠組みを4層実装。CausalLab は真の効果τ・交絡の強さ・割り当ての偏りスライダー＋無作為化(RCT)トグル→«素朴比較(赤)/真のATE(緑)/層別調整(青)» の3バーに真値の緑破線を重ね、共変量バランス（処置群/対照群の交絡平均）と «素朴比較=真のATE+交絡バイアス» の分解数式（TermController）が同時連動。PotentialOutcomesStepper は6個体の固定例で «神の視点(両潜在結果)→根本問題(片方が反事実で淡色化)→交絡(重症ほど治療)→素朴比較のバイアス→層別調整» を1コマ送り。素朴比較=ATT+選択バイアスの分解導出・交換可能性下で層別(標準化/g-公式)が交絡を断つ導出を収録。
 - **検証結果**: Vitest **746 passed**（+14: causal 8 / frames 6、registry リンク切れゼロ）。tsc / lint（警告0）/ build成功。`npm run dev` + Playwright 実機確認: 既定(交絡6・偏り0.8・非無作為)で naive=6.72・ATE=2.00・bias=4.72（上振れ）、無作為化トグルON で naive=2.16・bias=0.16（交絡消失）と強連動、コンソールエラー0件。
 - **設計判断 / つまずき**: Lab は連続シミュレーション（交絡＝結果を悪化させ治療も受けやすい→素朴比較が上振れ）、Stepper は手作り6個体（severe=低ベースライン→過小評価）で符号が逆になるため、Lab コールアウトを bias の符号で «上振れ/下振れ» を動的表示に変更（固定文言の矛盾を回避）。**MDX 2件を修正** — 正値性の $0<P(...)<1$ の `<P` がJSXタグ開始と誤解される→`< ` にスペース挿入、L2 Concept のリスト直後に `</Concept>` が続くと list item に取り込まれ閉じタグ不整合→リスト後に段落を1つ挟んで解消。次は N-2 識別戦略（DID・IV・RDD）へ。
+
+### コンテンツ拡充 #63 — [N-2] 識別戦略（DID・IV・RDD）
+
+優先度 37/82。前提=因果推論の枠組み。差の差分法（平行トレンド）／操作変数法（関連性・除外制約・Wald 推定）／回帰不連続デザイン（閾値の局所無作為化・局所線形フィット）。
+
+- [x] 計算層 `lib/stats/identification.ts`（DID: generateDidCells/didEstimate/didCounterfactual、IV: generateIvUnits/ivWaldEstimate/ivNaiveEstimate、RDD: generateRddPoints/rddEstimate（局所線形は olsFit 再利用））+ Vitest（8）
+- [x] 状態層 `lib/store/causal-identification.ts`（DID controls {trueEffect, commonTrend, parallelViolation}・cells/did/counterfactual/bias を派生）
+- [x] 描画層 `components/topics/causal-identification/`（DidLab=2期×2群の折れ線・反事実の破線・DIDギャップ・強連動数式 / RddStepper=散布→左フィット→右フィット→ジャンプの4段階コマ送りSVG / IdentificationQuiz=3手法横断4問）+ frames.ts（RDD）+ Vitest（4）
+- [x] 用語ノード5件（difference-in-differences / parallel-trends / instrumental-variable / exclusion-restriction / regression-discontinuity）相互リンク（既存 confounding / randomization / average-treatment-effect へ接続）
+- [x] MDX `content/topics/causal-identification.mdx`（L0-L2 充実：準実験の必要性→DID構成/RDDジャンプ→3戦略の識別条件と射程＋DIDで固定交絡が消える固定効果の導出/IV Wald が未観測交絡を迂回する導出、L3-L6 planned）
+- [x] `/topics` 一覧へ反映（status: published）
+
+#### レビュー: 識別戦略（DID・IV・RDD）トピック（2026-07-04）
+- **変更概要**: 無作為化できない観察データで因果効果を «識別» する3準実験デザインを4層実装。DidLab は真の効果・共通トレンド・平行トレンドの破れスライダー→処置群(赤)/対照群(青)/反事実(灰破線)の2期折れ線・DIDギャップの縦線・«DID=(処置群の変化)−(対照群の変化)» 分解数式が同時連動、破れを入れるとそのままバイアスに。RddStepper は固定60点で «散布→閾値の左を線形フィット→右を線形フィット→閾値のジャンプ» をSVGコマ送り、閾値ぎりぎりの局所効果を可視化。IV は計算層(Wald 推定)＋MDX導出で扱い、3手法横断のクイズ。DIDで固定交絡が消える固定効果分解・IV Wald が未観測交絡を迂回する導出を収録。
+- **検証結果**: Vitest **758 passed**（+12: identification 8 / RDD frames 4、registry リンク切れゼロ）。tsc / lint（警告0）/ build成功。`npm run dev` + Playwright 実機確認: 既定で DID=3（真値一致, ta=27/tb=20/ca=14/cb=10）、破れ+2 で DID=5・ta=29（バイアス2が乗る）と強連動、RDDステッパー最終フレームで «ジャンプ 3.93»（真値+4を復元）・左右フィット＋ジャンプ線描画、コンソールエラー0件。
+- **設計判断 / つまずき**: 3手法のうち視覚的な DID・RDD を Lab/Stepper に、IV は計算層＋MDX 導出に配分（前トピック同様 1 Lab + 1 Stepper のカデンツを維持しつつ3手法を網羅）。RDD の局所線形フィットは既存 regression.ts の olsFit を cutoff シフトして再利用し重複回避。MDX は数式を全て $...$ 内に閉じ（$Z\perp U$ 等）、L2 Concept のリスト後に段落を挟んで閉じタグ不整合を回避（前回教訓を適用）。**N群 因果推論の中核（N-1/N-2）完了**、次は N-3 A/Bテスト実務へ。

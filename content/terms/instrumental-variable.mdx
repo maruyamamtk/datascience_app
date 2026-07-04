@@ -1,0 +1,24 @@
+---
+title: 操作変数（IV）
+definition: 処置を動かすが結果には直接影響しない変数。未観測交絡があっても «処置を通してしか結果に効かない» 性質を使い、Wald 推定で因果効果を識別する。
+aliases: [instrumental variable, IV, 操作変数法, instrument, 道具変数]
+seeAlso: [exclusion-restriction, confounding, average-treatment-effect, difference-in-differences]
+---
+
+# 操作変数（IV）
+
+処置 $T$ に効くが結果 $Y$ には直接効かない外生変数 $Z$。二値 $Z$ での **Wald 推定量**：
+
+$$
+\hat\tau_{IV}=\frac{E[Y\mid Z=1]-E[Y\mid Z=0]}{E[T\mid Z=1]-E[T\mid Z=0]}
+$$
+
+満たすべき2条件：
+
+- **関連性（第1段階）**: $Z$ が $T$ を実際に動かす（分母が非ゼロ）。弱いと推定が不安定になる（弱操作変数問題）。
+- **[除外制約](exclusion-restriction)**: $Z$ は $T$ を通してしか $Y$ に影響しない（+ $Z$ が[交絡](confounding)と独立）。
+
+«$Z$ が $Y$ を動かす分» は $Z\to T\to Y$ 経由だけなので、$T$ の動き分で割ると処置効果が復元される。未観測交絡があっても迂回できるのが強み。
+
+- 推定できるのは «$Z$ で処置状態が変わる人（コンプライアー）» での効果（局所平均処置効果 LATE）。
+- 例：くじ引きの当選（$Z$）で受講が決まる、雨量が農作物価格の道具になる、など。二段階最小二乗法（2SLS）で連続・多変数へ拡張。

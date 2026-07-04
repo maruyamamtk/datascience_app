@@ -1,0 +1,142 @@
+---
+title: 識別戦略（DID・IV・RDD）
+summary: 無作為化できない観察データで因果効果を «識別» する3つの準実験デザイン。差の差分法（平行トレンド）、操作変数法（除外制約）、回帰不連続デザイン（閾値の局所無作為化）を、それぞれの仮定とともに操作で体感する。
+status: published
+---
+
+import { DidLab } from "@/components/topics/causal-identification/DidLab";
+import { RddStepper } from "@/components/topics/causal-identification/RddStepper";
+import { IdentificationQuiz } from "@/components/topics/causal-identification/IdentificationQuiz";
+
+<Topic title="識別戦略（DID・IV・RDD）" summary="無作為化できない観察データで因果効果を «識別» する3つの準実験デザイン。差の差分法（平行トレンド）、操作変数法（除外制約）、回帰不連続デザイン（閾値の局所無作為化）を、それぞれの仮定とともに操作で体感する。">
+
+<ReaderGuide>
+
+- **初学者** → L0〜L1（なぜ準実験が要るか・差の差分法 DID・回帰不連続 RDD の直感）
+- **一通り使える人** → L2（各戦略の識別仮定：平行トレンド・除外制約・連続性、何の効果を測るか）
+- **「完全に理解した」人** → L3 以降（2SLS・合成統制法・イベントスタディ・ファジー RDD は到達途上）
+
+前提: [因果推論の枠組み](/topics/causal-inference-models)（潜在的結果・交絡・平均処置効果）。
+
+</ReaderGuide>
+
+<Level level={0} title="ブラックボックス（無作為化できないときどうするか）">
+  <Concept>
+
+無作為化比較試験（RCT）が使えれば交絡は消えるが、政策・制度・倫理の制約でくじ引きできないことは多い。そこで «制度のたまたまの仕組み» を利用して、無作為化を **近似** するのが準実験デザイン。
+
+代表が3つ。**<Term id="difference-in-differences">差の差分法（DID）</Term>**（前後×群の2×2で時間変化を差し引く）、**<Term id="instrumental-variable">操作変数法（IV）</Term>**（処置だけを動かす «外生の押し»）、**<Term id="regression-discontinuity">回帰不連続デザイン（RDD）</Term>**（閾値のすぐ両側を «そっくりさん» とみなす）。どれも «同じ条件で比べる» を設計で作り出す。
+
+  </Concept>
+  <Interact>
+
+下のラボで DID を操作しよう。真の効果・共通の時間トレンド・平行トレンドの破れを動かすと、処置群（赤）・対照群（青）・反事実（灰破線）の折れ線、DID のギャップ、数式が同時に追従する。«平行トレンドの破れ» を入れると DID が真値からズレる様子を確かめよう。
+
+<DidLab />
+
+  </Interact>
+  <Exercise>
+
+確認: 「DID では、介入前に処置群と対照群の水準が違っていても効果を推定できる」——○か×か。
+（答: ○。DID は水準差を差分で消す。必要なのは «変化の平行性»（平行トレンド）であって水準の一致ではない）
+
+  </Exercise>
+</Level>
+
+<Level level={1} title="古典的理解（DID の構成と RDD のジャンプ）">
+  <Concept>
+
+**DID** は2×2の群平均から $\text{DID}=(Y^T_{\text{後}}-Y^T_{\text{前}})-(Y^C_{\text{後}}-Y^C_{\text{前}})$。対照群の変化を «処置がなくても起きた共通の時間変化» の代理として差し引く。
+
+**RDD** は連続な割り当て変数 $x$ が閾値 $c$ を超えると処置が入る状況で、閾値での結果のジャンプを効果とみなす。閾値のすぐ両側はほぼ «そっくりさん» なので、割り当て変数以外が境界で連続なら、ジャンプの原因は処置しかない。
+
+下のステッパーで RDD を «散布→左を線形フィット→右を線形フィット→閾値のジャンプ» と1コマずつ追う。
+
+  </Concept>
+  <Derivation title="なぜ DID で «時間で一定の交絡» が消えるのか">
+
+結果を «群の固定効果 $\alpha$ ＋ 時間効果 $\lambda$ ＋ 処置効果 $\tau D$ ＋ 誤差» と書く。処置群 $T$ は後だけ処置 $D=1$、対照群 $C$ は常に $D=0$：
+
+$$
+\begin{aligned}
+Y^{T}_{\text{前}}&=\alpha_T+\lambda_{\text{前}}, & Y^{T}_{\text{後}}&=\alpha_T+\lambda_{\text{後}}+\tau,\\
+Y^{C}_{\text{前}}&=\alpha_C+\lambda_{\text{前}}, & Y^{C}_{\text{後}}&=\alpha_C+\lambda_{\text{後}}.
+\end{aligned}
+$$
+
+各群で «後−前» をとると群固定効果 $\alpha$ が消える：$Y^{T}_{\text{後}}-Y^{T}_{\text{前}}=\lambda_{\text{後}}-\lambda_{\text{前}}+\tau$、$Y^{C}_{\text{後}}-Y^{C}_{\text{前}}=\lambda_{\text{後}}-\lambda_{\text{前}}$。さらに群間で差をとると時間効果 $\lambda$ も消え、
+
+$$
+\text{DID}=(\lambda_{\text{後}}-\lambda_{\text{前}}+\tau)-(\lambda_{\text{後}}-\lambda_{\text{前}})=\tau.
+$$
+
+群ごとに固定の（時間で変わらない）交絡 $\alpha$ は差分で消える。ただし時間効果 $\lambda$ が両群で共通（＝[平行トレンド](parallel-trends)）でないと最後の相殺が崩れ、その差がバイアスになる。
+
+  </Derivation>
+  <Interact>
+
+<RddStepper />
+
+  </Interact>
+  <Exercise>
+
+<IdentificationQuiz />
+
+  </Exercise>
+</Level>
+
+<Level level={2} title="仮定体系（3戦略の識別条件と射程）">
+  <Concept>
+
+各戦略は «何を仮定して» «何の効果を» 識別するかが異なる。
+
+- **DID**: 仮定＝[平行トレンド](parallel-trends)。時間で一定の交絡は差分で消えるが、時間変化する交絡が平行を破るとバイアス。介入前の複数期でトレンドの平行性を確認（プレトレンド）。識別するのは処置群での効果（ATT）。
+- **IV**: 仮定＝関連性（$Z$ が処置を動かす・第1段階が非ゼロ）＋[除外制約](exclusion-restriction)（$Z$ は処置を通してしか結果に効かず交絡と独立）。未観測交絡を迂回できるが、除外制約は検証不能で実質的正当化が要る。識別するのは «$Z$ で処置が変わる人（コンプライアー）» の効果（LATE）。弱い操作変数は推定を不安定にする。
+- **RDD**: 仮定＝割り当て変数以外が閾値で連続。閾値の局所無作為化を使う。個体が割り当て変数を操作できると崩れる（密度の連続性検定）。識別するのは «閾値ぎりぎりの人» の効果（局所処置効果）。
+- **共通の思想**: どれも «デザイン（制度のたまたま）» で交絡を回避する。だから «仮定が妥当か» の議論が統計計算そのものより重い。
+
+準実験は «識別できる効果の射程（ATT / LATE / 局所効果）» が限定的なことも要注意。
+
+  </Concept>
+  <Derivation title="なぜ IV（Wald 推定）で未観測交絡を迂回できるのか">
+
+未観測交絡 $U$ が処置 $T$ と結果 $Y$ の両方に効くとする。操作変数 $Z$ が[除外制約](exclusion-restriction)（$Z$ は $T$ を通してのみ $Y$ に効く・$Z\perp U$）を満たすなら、$Z$ を1増やしたときの $Y$ の動きは «$Z\to T\to Y$» の一本道だけ：
+
+$$
+E[Y\mid Z=1]-E[Y\mid Z=0]=\tau\,\big(E[T\mid Z=1]-E[T\mid Z=0]\big).
+$$
+
+$U$ は $Z$ と独立なので $Z$ で条件付けても $U$ の分布は変わらず、$U$ 経由の項は差で消える。あとは両辺を第1段階 $E[T\mid Z=1]-E[T\mid Z=0]$ で割れば
+
+$$
+\tau=\frac{E[Y\mid Z=1]-E[Y\mid Z=0]}{E[T\mid Z=1]-E[T\mid Z=0]}.
+$$
+
+これが Wald 推定量。素朴な $E[Y\mid T=1]-E[Y\mid T=0]$ は $U$ で偏るが、IV は «$Z$ が動かした分の $T$» だけを使うので交絡から切り離せる。第1段階（分母）が小さい弱操作変数だと、わずかな違反や標本誤差が大きく増幅される。
+
+  </Derivation>
+  <Exercise>
+
+確認: 「操作変数が処置をほとんど動かさない（第1段階がほぼゼロ）場合でも、妥当なら安心して使える」——○か×か。
+（答: ×。分母が小さいと Wald 推定は不安定で、除外制約のわずかな違反や標本誤差が大きく増幅される（弱操作変数問題）。第1段階の強さ（F 統計量など）を必ず確認する）
+
+  </Exercise>
+</Level>
+
+<Level level={3} title="推定の実装（回帰による定式化）" status="planned">
+  DID の二元固定効果回帰、IV の二段階最小二乗法（2SLS）と多変数・連続操作変数、RDD の局所線形回帰とバンド幅選択・共変量調整（前提: 重回帰分析）。
+</Level>
+
+<Level level={4} title="デザインの拡張" status="planned">
+  合成統制法（synthetic control）、イベントスタディ・段階的処置導入の DID、ファジー RDD、断層回帰デザイン、ブレークダウン。
+</Level>
+
+<Level level={5} title="仮定の検証と頑健性" status="planned">
+  プレトレンド検定と最近の DID 批判（異質処置・負の重み問題）、除外制約の感度分析、RDD の密度連続性検定（McCrary 検定）、部分識別。
+</Level>
+
+<Level level={6} title="フロンティア" status="planned">
+  機械学習と識別戦略の融合（二重機械学習・因果森）、時間変化処置のダイナミック因果効果、ネットワーク干渉下の識別は研究が活発（到達途上）。
+</Level>
+
+</Topic>
