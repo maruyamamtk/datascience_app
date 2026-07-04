@@ -649,3 +649,19 @@ MVP 5トピック完了後、SPEC §3 のチェックリスト全項目（A〜S,
 - **変更概要**: 潜在因子で観測相関を説明する因子分析・SEMを4層実装。FactorLab は因子負荷倍率スライダー→観測相関と含意相関 r_ij=λ_iλ_j のヒートマップ並置・残差平方和（TermController）・共通性(青)/独自性(黄)バーが同時連動、倍率1（真値）で含意相関が観測相関に一致し残差0に。CommunalityStepper は各変数の分散1=共通性λ²+独自性(1−λ²)を積み木でコマ送り。共通性=λ²・相関=λ_iλ_jの導出（独自因子の無相関で交差項が消える）・因子回転の不定性の導出（直交回転で含意共分散不変）を網羅。fitOneFactorは主因子法（冪乗法）。
 - **検証結果**: Vitest **581 passed**（+11: factor-analysis 7 / frames 4、registry リンク切れゼロ）。tsc / lint（警告0）/ build成功。`pnpm start` + Playwright 実機確認: 倍率0.6 で 残差平方和1.201（ずれあり）、倍率1 で 残差0・平均共通性0.5（よく当てはまる、含意相関が観測に一致）、共通性分解ステッパーが理科でλ=0.55・共通性0.30+独自性0.70=1、コンソールエラー0件。
 - **設計判断**: «潜在因子が観測相関を生む» を観測相関と含意相関のヒートマップ並置で直接見せ、PCA（記述）との違いを共通性/独自性の分散分解で明確化。回転の不定性を導出で扱い «当てはまり不変で解釈だけ整える» 点を強調。frame は CommunalityStepper のみ使用で競合なし。次は H-5 その他の多変量解析へ。
+
+### コンテンツ拡充 #53 — [H-5] その他の多変量解析
+
+優先度 27/82。前提=主成分分析。MDS中心に数量化・正準相関・対応分析。
+
+- [x] 計算層 `lib/stats/mds.ts`（distanceMatrix/classicalMDS(二重中心化・冪乗法+デフレーション)/kruskalStress/distortDistances、pca.Point2 再利用）+ Vitest（8）
+- [x] 状態層 `lib/store/multivariate-other.ts`（controls {distortion}・固定6都市配置）
+- [x] 描画層 `components/topics/multivariate-other/`（MdsLab=歪み→距離行列ヒートマップ・MDS復元地図・ストレスの強連動 / MdsBuildStepper=距離のみ→1次元→2次元復元のコマ送り / MvQuiz）+ frames.ts + Vitest（4）
+- [x] 用語ノード4件（multidimensional-scaling / quantification-theory / canonical-correlation / correspondence-analysis）相互リンク
+- [x] MDX `content/topics/multivariate-other.mdx`（L0-L2 充実：距離から地図→距離行列の固有値分解で座標復元の導出（二重中心化）→数量化/正準相関/対応分析＋PCA/MDS/対応分析をつなぐ固有値分解の共通骨格の導出、L3-L6 planned）
+- [x] `/topics` 一覧へ反映（status: published）
+
+#### レビュー: その他の多変量解析トピック（2026-07-04）
+- **変更概要**: 主成分・判別・クラスター・因子に続く «その他» の多変量手法をMDS中心に4層実装。MdsLab は距離の歪み distortion スライダー→与えられた距離行列ヒートマップ・MDSが距離だけから復元した地図（6都市）・ストレス（TermController）が同時連動、歪み0で地図を完全再現(ストレス0)、歪みを増やすと布置が崩れる。MdsBuildStepper は «距離のみ→1次元復元→2次元復元» と次元を増やしストレスが下がる過程をコマ送り。距離²と内積の関係から二重中心化 B=−½JD²J で座標が復元できる導出・PCA/MDS/対応分析をつなぐ«固有値分解の共通骨格»の導出を網羅。数量化理論Ⅰ〜Ⅳ類・正準相関・対応分析をL2で位置づけ。古典的MDSは冪乗法+デフレーションで上位固有対を計算。
+- **検証結果**: Vitest **593 passed**（+12: mds 8 / frames 4、registry リンク切れゼロ）。tsc / lint（警告0、未使用n除去）/ build成功。`pnpm start` + Playwright 実機確認: 歪み0 で ストレス0（距離完全再現）、歪み1.2 で ストレス0.072（歪みあり）、MDS復元ステッパー2次元でストレス0.000、コンソールエラー0件。
+- **設計判断**: «座標が未知でも距離があれば地図が描ける» をMDS復元地図で直接体感させ、主成分分析との数学的近さ（固有値分解）をL2導出で明示して多変量解析群を «固有値分解の共通骨格» で締めた。回転・鏡映の自由度は距離を保つので表示上問題なし。frame は MdsBuildStepper のみ使用で競合なし。次は H-6 カーネル密度推定へ。

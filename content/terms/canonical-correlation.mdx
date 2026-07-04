@@ -1,0 +1,14 @@
+---
+title: 正準相関分析
+definition: 2組の変数群それぞれの線形結合を作り、その相関（正準相関）が最大になる組を求める手法。主成分分析や重回帰の «2群の関係» への拡張。
+aliases: [canonical correlation, 正準相関分析, CCA]
+seeAlso: [principal-component, correlation-coefficient]
+---
+
+# 正準相関分析（CCA）
+
+2つの変数群 $X$・$Y$ の «関係» を要約する手法。
+
+- $X$ の線形結合 $\mathbf a^\top X$ と $Y$ の線形結合 $\mathbf b^\top Y$ を作り、その[相関](correlation-coefficient)（**正準相関**）が最大になる $\mathbf a,\mathbf b$ を求める。
+- [主成分分析](principal-component)（1群の分散最大）や重回帰（1変数を説明）を «2群間の関係» に一般化したもの。
+- 第2・第3の正準変量（前と直交）も順に。«どの合成得点どうしが強く連動するか» を読む。
