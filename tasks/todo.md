@@ -713,3 +713,19 @@ MVP 5トピック完了後、SPEC §3 のチェックリスト全項目（A〜S,
 - **変更概要**: «時間とともにランダムに変化する量» をブラウン運動中心に4層実装。BrownianLab は σ(ボラティリティ)・μ(ドリフト)スライダー→16本の標本パス・±2σ√t の拡散帯(放物線状に開く)・平均ドリフト線・終端分散σ²T（TermController）が同時連動、σを上げると帯が√tで広がる «拡散» を可視化。ProcessGalleryStepper はランダムウォーク(±1折れ線)→ブラウン運動(正規増分)→ポアソン過程(指数間隔の階段)を «増分の種類» つきでコマ送り。独立増分の分散加算で Var[B_t]=σ²t になる導出・ランダムウォーク→ブラウン運動の不変原理(CLTの過程版)の導出を網羅。ポアソン過程は指数間隔生成で N(t)〜Po(λt) を検証。
 - **検証結果**: Vitest **639 passed**（+13: stochastic 9 / frames 4、registry リンク切れゼロ）。tsc / lint（警告0）/ build成功。`pnpm start` + Playwright 実機確認: σ=1 で 終端分散=1、σ=2 で 4（σ²Tで拡散帯が広がる）、過程ギャラリーが3過程を循環表示（③ポアソン=指数間隔ジャンプ）、コンソールエラー0件。
 - **設計判断 / つまずき**: «独立増分の積み重ね→分散∝t→√tで広がる拡散» を拡散帯の連動で体感させ、不変原理でランダムウォーク・CLTと接続、増分の種類で3過程を対比した。**MDXのバグ2件を修正** — L2でConcept閉じタグを誤って `</Derivation>` と書きJSXネスト崩れ→`</Concept>`に、用語リンクにトピックslug(central-limit-theorem)混入・topic MDXの<Term>が未作成用語を指す問題→平文/実在用語(standard-normal-distribution)に修正。frame は ProcessGalleryStepper のみ使用で競合なし。次は L-3 計算多用手法（ブートストラップ・モンテカルロ）へ。
+
+### コンテンツ拡充 #57 — [L-3] 計算多用手法（ブートストラップ・モンテカルロ）
+
+優先度 31/82。前提=マルコフ連鎖・推定量の性質。乱数で試して数える（モンテカルロ）・標本を引き直してばらつきを測る（ブートストラップ）。
+
+- [x] 計算層 `lib/stats/monte-carlo.ts`（throwDarts/estimatePi/runningPiEstimate/monteCarloIntegrate/resample/bootstrapStatistics/bootstrapStandardError/percentileInterval/quantileSorted）+ Vitest（12）
+- [x] 状態層 `lib/store/monte-carlo-methods.ts`（controls {levelIndex}・ダーツ数を対数的に 50→12800、π推定と収束曲線を派生）
+- [x] 描画層 `components/topics/monte-carlo-methods/`（MonteCarloLab=ダーツ数→散布図(円内緑/外赤)・π̂=4k/nの強連動・収束 / BootstrapStepper=元標本→復元抽出→ヒストグラム構築→パーセンタイル信頼区間帯をコマ送り / MonteCarloQuiz）+ frames.ts + Vitest（5）
+- [x] 用語ノード3件（monte-carlo-method / bootstrap / resampling）相互リンク（既存 law-of-large-numbers / standard-error / confidence-interval へ接続）
+- [x] MDX `content/topics/monte-carlo-methods.mdx`（L0-L2 充実：乱数でπを数える→経験分布からの復元抽出が標準誤差を与える導出→1/√n収束/モンテカルロ積分/適用条件＋モンテカルロ誤差が次元に依らず1/√nの導出、L3-L6 planned）
+- [x] `/topics` 一覧へ反映（status: published）
+
+#### レビュー: 計算多用手法トピック（2026-07-04）
+- **変更概要**: «計算資源で押し切る» モンテカルロ法とブートストラップを4層実装。MonteCarloLab はダーツ数 n スライダー→[-1,1]²への散布図(円内緑/外赤)・π̂=4k/n（TermController で k・n・π̂ を差し込み）・|誤差| が同時連動、n を増やすと誤差が 1/√n で縮む。BootstrapStepper は元標本(n=8)→復元抽出を1つずつ見せ→600回まで積み上げてブートストラップ分布(ヒストグラム)を構築→パーセンタイル95%信頼区間を帯で提示するコマ送り。経験分布 F̂ を母集団の代わりにする→復元抽出の標準偏差が標準誤差になる導出・モンテカルロ誤差が次元に依らず1/√nで縮む導出を網羅。
+- **検証結果**: Vitest **656 passed**（+17: monte-carlo 12 / frames 5、registry リンク切れゼロ）。tsc / lint（警告0）/ build成功。`next start` + Playwright 実機確認: n=200 で π̂=3.2・誤差0.0584、n=12800 で π̂=3.1375・誤差0.0041（1/√n収束）、ブートストラップ最終フレームで 600再標本・SE=1.140・95%CI[5.50,9.75]（標本平均7.625を含む）、コンソールエラー0件。
+- **設計判断 / つまずき**: モンテカルロ(乱数で面積/積分)とブートストラップ(標本の引き直し)を «乱数を大量に発生させて試す» 計算多用手法として1トピックに統合、L0=π推定・L1=ブートストラップと段階配置。前回同様に未作成トピックslug(mcmc-methods #86)へのリンクは張らず、既存 mcmc 用語で MCMC への接続を予告。BootstrapStepper の stats を useMemo でラップし exhaustive-deps 警告を解消。**これで L群(L1-L3)完了**、次は M群 時系列解析へ（M-1 時系列解析の基礎）。
