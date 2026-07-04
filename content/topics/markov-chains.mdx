@@ -1,0 +1,133 @@
+---
+title: マルコフ連鎖
+summary: 次の状態が «今» だけで決まる（記憶がない）確率過程。遷移行列による状態分布の推移が初期状態を忘れて定常分布へ収束する仕組み・エルゴード性・MCMCへの応用を操作で体感する。
+status: published
+---
+
+import { MarkovLab } from "@/components/topics/markov-chains/MarkovLab";
+import { DistributionStepper } from "@/components/topics/markov-chains/DistributionStepper";
+import { MarkovQuiz } from "@/components/topics/markov-chains/MarkovQuiz";
+
+<Topic title="マルコフ連鎖" summary="次の状態が «今» だけで決まる（記憶がない）確率過程。遷移行列による状態分布の推移が初期状態を忘れて定常分布へ収束する仕組み・エルゴード性・MCMCへの応用を操作で体感する。">
+
+<ReaderGuide>
+
+- **初学者** → L0〜L1（マルコフ性・遷移行列・定常分布への収束）
+- **一通り使える人** → L2（既約性・非周期性・エルゴード定理・詳細釣り合い・MCMC）
+- **「完全に理解した」人** → L3 以降（連続時間・連続状態・収束速度は到達途上）
+
+前提: [事象と確率](/topics/probability-basics)の<Term id="conditional-probability">条件付き確率</Term>。
+
+</ReaderGuide>
+
+<Level level={0} title="ブラックボックス（記憶のない確率過程）">
+  <Concept>
+
+天気が «晴・曇・雨» を移り変わるように、状態が確率的に遷移する。次の状態が **«今の状態» だけで決まり過去に依らない** のが**<Term id="markov-chain">マルコフ連鎖</Term>**（マルコフ性＝記憶のなさ）。
+
+だから «どの状態からどこへ、どの確率で移るか» の**<Term id="transition-matrix">遷移行列</Term>** $P$ さえ決めれば、将来の分布が計算できる。
+
+  </Concept>
+  <Interact>
+
+下のラボで «雨の続きやすさ» $P(\text{雨}\to\text{雨})$ を変えると、遷移行列・**<Term id="stationary-distribution">定常分布</Term>**（長期の滞在割合）が変わり、数式が同時に追従する（操作→図→数式の強連動）。
+雨が続きやすい気候ほど、定常分布の «雨» が増えることを確かめよう。
+
+<MarkovLab />
+
+  </Interact>
+  <Exercise>
+
+確認: 「マルコフ連鎖では、次の状態を予測するのに «今日の状態» に加えて «昨日以前の履歴» も必要である」——○か×か。
+（答: ×。マルコフ性により、次の状態の確率は «今» だけで決まる。今の状態が分かれば過去は予測に不要——これが «記憶のなさ»）
+
+  </Exercise>
+</Level>
+
+<Level level={1} title="古典的理解（定常分布への収束）">
+  <Concept>
+
+状態分布 $\pi$ は $\pi_{t+1}=\pi_t P$ で1ステップずつ進む。既約・非周期な連鎖では、**初期分布を忘れて** 一つの**定常分布** $\pi$（$\pi P=\pi$）に収束する。
+
+下のステッパーで初期分布から $\pi P$ を反復し、初期の偏りが薄れて定常分布（破線）に落ち着く様子を追える。
+
+  </Concept>
+  <Derivation title="なぜ初期状態を忘れて定常分布に収束するのか">
+
+分布 $\pi_t$ は $\pi_t=\pi_0 P^t$。遷移行列 $P$ を固有値分解すると、行確率的行列は必ず固有値 $\lambda_1=1$ を持ち（対応する左固有ベクトルが定常分布 $\pi$）、既約・非周期ならそれ以外の固有値は $|\lambda_k|<1$。
+
+$\pi_0$ を固有ベクトルで展開して $P^t$ をかけると、各成分は $\lambda_k^t$ 倍される：
+
+$$
+\pi_t=\pi+\sum_{k\ge2} c_k\,\lambda_k^t\,\mathbf v_k.
+$$
+
+$|\lambda_k|<1$ なので $\lambda_k^t\to0$。**初期分布に依存する項（$k\ge2$）が指数的に消え**、残るのは定常分布 $\pi$ だけ。
+だからどんな初期分布から出発しても同じ $\pi$ に収束する（エルゴード性）。第2固有値 $|\lambda_2|$ が1に近いほど収束が遅い（＝混合が遅い）。
+
+  </Derivation>
+  <Interact>
+
+<DistributionStepper />
+
+  </Interact>
+  <Exercise>
+
+<MarkovQuiz />
+
+  </Exercise>
+</Level>
+
+<Level level={2} title="仮定体系（既約・非周期・詳細釣り合い・MCMC）">
+  <Concept>
+
+定常分布への収束を保証する条件と応用を整理する。
+
+- **既約性**: どの状態からどの状態へも（何ステップかで）到達できる。孤立した部分がない。
+- **非周期性**: 特定の周期で戻る «振動» がない。両方満たすと **エルゴード的** で定常分布が一意・収束する。
+- **詳細釣り合い** $\pi_i P_{ij}=\pi_j P_{ji}$: これを満たす連鎖は可逆で、$\pi$ が定常分布になる（設計の十分条件）。
+- **<Term id="mcmc">MCMC</Term>**: «欲しい分布を定常分布に持つ連鎖» を詳細釣り合いから設計し、走らせてサンプルを得る。ベイズ計算の基盤。
+
+«記憶がない» という最小限の仮定から、長期挙動（定常分布）が完全に決まるのがマルコフ連鎖の強さ。
+
+  </Concept>
+  <Derivation title="詳細釣り合いを満たせば定常分布になる（MCMCの設計原理）">
+
+分布 $\pi$ と遷移 $P$ が **詳細釣り合い** $\pi_i P_{ij}=\pi_j P_{ji}$（すべての $i,j$）を満たすとする。
+両辺を $i$ について和を取ると、左辺は
+
+$$
+\sum_i \pi_i P_{ij}=\sum_i \pi_j P_{ji}=\pi_j\sum_i P_{ji}=\pi_j
+$$
+
+（$\sum_i P_{ji}=1$ は行確率的）。左辺は $(\pi P)_j$ だから $(\pi P)_j=\pi_j$、すなわち $\pi P=\pi$。**$\pi$ が定常分布**。
+
+これが MCMC の設計原理：目標分布 $\pi$ に対し詳細釣り合いを満たすように «提案＋受容確率»（メトロポリス）を作れば、その連鎖の定常分布が $\pi$ になる。
+だから直接サンプリングできない分布でも、連鎖を走らせれば $\pi$ からのサンプルが得られる。
+
+  </Derivation>
+  <Exercise>
+
+確認: 「マルコフ連鎖が定常分布に収束するには、既約性（どの状態にも到達可能）と非周期性が必要」——○か×か。
+（答: ○。両方満たす＝エルゴード的なら定常分布が一意で初期分布によらず収束する。どちらか欠けると収束しない・一意でないことがある）
+
+  </Exercise>
+</Level>
+
+<Level level={3} title="収束速度・混合時間" status="planned">
+  第2固有値と混合時間、スペクトルギャップ、結合法（coupling）による収束評価（前提: 固有値分解）。
+</Level>
+
+<Level level={4} title="連続時間・連続状態" status="planned">
+  連続時間マルコフ連鎖（生成行列 Q）、連続状態の遷移核、拡散過程への橋渡し（確率過程トピックへ）。
+</Level>
+
+<Level level={5} title="MCMC の実際" status="planned">
+  メトロポリス–ヘイスティングス・ギブス・ハミルトニアンMCMC、収束診断（計算多用手法トピックへ）。
+</Level>
+
+<Level level={6} title="フロンティア" status="planned">
+  高次元・多峰分布での効率的サンプリング（並列テンパリング・変分＋MCMC）は研究が活発（到達途上）。
+</Level>
+
+</Topic>

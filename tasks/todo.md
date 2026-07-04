@@ -681,3 +681,19 @@ MVP 5トピック完了後、SPEC §3 のチェックリスト全項目（A〜S,
 - **変更概要**: ヒストグラムの滑らか版KDEを4層実装。KdeLab は帯域幅 h スライダー＋カーネル種別トグル（ガウス/エパネチニコフ/三角/一様）→各データ点の個別カーネル（薄紫の山40本）・KDE曲線（紫）・真の密度（緑破線）・ISE（TermController）・データのラグが同時連動、シルバーマン目安ボタンつき。h小でギザギザ・h大で二峰性が潰れる様子を可視化。BandwidthStepper は h を過小→最適→過大とコマ送りしregime色分け（赤/緑/橙）でバイアス–分散を見せる。帯域幅がバイアス(∝h²)–分散(∝1/nh)のトレードオフである導出・ヒストグラムが一様カーネルKDEである導出を網羅。真の密度は二峰性混合正規でISE評価。
 - **検証結果**: Vitest **610 passed**（+17: kde 12 / frames 5、registry リンク切れゼロ）。tsc / lint（警告0）/ build成功。`pnpm start` + Playwright 実機確認: h=0.88(シルバーマン)で ISE=0.037（過平滑）、h=0.36 で ISE=0.014（二峰性が出て改善・個別カーネル42パス）、帯域幅ステッパーが h=0.35 で ISE最小(緑)を特定（ラボの手動最適と一致）、コンソールエラー0件。
 - **設計判断 / つまずき**: **統計的事実の反映** — シルバーマンは正規前提で二峰性データでは過平滑。frames の regime を「silverman=good」と決め打ちしたら ISE(0.2·silverman)<ISE(silverman) でテスト失敗→ «最適» を ISE の argmin で判定するよう修正（教育的にも «シルバーマンは万能でない» と示せて正しい）。lessons.md に «最適パラメータをテストで固定値に決め打ちしない» を追記。frame は BandwidthStepper のみ使用で競合なし。次は H-7 へ（H群最後）。
+
+### コンテンツ拡充 #55 — [L-1] マルコフ連鎖
+
+優先度 29/82（L群 確率過程の起点）。前提=事象と確率。遷移行列・定常分布・エルゴード性。
+
+- [x] 計算層 `lib/stats/markov.ts`（step(πP)/evolve/stationaryDistribution(冪乗法)/isStochastic/totalVariationToStationary/samplePath）+ Vitest（12）
+- [x] 状態層 `lib/store/markov-chains.ts`（controls {rainStick}・3状態天気連鎖）
+- [x] 描画層 `components/topics/markov-chains/`（MarkovLab=雨の続きやすさ→遷移行列ヒートマップ・定常分布バーの強連動 / DistributionStepper=初期分布→定常分布への収束を棒＋定常目標線でコマ送り / MarkovQuiz）+ frames.ts + Vitest（4）
+- [x] 用語ノード4件（markov-chain / transition-matrix / stationary-distribution / mcmc）相互リンク
+- [x] MDX `content/topics/markov-chains.mdx`（L0-L2 充実：マルコフ性→固有値分解で初期状態を忘れ定常分布に収束する導出→既約/非周期/詳細釣り合い/MCMC＋詳細釣り合いが定常分布を与える導出、L3-L6 planned）
+- [x] `/topics` 一覧へ反映（status: published）
+
+#### レビュー: マルコフ連鎖トピック（2026-07-04）
+- **変更概要**: «記憶のない» 確率過程マルコフ連鎖を4層実装。MarkovLab は雨の続きやすさ P(雨→雨) スライダー→3×3遷移行列ヒートマップ・定常分布バー（晴/曇/雨）・π_雨（TermController）が同時連動、雨が続きやすいほど定常分布の雨が増える。DistributionStepper は初期分布(晴100%)から πP を反復し定常分布(破線)へ収束する過程を棒でコマ送り。固有値分解で初期状態依存の項(|λ|<1)が指数的に消え定常分布に収束する導出・詳細釣り合いπ_iP_ij=π_jP_jiが定常分布を与える導出(MCMC設計原理)を網羅。samplePathで長期滞在割合が定常分布に一致することも検証。
+- **検証結果**: Vitest **626 passed**（+16: markov 12 / frames 4、registry リンク切れゼロ）。tsc / lint（警告0）/ build成功。`pnpm start` + Playwright 実機確認: P(雨→雨)=0.6 で 定常π_雨=0.294、0.9 で 0.625（雨がちな気候）、分布推移ステッパーが t=14 で定常への距離0.011に収束、コンソールエラー0件。
+- **設計判断 / つまずき**: «記憶のなさ→遷移行列だけで長期挙動が決まる» を定常分布バーの連動で体感、収束を固有値分解の導出で裏づけて MCMC（詳細釣り合い）へ橋渡し。mcmc用語の seeAlso/本文が未作成の monte-carlo(トピック#57)を指していたので除去（[[lessons: 用語リンクは実在slugのみ]]の再確認）。frame は DistributionStepper のみ使用で競合なし。**これでH群完了**、L群（確率過程）に前進。次は L-2 確率過程へ。

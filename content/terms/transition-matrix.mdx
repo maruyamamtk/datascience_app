@@ -1,0 +1,18 @@
+---
+title: 遷移行列
+definition: マルコフ連鎖で状態 i から状態 j へ移る確率 P[i][j] を並べた行列。各行が確率分布（非負・和1、行確率的）。分布は π→πP で進む。
+aliases: [transition matrix, 遷移行列, 推移確率行列]
+seeAlso: [markov-chain, stationary-distribution]
+---
+
+# 遷移行列
+
+[マルコフ連鎖](markov-chain)の «状態 $i$ から $j$ へ移る確率» を並べた行列 $P$。
+
+$$
+P_{ij}=P(X_{t+1}=j\mid X_t=i),\qquad \sum_j P_{ij}=1
+$$
+
+- 各行が確率分布（非負・和1）＝**行確率的**。分布（行ベクトル）$\pi$ は $\pi_{t+1}=\pi_t P$ で1ステップ進む。
+- $n$ ステップ後の遷移は $P^n$。$P^n_{ij}$ が «$n$ 回後に $i$ から $j$ にいる確率»。
+- 行列の固有値・固有ベクトルが収束の速さ・[定常分布](stationary-distribution)を決める（$\pi$ は固有値1の左固有ベクトル）。

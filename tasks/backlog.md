@@ -42,6 +42,7 @@
 - ✅ H-4 共分散構造分析・因子分析 `covariance-structure-analysis`（#52）
 - ✅ H-5 その他の多変量解析 `multivariate-other`（#53）
 - ✅ H-6 カーネル密度推定 `kernel-density-estimation`（#54）
+- ✅ L-1 マルコフ連鎖 `markov-chains`（#55）
 
 ## キュー（優先順）
 
@@ -75,7 +76,7 @@
 | 26 | #52 | H-4 | 共分散構造分析・因子分析 | covariance-structure-analysis | principal-component-analysis | ✅ done |
 | 27 | #53 | H-5 | その他の多変量解析 | multivariate-other | principal-component-analysis | ✅ done |
 | 28 | #54 | H-6 | カーネル密度推定 | kernel-density-estimation | continuous-distributions | ✅ done |
-| 29 | #55 | L-1 | マルコフ連鎖 | markov-chains | probability-basics | pending |
+| 29 | #55 | L-1 | マルコフ連鎖 | markov-chains | probability-basics | ✅ done |
 | 30 | #56 | L-2 | 確率過程 | stochastic-processes | markov-chains | pending |
 | 31 | #57 | L-3 | 計算多用手法（ブートストラップ・モンテカルロ） | monte-carlo-methods | markov-chains, estimation-methods | pending |
 | 32 | #58 | M-1 | 時系列解析の基礎 | time-series-basics | distribution-characteristics | pending |
