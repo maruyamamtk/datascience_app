@@ -873,3 +873,19 @@ MVP 5トピック完了後、SPEC §3 のチェックリスト全項目（A〜S,
 - **変更概要**: カテゴリを数量に変換して多変量解析する数量化理論を4層実装。QuantLab は «天気×曜日→アイス売上» の数量化I類で、雑音/標本サイズ スライダー＋予測する組合せ選択→推定カテゴリ数量バー（真値を灰で併記・青押上げ/赤押下げ）・予測の内訳・«ŷ=定数+天気+曜日» 数式が同時連動。推定スコアが真値を回復し、雑音を上げると R² が落ちる。Quant1Stepper は «生データ→ダミー符号化→最小二乗でカテゴリ数量→予測» の4段階を小デモ表でコマ送り。«実質はダミー回帰» とダミー変数トラップ（全カテゴリ入れると定数列と共線）の導出・数量化III類=標準化残差のSVDで相関最大の数量を与える導出を収録。
 - **検証結果**: Vitest **793 passed**（+12: quantification 8 / frames 4、registry リンク切れゼロ）。tsc / lint（警告0）/ build成功。`npm run dev` + Playwright 実機確認: 晴×週末で 定数20+天気3.9+曜日3.1=27.1（真値スコア4/3を回復）、天気を雨に変えると天気スコア−4.0・予測19.2と強連動、コンソールエラー0件。
 - **設計判断 / つまずき**: 既存 multiple-regression の olsFit・既存用語（quantification-theory/correspondence-analysis）を再利用。数量化I類を «真のカテゴリ数量を回復する» デモにして推定の正しさを体感させる設計。correlationRatio のテストデータを最初 «群が完全分離» に誤設定し η²=1 で落ちた→両群同平均データに修正（テスト設計ミスの教訓）。MDX の $\text{曇}$ 等はブレース必須（$\text週末$ は2文字目が math モードに漏れKaTeXエラー）→全て `\text{...}` に。**N群（因果推論・質的データ）完走**、次は O群 O-1 欠測値の処理へ。
+
+### コンテンツ拡充 #67 — [O-1] 欠測値の処理
+
+優先度 41/82（O群 起点）。前提=推定法・単回帰。欠測メカニズム MCAR/MAR/MNAR／完全ケース分析（リストワイズ除去）／平均代入（分散の過小評価）／回帰代入・確率的回帰代入／多重代入と Rubin の規則／MNAR と感度分析。
+
+- [x] 計算層 `lib/stats/missing.ts`（generateMissing=MCAR/MAR/MNAR で欠測付与、fullData/completeCase/meanImputation/regressionImputation/stochasticRegression の各 Estimate、observedFraction）+ Vitest（8）（olsFit 再利用）
+- [x] 状態層 `lib/store/missing-data.ts`（controls {mechanism, missRate, strength}・units/5推定/真値 を派生）
+- [x] 描画層 `components/topics/missing-data/`（MissingLab=メカニズム選択＋欠測率/依存の強さ→散布図（欠測点灰・真値線緑/完全ケース線赤）・5推定の平均バー・SDバー・完全ケースのバイアス数式の強連動 / ImputationStepper=欠測発生→完全ケース→平均代入→回帰代入→確率的回帰代入の5段階、平均バイアスとSD比バーで比較 / MissingQuiz=MAR定義/完全ケース/平均代入/MNAR 4問）+ frames.ts + Vitest（7）
+- [x] 用語ノード5件（missing-mechanism / complete-case-analysis / mean-imputation / regression-imputation / multiple-imputation）相互リンク
+- [x] MDX `content/topics/missing-data.mdx`（L0-L2 充実：欠測は捨てる/埋める→メカニズムと補完法→多重代入/Rubinの規則/感度分析＋MARで完全ケースが下振れし回帰代入で回復する導出/単一代入が標準誤差を過小評価する Rubin 分散の導出、L3-L6 planned）
+- [x] `/topics` 一覧へ反映（status: published）
+
+#### レビュー: 欠測値の処理トピック（2026-07-05）
+- **変更概要**: 欠測メカニズム（MCAR/MAR/MNAR）で使える手が変わることを4層実装。MissingLab はメカニズム選択＋欠測率/依存の強さ スライダー→散布図（欠測点を灰・真値線緑/完全ケース線赤）・5推定（真値/完全ケース/平均代入/回帰代入/確率的回帰代入）の平均バー・SDバー・«バイアス=完全ケース−真値» 数式が同時連動。MCAR で完全ケースが不偏、MAR で下振れ→回帰代入で回復、MNAR で回帰代入でも残存。ImputationStepper は固定MARで «欠測発生→完全ケース→平均代入→回帰代入→確率的回帰代入» を平均バイアス/SD比バーでコマ送り比較。MARで完全ケースが下振れし回帰代入で回復する導出・単一代入が標準誤差を過小評価する Rubin の分散 T=Ū+(1+1/m)B の導出を収録。
+- **検証結果**: Vitest **808 passed**（+15: missing 8 / frames 7、registry リンク切れゼロ）。tsc / lint（警告0）/ build成功。`npm run dev` + Playwright 実機確認: MCAR バイアス−0.04（不偏）、MAR −1.32（下振れ）、MNAR −1.55（バイアス拡大）と3メカニズムが正しく強連動、コンソールエラー0件。
+- **設計判断 / つまずき**: 既存 olsFit を回帰代入に再利用。«真値（神の視点）vs 各補完» を並べて «どれが平均/ばらつきを回復するか» を一目化。**ハイドレーション不一致を修正** — 散布図SVGで cx が server/client で末尾1桁ズレ（Box-Muller の Math.cos/log が Node と ブラウザ V8 で1ULP違う）→座標スケール sx/sy を Math.round(v*100)/100 で丸めて解消。lessons.md に «SVG座標は丸める» を追記。**O群 起点（O-1）完了**、次は P群へ。
