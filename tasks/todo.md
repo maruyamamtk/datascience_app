@@ -777,3 +777,19 @@ MVP 5トピック完了後、SPEC §3 のチェックリスト全項目（A〜S,
 - **変更概要**: «過去から先を当て、当たり具合を数値で測る» を4層実装。ForecastLab は平滑化係数 α スライダー→観測系列・平滑化線(＝1期先予測)・過去への重み α(1−α)^j の幾何級数減衰バー・1期先RMSE（TermController）が同時連動、α を上げると直近に速く反応。ForecastEvalStepper は訓練/検証を時間順分割し、素朴・平均・ドリフト・指数平滑化を検証区間へ1手法ずつぶつけてRMSEを積み上げ比較（最小を緑ハイライト）。RMSEが二乗ゆえ大外れに敏感（MAE≤RMSE）な導出・シャッフルCVが自己相関でデータリークし楽観的になる導出を収録。
 - **検証結果**: Vitest **711 passed**（+20: forecasting 14 / frames 6、registry リンク切れゼロ）。tsc / lint（警告0）/ build成功。`next start` + Playwright 実機確認: α=0.30 で(1−α)=0.7・RMSE=2.135・重み12本、評価ステッパーが4手法比較（素朴1.92・平均4.53・ドリフト2.49・ES1.87、最小=ES緑表示）、コンソールエラー0件。
 - **設計判断 / つまずき**: «まずベースライン→高度モデルが上回るかで価値を測る» と «時間順分割でリーク防止» を軸に配置。ForecastEvalStepper のRMSE比較バーで手法の優劣を一目化。前回学んだMDXの裸波括弧・<数字を回避（数式は全て$...$内、$\{1,\dots,c\}$も数式内）。**これでM群（時系列 M1-M3）完了**、次は N群 分割表・因果推論へ（N-5 分割表の解析）。
+
+### コンテンツ拡充 #61 — [N-5] 分割表の解析
+
+優先度 35/82（N群 起点）。前提=適合度検定。分割表／期待度数／カイ二乗独立性検定／自由度(r−1)(c−1)／Cramér's V・オッズ比／フィッシャー正確確率検定。
+
+- [x] 計算層 `lib/stats/contingency.ts`（rowSums/colSums/expectedTable/chiSquareStatistic/degreesOfFreedom/independencePValue/standardizedResiduals/cramersV/oddsRatio2x2、χ² CDFは goodness-of-fit を再利用）+ Vitest（14）
+- [x] 状態層 `lib/store/contingency-tables.ts`（controls {a,b,c,d}・観測/期待/残差・χ²・p・V・OR を派生）
+- [x] 描画層 `components/topics/contingency-tables/`（ContingencyLab=4セル→観測/期待表・標準化残差ヒートマップ・χ²/p/V/ORの強連動 / IndependenceStepper=観測→周辺和→期待→セル寄与→判定の5段階コマ送り / ContingencyQuiz）+ frames.ts + Vitest（7）
+- [x] 用語ノード4件（contingency-table / expected-frequency / cramers-v / fishers-exact-test）相互リンク（既存 chi-square-test / statistical-independence / odds-ratio へ接続）
+- [x] MDX `content/topics/contingency-tables.mdx`（L0-L2 充実：期待度数とのズレ→独立なら E=行和·列和/N の導出→自由度/連関の強さ/小標本＋自由度が(r−1)(c−1)になる制約数え上げの導出、L3-L6 planned）
+- [x] `/topics` 一覧へ反映（status: published）
+
+#### レビュー: 分割表の解析トピック（2026-07-04）
+- **変更概要**: «2つのカテゴリ変数の関連» を期待度数とのズレで測る手法を4層実装。ContingencyLab は2×2の4セルスライダー→観測/期待を並べた表・標準化残差の青赤ヒートマップ・χ²/p値/Cramér's V/オッズ比（TermController）が同時連動、対角を増やすと連関が強まる。IndependenceStepper は 3×2 表で «観測→周辺和→期待度数→セル寄与(O−E)²/E→判定» の5段階を、寄与の大きいセルを濃く塗ってコマ送り。独立なら E=行和·列和/N になる導出（周辺確率の積）・自由度が rc−(r+c−1)=(r−1)(c−1) になる制約数え上げの導出を収録。有意性(p)と強さ(V)を分けて評価する作法を強調。
+- **検証結果**: Vitest **732 passed**（+21: contingency 14 / frames 7、registry リンク切れゼロ）。tsc / lint（警告0）/ build成功。`next start` + Playwright 実機確認: [[40,20],[20,40]]で χ²=13.33・p=0.0003・V=0.333・OR=4、独立表[[40,40],[20,20]]で χ²=0・p=1・V=0、ステッパー判定フレームで χ²=20.00・df=2・p≈0・独立棄却、コンソールエラー0件。
+- **設計判断 / つまずき**: χ² CDF を既存 goodness-of-fit から再利用し重複を避けた。既存用語(chi-square-test/statistical-independence/odds-ratio)へ接続し新規4語のみ追加。**lint 2件を修正** — 未使用の CELLS 定数を削除、JSXテキスト内 "Cramér's V" のアポストロフィが react/no-unescaped-entities で落ちる→「クラメールの V」に変更。次は N-1 因果推論の枠組みへ。

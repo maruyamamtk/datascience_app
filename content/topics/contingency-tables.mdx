@@ -1,0 +1,131 @@
+---
+title: 分割表の解析
+summary: 2つのカテゴリ変数のクロス集計から «関連» を読む。独立を仮定した期待度数とのズレをカイ二乗で測り、自由度(r−1)(c−1)で検定、Cramér's V・オッズ比で連関の強さを評価する手順を操作で体感する。
+status: published
+---
+
+import { ContingencyLab } from "@/components/topics/contingency-tables/ContingencyLab";
+import { IndependenceStepper } from "@/components/topics/contingency-tables/IndependenceStepper";
+import { ContingencyQuiz } from "@/components/topics/contingency-tables/ContingencyQuiz";
+
+<Topic title="分割表の解析" summary="2つのカテゴリ変数のクロス集計から «関連» を読む。独立を仮定した期待度数とのズレをカイ二乗で測り、自由度(r−1)(c−1)で検定、Cramér's V・オッズ比で連関の強さを評価する手順を操作で体感する。">
+
+<ReaderGuide>
+
+- **初学者** → L0〜L1（クロス集計・期待度数とのズレ・カイ二乗独立性検定の手順）
+- **一通り使える人** → L2（自由度の理由・連関の強さ Cramér's V/オッズ比・小標本とフィッシャー検定）
+- **「完全に理解した」人** → L3 以降（対数線形モデル・多元表・グラフィカルモデルは到達途上）
+
+前提: [適合度検定](/topics/goodness-of-fit-tests)（カイ二乗統計量・カイ二乗分布）。
+
+</ReaderGuide>
+
+<Level level={0} title="ブラックボックス（クロス集計から関連を見る）">
+  <Concept>
+
+「治療の有無」と「症状の改善」のような2つのカテゴリ変数を交差させて数えた表が**<Term id="contingency-table">分割表</Term>**（クロス集計表）。知りたいのは «2変数に関連があるか»。
+
+判断の基準は**<Term id="expected-frequency">期待度数</Term>** $E_{ij}=(\text{行和}\times\text{列和})/N$——«もし2変数が無関係（独立）なら» 各セルはこの度数になるはず。観測 $O$ がこの $E$ から大きくズレるほど «関連あり» が疑われる。
+
+  </Concept>
+  <Interact>
+
+下のラボで4つのセルを動かすと、観測/期待の表・標準化残差のヒートマップ・カイ二乗・p値・**<Term id="cramers-v">Cramér's V</Term>**・**<Term id="odds-ratio">オッズ比</Term>**・数式が同時に追従する（操作→図→数式の強連動）。対角（治療あり×改善・治療なし×非改善）を増やすと連関が強まる様子を確かめよう。
+
+<ContingencyLab />
+
+  </Interact>
+  <Exercise>
+
+確認: 「分割表で観測度数が期待度数にほぼ等しいなら、2変数は独立に近い」——○か×か。
+（答: ○。期待度数は «独立なら» の基準。観測が期待に近い＝ズレ小＝カイ二乗が小さく、独立を棄却できない。ズレが大きいほど関連が疑われる）
+
+  </Exercise>
+</Level>
+
+<Level level={1} title="古典的理解（カイ二乗独立性検定の手順）">
+  <Concept>
+
+独立性の検定は5ステップ：①観測度数 → ②周辺和 → ③期待度数 $E=$行和·列和/$N$ → ④セル寄与 $(O-E)^2/E$ を合計してカイ二乗 → ⑤自由度 $(r-1)(c-1)$ のカイ二乗分布と比べて p 値で判定。
+
+下のステッパーで 3×2 表を例に、この手順を1コマずつ追える。どのセルが独立からのズレを大きく作っているかも色で分かる。
+
+  </Concept>
+  <Derivation title="なぜ期待度数は 行和×列和/N なのか">
+
+帰無仮説は «行変数と列変数が[独立](statistical-independence)»。独立なら同時確率が周辺確率の積になる：
+
+$$
+P(\text{行}=i,\ \text{列}=j)=P(\text{行}=i)\,P(\text{列}=j).
+$$
+
+周辺確率をデータで推定すると $P(\text{行}=i)\approx \text{行和}_i/N$、$P(\text{列}=j)\approx \text{列和}_j/N$。よってセル $(i,j)$ の確率は $(\text{行和}_i/N)(\text{列和}_j/N)$。これに総数 $N$ を掛けて度数に戻すと
+
+$$
+E_{ij}=N\cdot\frac{\text{行和}_i}{N}\cdot\frac{\text{列和}_j}{N}=\frac{\text{行和}_i\times\text{列和}_j}{N}.
+$$
+
+この $E$ は «行和・列和を保ったまま偏りをゼロにした» 表。観測とのズレを $\chi^2=\sum(O-E)^2/E$ で測る。$E$ で割るのは、期待の大きいセルほど絶対的なズレも大きくて当然なので、相対的な «驚き» に直すため。
+
+  </Derivation>
+  <Interact>
+
+<IndependenceStepper />
+
+  </Interact>
+  <Exercise>
+
+<ContingencyQuiz />
+
+  </Exercise>
+</Level>
+
+<Level level={2} title="仮定体系（自由度・連関の強さ・小標本）">
+  <Concept>
+
+独立性の検定を «正しく» «意味をもって» 使うための要点。
+
+- **自由度 $(r-1)(c-1)$**: 周辺和を固定すると自由に決められるセルはこの数だけ（残りは周辺和から決まる）。2×2 なら1。
+- **有意性 ≠ 強さ**: $\chi^2$ は標本サイズ $N$ に比例して膨らむので、大標本ではわずかな偏りでも有意になる。関連の «強さ» は $N$ で正規化した **<Term id="cramers-v">Cramér's V</Term>**（0〜1）、2×2 では **<Term id="odds-ratio">オッズ比</Term>** で測る。必ず効果量を併記。
+- **標準化残差**: $(O-E)/\sqrt{E}$。$|残差|>2$ のセルが独立からのズレの主因で、向き（多い/少ない）も分かる。
+- **小標本の注意**: カイ二乗近似は «期待度数が十分大きい»（目安 $E\ge5$）ときの近似。小さいと近似が崩れるので **<Term id="fishers-exact-test">フィッシャーの正確確率検定</Term>** を使う。
+
+«独立からのズレ» を期待度数で測り、有意性と強さを分けて評価するのが分割表解析の作法。
+
+  </Concept>
+  <Derivation title="なぜ自由度は (r−1)(c−1) なのか">
+
+$r\times c$ 表のセルは全部で $rc$ 個。独立性の検定では **行和と列和（周辺和）を固定** して考える。行和の制約は $r$ 本、列和の制約は $c$ 本あるが、«総和» が両者に共通なので独立な制約は $r+c-1$ 本。よって自由に決められるセル数は
+
+$$
+rc-(r+c-1)=rc-r-c+1=(r-1)(c-1).
+$$
+
+これが自由度。直感的には «各行で最後の1列は行和から決まり、各列で最後の1行は列和から決まる» ので、左上の $(r-1)\times(c-1)$ ブロックだけが自由に動く。2×2 では $(2-1)(2-1)=1$——1つのセルを決めれば周辺和から残り3つが決まる。
+
+  </Derivation>
+  <Exercise>
+
+確認: 「標本サイズが非常に大きければ、ごくわずかな連関でもカイ二乗検定は有意になりやすい」——○か×か。
+（答: ○。χ² は N に比例して増えるので、大標本では小さなズレでも p が小さくなる。だから有意性（p）とは別に、N で正規化した Cramér's V などの効果量で «関連の強さ» を評価する必要がある）
+
+  </Exercise>
+</Level>
+
+<Level level={3} title="対数線形モデル" status="planned">
+  多元分割表を対数線形モデル log E_ij = μ + α_i + β_j + (αβ)_ij で表し、交互作用項で連関をモデル化（前提: 一般化線形モデル）。
+</Level>
+
+<Level level={4} title="多元表と条件付き独立" status="planned">
+  3元以上の表、Simpson のパラドックス、層別解析、条件付き独立と周辺独立の違い、Mantel-Haenszel。
+</Level>
+
+<Level level={5} title="グラフィカルモデルへ" status="planned">
+  条件付き独立の構造をグラフで表現（無向グラフィカルモデル）。分割表解析からグラフィカルモデリングへの接続。
+</Level>
+
+<Level level={6} title="フロンティア" status="planned">
+  スパースな高次元分割表、順序カテゴリの連関モデル、ベイズ的分割表解析は研究が活発（到達途上）。
+</Level>
+
+</Topic>

@@ -83,7 +83,7 @@
 | 32 | #58 | M-1 | 時系列解析の基礎 | time-series-basics | distribution-characteristics | ✅ done |
 | 33 | #59 | M-2 | 時系列モデル（ARIMA・状態空間） | time-series-models | time-series-basics | ✅ done |
 | 34 | #60 | M-3 | 時系列予測と評価 | time-series-forecasting | time-series-models | ✅ done |
-| 35 | #61 | N-5 | 分割表の解析 | contingency-tables | goodness-of-fit-tests | pending |
+| 35 | #61 | N-5 | 分割表の解析 | contingency-tables | goodness-of-fit-tests | ✅ done |
 | 36 | #62 | N-1 | 因果推論の枠組み | causal-inference-models | multiple-regression | pending |
 | 37 | #63 | N-2 | 識別戦略（DID・IV・RDD） | causal-identification | causal-inference-models | pending |
 | 38 | #64 | N-3 | A/Bテスト実務 | ab-testing | causal-inference-models | pending |

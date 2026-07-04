@@ -1,0 +1,19 @@
+---
+title: 期待度数
+definition: 分割表で «行と列が独立なら» 各セルに期待される度数 E_ij = 行和_i × 列和_j / N。観測度数 O とのズレ (O−E)²/E を足したものがカイ二乗統計量になる。
+aliases: [expected frequency, 期待度数, 期待頻度]
+seeAlso: [contingency-table, chi-square-test, statistical-independence]
+---
+
+# 期待度数
+
+[分割表](contingency-table)で **«2変数が[独立](statistical-independence)なら» 各セルに期待される度数**：
+
+$$
+E_{ij}=\frac{(\text{行和}_i)\times(\text{列和}_j)}{N}
+$$
+
+- 導出：独立なら $P(i,j)=P(i)P(j)$。周辺確率を割合 $(\text{行和}_i/N)\cdot(\text{列和}_j/N)$ で推定し、$N$ 倍して度数に戻すと上式。
+- 期待度数の **周辺和は観測と一致** する（行和・列和は保たれる）。これは «偏りゼロ» の基準表。
+- 観測 $O$ とのズレを $\sum (O-E)^2/E$ で集計したのが[カイ二乗統計量](chi-square-test)。$E$ で割るのは «期待が大きいセルほど多少のズレは当然» だから相対化するため。
+- カイ二乗近似が成り立つ目安は **全セルで $E\ge5$** 程度。小さいと近似が崩れる。
