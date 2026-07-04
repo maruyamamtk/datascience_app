@@ -1,0 +1,17 @@
+---
+title: ARIMAモデル
+definition: 自己回帰(AR)・和分(I=階差)・移動平均(MA)を組み合わせた時系列モデル ARIMA(p,d,q)。d 回の階差で非定常な系列を定常化し、AR(p)+MA(q) を当てる。季節版が SARIMA。
+aliases: [ARIMA, ARIMAモデル, 自己回帰和分移動平均, ARMA, SARIMA]
+seeAlso: [autoregressive-model, moving-average-model, stationarity, autocorrelation]
+---
+
+# ARIMAモデル
+
+**AR＋I＋MA** を統合した時系列モデル $\text{ARIMA}(p,d,q)$。
+
+- **AR($p$)**：[自己回帰](autoregressive-model)——過去の値を引きずる（$p$ 個）。
+- **I($d$)**：Integrated（和分）——$d$ 回の**階差** $\Delta^d x_t$ で非定常な系列を[定常](stationarity)化する前処理。
+- **MA($q$)**：[移動平均](moving-average-model)——直近のショックを混ぜる（$q$ 個）。
+- 定常な系列は $d=0$（＝ARMA）。**ランダムウォークは ARIMA(0,1,0)**：1回階差でホワイトノイズ。
+- 手順：①[自己相関](autocorrelation)/PACF と単位根検定で $d$ を決めて定常化 → ②ACF/PACF の切れ方で $(p,q)$ を選ぶ → ③最尤推定 → ④残差がホワイトノイズか診断。
+- 季節性を別の $(P,D,Q)_s$ で加えたのが **SARIMA**。

@@ -745,3 +745,19 @@ MVP 5トピック完了後、SPEC §3 のチェックリスト全項目（A〜S,
 - **変更概要**: «時間順に並んだデータの構造» を4層実装。TimeSeriesLab はトレンド傾き・季節振幅・ノイズ・移動平均窓の4スライダー→系列プロット・移動平均線・トレンド線・分散(平滑化前後)・数式の成分ハイライトが同時連動、窓を広げるとノイズが均され分散が下がる。AcfStepper はラグ k を0→24と増やし «系列をk期ずらして重ねる» 様子（破線）と、各ρ(k)をコレログラムに積み上げるコマ送り。季節周期(12,24)で信頼限界±1.96/√nを超える正のピークが立つ。季節波のcos振動でACFピークが立つ導出・階差 Δx_t でトレンド(a+bt)が定数bに消える導出を収録。
 - **検証結果**: Vitest **673 passed**（+17: time-series 11 / frames 6、registry リンク切れゼロ）。tsc / lint（警告0）/ build成功。`next start` + Playwright 実機確認: 分散が平滑化で30.92→26.88、ノイズ3・窓21で39.75→26.07、ACFステッパーが lag12 で ρ(12)=0.787（有意・信頼限界±0.200超）とラグずらし重ね表示、コンソールエラー0件。
 - **設計判断 / つまずき**: «並び順に情報がある→自己相関» を軸に、L0=分解＋移動平均、L1=ACF＋コレログラム、L2=定常性＋階差＋ホワイトノイズと段階配置。ACFのコレログラムをコマ送りで «積み上げる» ことで «ラグごとに1本ずつ計算» の手順を可視化。用語リンクで階差・予測をトピックslug化しないよう平文に留めた（[[lessons: 用語リンクは実在slugのみ]]）。M群の起点完了、次は M-2 時系列モデル（ARIMA・状態空間）へ。
+
+### コンテンツ拡充 #59 — [M-2] 時系列モデル（ARIMA・状態空間）
+
+優先度 33/82。前提=時系列解析の基礎。AR/MA/ARMA/ARIMA・自己相関の指紋・和分による定常化・状態空間モデル。
+
+- [x] 計算層 `lib/stats/arima.ts`（simulateAR1/simulateMA1/simulateRandomWalk/theoreticalAcfAR1/ar1Variance/fitAR1(Yule-Walker)/forecastAR1）+ Vitest（11）
+- [x] 状態層 `lib/store/time-series-models.ts`（controls {phi, sigma}・AR(1)パス・理論/標本ACF・予測・分散を派生）
+- [x] 描画層 `components/topics/time-series-models/`（TSModelLab=φ・σ→AR(1)パス・理論φ^k と標本ACF・予測減衰・分散の強連動 / ModelGalleryStepper=白色雑音→AR(1)→MA(1)→ランダムウォークのACF指紋ギャラリー / TSModelQuiz）+ frames.ts + Vitest（7）
+- [x] 用語ノード4件（autoregressive-model / moving-average-model / arima-model / state-space-model）相互リンク（既存 autocorrelation/stationarity/white-noise へ接続）
+- [x] MDX `content/topics/time-series-models.mdx`（L0-L2 充実：AR(1)漸化式→ρ(k)=φ^k の等比漸化式導出→ARIMA/和分/状態空間＋階差で非定常が定常になる導出、L3-L6 planned）
+- [x] `/topics` 一覧へ反映（status: published）
+
+#### レビュー: 時系列モデルトピック（2026-07-04）
+- **変更概要**: «過去の値・過去のショックから次を作る漸化式» として時系列モデルを4層実装。TSModelLab は AR係数 φ・ショック σ スライダー→AR(1)標本パス＋予測(φ^h減衰)・理論ACF(φ^k の線)と標本ACF(棒)の重ね・理論分散 σ²/(1−φ²)（TermController）が同時連動、φ を1に近づけると自己相関の減衰が緩やかになり分散が発散。ModelGalleryStepper は ①ホワイトノイズ→②AR(1)→③MA(1)→④ランダムウォーク を «標本パス＋ACFの指紋» で対比コマ送り（AR=だらだら減衰/MA=早く切れる/walk=減衰しない・非定常）。AR(1)の自己共分散が γ(k)=φγ(k-1) の等比漸化式→ρ(k)=φ^k になる導出・階差でランダムウォークがホワイトノイズに戻る（I=和分）導出を収録。
+- **検証結果**: Vitest **691 passed**（+18: arima 11 / frames 7、registry リンク切れゼロ）。tsc / lint（警告0）/ build成功。`next start` + Playwright 実機確認: φ=0.7 で分散1.96、φ=0.95 で 10.26（1/(1−φ²)で発散）、モデルギャラリーが4モデル巡回（④ランダムウォーク=非定常表示）、コンソールエラー0件。
+- **設計判断 / つまずき**: «自己相関の指紋でモデルを見分ける» を軸に、L0=AR(1)、L1=AR/MA対比ギャラリー、L2=ARIMA/和分/状態空間と段階配置。**MDXバグを1件修正** — 演習の答の平文に数式片「x_t−x_{t-1}=e_t」を裸で書いたら `{t-1}` がJSX式と解釈され prerender 失敗（tsc/testは通るのにbuildだけ落ちる）→`$...$`で囲んで解決。[[lessons: MDX素の波括弧はJSX式]]を新規追記。次は M-3 時系列予測と評価へ。
