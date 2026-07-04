@@ -88,7 +88,7 @@
 | 37 | #63 | N-2 | 識別戦略（DID・IV・RDD） | causal-identification | causal-inference-models | ✅ done |
 | 38 | #64 | N-3 | A/Bテスト実務 | ab-testing | causal-inference-models | ✅ done |
 | 39 | #65 | N-4 | グラフィカルモデリング | graphical-models | contingency-tables | ✅ done |
-| 40 | #66 | N-6 | 質的データ解析 | qualitative-data-analysis | contingency-tables | pending |
+| 40 | #66 | N-6 | 質的データ解析 | qualitative-data-analysis | contingency-tables | ✅ done |
 | 41 | #67 | O-1 | 欠測値の処理 | missing-data | estimation-methods | pending |
 | 42 | #68 | O-2 | 生存時間解析 | survival-analysis | continuous-distributions | pending |
 | 43 | #69 | A-1 | 線形代数 | linear-algebra | （なし） | pending |
