@@ -1,0 +1,16 @@
+---
+title: 分割表（クロス集計表）
+definition: 2つ以上のカテゴリ変数の «同時度数» を行×列で集計した表。行和・列和（周辺度数）を持ち、独立性の検定・連関の測定の入力になる。2×2 表が最も基本。
+aliases: [contingency table, クロス集計表, 分割表, 二元表, cross tabulation]
+seeAlso: [chi-square-test, statistical-independence, expected-frequency, cramers-v]
+---
+
+# 分割表（クロス集計表）
+
+2つ以上のカテゴリ変数の **同時度数** を行×列でまとめた表。
+
+- 各セル $O_{ij}$ が «行カテゴリ $i$ かつ列カテゴリ $j$» の観測度数。行和・列和は **周辺度数**、全体は総和 $N$。
+- 例：治療（あり/なし）× 転帰（改善/非改善）の 2×2 表。喫煙×疾病、群×意見など。
+- 主な問い：2変数は **[独立](statistical-independence)** か？ 関連があるならどれくらい **強い** か？
+- 前者は[カイ二乗独立性検定](chi-square-test)（[期待度数](expected-frequency)とのズレ）、後者は[Cramér's V](cramers-v)や[オッズ比](odds-ratio)で測る。
+- 期待度数が小さいセルが多いときは[フィッシャーの正確確率検定](fishers-exact-test)を使う。
