@@ -1,0 +1,19 @@
+---
+title: マルコフブランケット
+definition: あるノードを «残り全部から条件付き独立にする» 最小の近傍集合。有向グラフでは親・子・子の別の親（配偶者）から成る。これを知れば他の変数は予測に不要。
+aliases: [Markov blanket, マルコフブランケット, マルコフ境界, Markov boundary]
+seeAlso: [graphical-model, d-separation, conditional-independence]
+---
+
+# マルコフブランケット
+
+[グラフィカルモデル](graphical-model)で、あるノード $X$ を «残りすべての変数から[条件付き独立](conditional-independence)にする» 最小の近傍集合 $\mathrm{MB}(X)$：
+
+$$
+X\ \perp\!\!\!\perp\ (\text{他の全変数})\ \mid\ \mathrm{MB}(X)
+$$
+
+- 有向グラフ（ベイジアンネットワーク）では、$\mathrm{MB}(X)=$ **親 ＋ 子 ＋ 子の別の親（配偶者）**。子の別の親が入るのは、子が[合流点](collider)になり条件づけで経路が開くため。
+- 無向グラフ（マルコフ確率場）では単に **隣接ノード** 全体。
+- $\mathrm{MB}(X)$ さえ観測すれば、他の変数は $X$ の予測に情報を加えない——[d分離](d-separation)が保証する «局所性»。
+- 特徴選択の理論的な «必要十分な変数集合» に対応し、因果探索や確率推論の効率化に使われる。
