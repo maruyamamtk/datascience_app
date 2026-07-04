@@ -108,3 +108,13 @@
     入れると registry.test.ts が落ちる。前方参照は «本文中の通常テキスト» に留め、seeAlso/Term/markdown リンクは
     «今あるトピックで作る用語» だけにする。トピック間リンク（`/topics/xxx`）はルートなので未作成でもテストは通るが、
     実在を確認してから貼る。出典: #32 連続分布 実装時の registry テスト落ち。
+
+## トピック実装フロー：コミット前に必ず作業ブランチを切る（出典 #64）
+- **症状**: 前トピックのマージ後 `git checkout main` した状態のまま、新トピックの作業を進めて `git commit` してしまい、
+  main に直接コミットが乗った（push は `git push -u origin feat/...` で refspec 不一致エラーになって発覚）。
+- **原因**: 各トピックの起点で `git checkout -b feat/NN-slug` を打つ手順を、実装に集中して飛ばした。
+- **対策**:
+  1. 各トピック着手時、**最初のファイル作成より前に** `git checkout -b feat/NN-slug` を実行する（計算層を書き始める前）。
+  2. 万一 main に commit してしまったら、`git branch feat/NN-slug`（現在のコミットを退避）→ `git reset --hard origin/main`
+     （main を巻き戻す）→ `git checkout feat/NN-slug` で復旧できる。履歴は失われない。
+  3. コミット直前に `git branch --show-current` が main でないことを確認する癖をつける。
