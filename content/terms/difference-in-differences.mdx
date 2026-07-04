@@ -1,0 +1,19 @@
+---
+title: 差の差分法（DID）
+definition: 処置群・対照群 × 介入前・後 の2×2から、対照群の変化を «処置がなくても起きた共通の時間変化» の代理とみなして差し引き、処置効果を識別する方法。平行トレンド仮定に依拠。
+aliases: [difference-in-differences, DID, DiD, 差分の差分法, 二重差分法]
+seeAlso: [parallel-trends, average-treatment-effect, confounding, randomization]
+---
+
+# 差の差分法（DID）
+
+処置群と対照群を、介入の **前と後** で観測し、変化の差をとる：
+
+$$
+\text{DID}=\underbrace{(Y^{T}_{\text{後}}-Y^{T}_{\text{前}})}_{\text{処置群の変化}}-\underbrace{(Y^{C}_{\text{後}}-Y^{C}_{\text{前}})}_{\text{対照群の変化}}
+$$
+
+- 処置群の変化には «処置の効果» と «時代の変化» が混ざる。対照群の変化を «処置がなくても起きた共通の時間変化» の代理として差し引く。
+- 依拠する要の仮定が **[平行トレンド](parallel-trends)**：処置がなければ処置群も対照群と平行に推移したはず。前の水準が違っても平行なら[平均処置効果](average-treatment-effect)（正確には ATT）が識別できる。
+- «時間で一定» の[交絡](confounding)（群の固定的な違い）は差分で消える。時間変化する交絡が平行トレンドを破るとバイアスになる。
+- パネルデータの二元固定効果モデルとして推定するのが一般的。政策評価で頻用。
