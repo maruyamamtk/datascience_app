@@ -1,0 +1,14 @@
+---
+title: 多次元尺度構成法
+definition: 点どうしの距離（非類似度）だけから、それを最もよく再現する低次元の配置（地図）を求める手法（MDS）。座標が未知でも近さから布置を描ける。
+aliases: [multidimensional scaling, MDS, 多次元尺度法, 主座標分析]
+seeAlso: [principal-component, correspondence-analysis, dimensionality-reduction]
+---
+
+# 多次元尺度構成法（MDS）
+
+«点どうしの距離» だけを入力に、それを再現する低次元の配置を求める。
+
+- 古典的 MDS: 距離行列を二重中心化して固有値分解（[主成分](principal-component)と数学的に近い）。距離を保つ座標を復元。
+- **ストレス**（元の距離と復元距離のずれ）を最小化。次元を増やすほど下がる。回転・鏡映は自由。
+- 座標が未知でも «似ている度»（アンケート等）から地図が描ける。[対応分析](correspondence-analysis)・数量化Ⅳ類も «非類似度から布置» する仲間。

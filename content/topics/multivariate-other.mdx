@@ -1,0 +1,137 @@
+---
+title: その他の多変量解析
+summary: 距離だけから地図を描く多次元尺度構成法（MDS）を中心に、数量化理論・正準相関分析・対応分析まで。非類似度から低次元の布置を復元する仕組み・ストレスを操作で体感する。
+status: published
+---
+
+import { MdsLab } from "@/components/topics/multivariate-other/MdsLab";
+import { MdsBuildStepper } from "@/components/topics/multivariate-other/MdsBuildStepper";
+import { MvQuiz } from "@/components/topics/multivariate-other/MvQuiz";
+
+<Topic title="その他の多変量解析" summary="距離だけから地図を描く多次元尺度構成法（MDS）を中心に、数量化理論・正準相関分析・対応分析まで。非類似度から低次元の布置を復元する仕組み・ストレスを操作で体感する。">
+
+<ReaderGuide>
+
+- **初学者** → L0〜L1（距離だけから地図を復元する MDS、ストレスと次元）
+- **一通り使える人** → L2（数量化理論Ⅰ〜Ⅳ類・正準相関分析・対応分析の位置づけ）
+- **「完全に理解した」人** → L3 以降（非計量MDS・カーネル法は到達途上）
+
+前提: [主成分分析](/topics/principal-component-analysis)の<Term id="dimensionality-reduction">次元圧縮</Term>・<Term id="eigen-decomposition">固有値分解</Term>。
+
+</ReaderGuide>
+
+<Level level={0} title="ブラックボックス（距離から地図を描く）">
+  <Concept>
+
+多変量解析には «主成分・判別・クラスター・因子» のほかにも道具がある。その一つが**<Term id="multidimensional-scaling">多次元尺度構成法（MDS）</Term>**。
+座標が分からなくても、**点どうしの距離（非類似度）** さえあれば、それを再現する «地図» を復元できる。
+
+都市間の距離表から地図を描く、アンケートの «似ている度» から商品の布置図を描く——そんな «近さから配置» を作る手法。
+
+  </Concept>
+  <Interact>
+
+下のラボで距離に歪みを加えると、距離行列（ヒートマップ）・MDS が復元した地図・**ストレス**（元の距離とのずれ）が変わり、数式が同時に追従する（操作→図→数式の強連動）。
+歪み0なら地図をきれいに復元（ストレス≈0）、歪みを増やすと布置が崩れることを確かめよう。
+
+<MdsLab />
+
+  </Interact>
+  <Exercise>
+
+確認: 「多次元尺度構成法は、各点の座標を入力に必要とする」——○か×か。
+（答: ×。MDS は «点どうしの距離（非類似度）» だけを入力に、座標（地図）を復元する。座標が未知でも近さがあれば布置できるのが特長）
+
+  </Exercise>
+</Level>
+
+<Level level={1} title="古典的理解（次元とストレス）">
+  <Concept>
+
+MDS は距離行列を **二重中心化** して[固有値分解](/topics/principal-component-analysis)し、上位の固有ベクトルを座標にする（主成分分析と数学的に近い）。
+何次元で表すかは **ストレス**（元の距離と復元距離のずれ）で判断する。
+
+下のステッパーで «距離のみ → 1次元 → 2次元» と次元を増やし、点が直線から平面の地図になりストレスが下がる様子を追える。
+
+  </Concept>
+  <Derivation title="なぜ距離行列の固有値分解で座標が復元できるのか">
+
+点 $\mathbf x_i$（中心化済み）の内積行列 $B_{ij}=\mathbf x_i^\top\mathbf x_j$ が分かれば、$B$ を固有値分解して $B=V\Lambda V^\top$、座標 $\mathbf x_i=\Lambda^{1/2}V^\top$ が得られる。
+問題は «距離しか分からない» こと。だが距離²と内積は結びつく：
+
+$$
+d_{ij}^2=\lVert\mathbf x_i-\mathbf x_j\rVert^2=B_{ii}+B_{jj}-2B_{ij}.
+$$
+
+これを $B$ について解くと、**二重中心化**
+
+$$
+B=-\tfrac12\,J\,D^{(2)}\,J,\qquad J=I-\tfrac1n\mathbf 1\mathbf 1^\top
+$$
+
+で内積行列 $B$ が距離²行列 $D^{(2)}$ から復元できる（中心化で $B_{ii},B_{jj}$ の項が消える）。
+あとは $B$ の上位 $k$ 固有対から座標を作れば、距離を最もよく再現する $k$ 次元配置になる。これが古典的 MDS。
+
+  </Derivation>
+  <Interact>
+
+<MdsBuildStepper />
+
+  </Interact>
+  <Exercise>
+
+<MvQuiz />
+
+  </Exercise>
+</Level>
+
+<Level level={2} title="仮定体系（数量化・正準相関・対応分析）">
+  <Concept>
+
+«その他の多変量解析» を地図に位置づける。
+
+- **<Term id="quantification-theory">数量化理論</Term>（林のⅠ〜Ⅳ類）**: 質的（カテゴリ）データを数量に変換して回帰・判別・布置する。Ⅰ類=回帰、Ⅱ類=判別、Ⅲ類=対応分析、Ⅳ類=MDS類似。
+- **<Term id="canonical-correlation">正準相関分析</Term>**: 2組の変数群の線形結合の相関を最大化。主成分・重回帰の «2群の関係» への拡張。
+- **<Term id="correspondence-analysis">対応分析</Term>**: 分割表の行・列カテゴリを同じ平面に布置し関連を可視化（数量化Ⅲ類）。
+- **非計量MDS**: 距離の «順序» だけを保つ（間隔でなく順位）柔軟な MDS。
+
+多くは «行列を固有値分解して低次元に落とす» という主成分分析と同じ骨格を、目的（距離の復元・2群の相関・カテゴリの関連）に合わせて使い分けている。
+
+  </Concept>
+  <Derivation title="主成分分析・MDS・対応分析をつなぐ «固有値分解» の共通骨格">
+
+これらの多変量手法は «適切な行列を作って固有値分解し、上位の固有ベクトルを座標にする» 点で共通する。
+
+- **主成分分析**: 共分散行列 $\Sigma$ を固有値分解 → 分散最大の軸。
+- **古典的 MDS**: 二重中心化した内積行列 $B=-\tfrac12JD^{(2)}J$ を固有値分解 → 距離を再現する座標。
+- **対応分析**: 分割表を行・列で規格化した «残差行列»（観測−期待を √期待 で割る）を特異値分解 → 行・列カテゴリの布置。
+
+行列の «中身» は分散・内積・カイ二乗残差と違うが、**固有値（特異値）が寄与、固有ベクトルが座標** という構造は同じ。
+だから «低次元に落として関係を見る» 発想が一貫し、主成分分析を土台に各手法へ橋渡しできる。
+
+  </Derivation>
+  <Exercise>
+
+確認: 「対応分析は、分割表の行カテゴリと列カテゴリを同じ平面上に布置して関連を可視化する」——○か×か。
+（答: ○。行・列のカテゴリを同じ低次元座標に置き、近さで «どのカテゴリが結びつくか» を見る。カテゴリ版の主成分分析＝数量化Ⅲ類）
+
+  </Exercise>
+</Level>
+
+<Level level={3} title="非計量MDS・近接構造" status="planned">
+  距離の順序だけを保つ非計量MDS、シェパード図、個人差スケーリング（INDSCAL）（前提: 順位）。
+</Level>
+
+<Level level={4} title="カーネル法・多様体学習" status="planned">
+  カーネルPCA・Isomap・LLE など非線形の距離保存、t-SNE/UMAP との関係（主成分分析トピックへ）。
+</Level>
+
+<Level level={5} title="正準相関・多重対応の一般化" status="planned">
+  正則化正準相関、多重対応分析（3変数以上のカテゴリ）、共分散構造分析との接続。
+</Level>
+
+<Level level={6} title="フロンティア" status="planned">
+  «関係の低次元表現» を深層で学ぶ表現学習・グラフ埋め込みとの接続は研究が活発（到達途上）。
+</Level>
+
+</Topic>

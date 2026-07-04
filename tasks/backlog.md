@@ -40,6 +40,7 @@
 - ✅ H-2 判別分析 `discriminant-analysis`（#50）
 - ✅ H-3 クラスター分析 `cluster-analysis`（#51）
 - ✅ H-4 共分散構造分析・因子分析 `covariance-structure-analysis`（#52）
+- ✅ H-5 その他の多変量解析 `multivariate-other`（#53）
 
 ## キュー（優先順）
 
@@ -71,7 +72,7 @@
 | 24 | #50 | H-2 | 判別分析 | discriminant-analysis | principal-component-analysis | ✅ done |
 | 25 | #51 | H-3 | クラスター分析 | cluster-analysis | principal-component-analysis | ✅ done |
 | 26 | #52 | H-4 | 共分散構造分析・因子分析 | covariance-structure-analysis | principal-component-analysis | ✅ done |
-| 27 | #53 | H-5 | その他の多変量解析 | multivariate-other | principal-component-analysis | pending |
+| 27 | #53 | H-5 | その他の多変量解析 | multivariate-other | principal-component-analysis | ✅ done |
 | 28 | #54 | H-6 | カーネル密度推定 | kernel-density-estimation | continuous-distributions | pending |
 | 29 | #55 | L-1 | マルコフ連鎖 | markov-chains | probability-basics | pending |
 | 30 | #56 | L-2 | 確率過程 | stochastic-processes | markov-chains | pending |
