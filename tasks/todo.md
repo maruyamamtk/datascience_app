@@ -857,3 +857,19 @@ MVP 5トピック完了後、SPEC §3 のチェックリスト全項目（A〜S,
 - **変更概要**: 確率変数の «条件付き独立» の構造をグラフで表す枠組みを4層実装。GraphLab は連鎖/分岐/合流の構造選択＋辺の強さ＋«Bを条件づける» トグル→3ノードDAG（条件づけノードを紫四角に）・周辺相関/偏相関バー・d分離判定・«corr(A,C) と corr(A,C|B)» 数式が同時連動。連鎖/分岐はBの条件づけで相関が消え、合流は逆に相関が生まれる。StructureStepper は «連鎖→条件づけ→分岐→合流→条件づけ» をコマ送りし、A-C間の経路の開（赤実線）閉（緑破線）を弧で可視化。合流点が «説明のしあい（explaining away）» で開く導出・ガウシアングラフィカルモデル（精度行列のゼロパターン⇔無向グラフの辺）の導出を収録。
 - **検証結果**: Vitest **781 passed**（+11: graphical 7 / frames 4、registry リンク切れゼロ）。tsc / lint（警告0）/ build成功。`npm run dev` + Playwright 実機確認: 連鎖で周辺 corr=0.541→B条件づけ偏相関=0.031（遮断）、合流で周辺 corr=0.033（独立）→B条件づけ偏相関=−0.42（依存が開く=説明のしあい）と d分離の反転を強連動で確認、コンソールエラー0件。
 - **設計判断 / つまずき**: 既存 partial-correlation 用語を再利用。多変量正規での «条件付き独立⇔偏相関ゼロ» を使い、実測相関で d分離を «体感» させる設計（抽象的なグラフ規則を数値と結びつけた）。合流点バイアスを «むやみに変数を調整に入れてはいけない» 因果推論の教訓に接続。MDX の入れ子 $（\text{$B$…}）を避け $B\ \text{を固定…}$ に修正（KaTeX は通るが MDX パーサの $ 計数リスクを回避）。**N群 因果推論クラスタ（N-1〜N-5）完了**、次は N-6 質的データ解析へ。
+
+### コンテンツ拡充 #66 — [N-6] 質的データ解析
+
+優先度 40/82。前提=重回帰・分割表。数量化理論（林知己夫）／数量化I類=質的説明変数→量的目的変数（カテゴリ数量＝ダミー回帰係数の中心化）／ダミー変数と基準カテゴリ／相関比 η²／数量化II/III類・対応分析。
+
+- [x] 計算層 `lib/stats/quantification.ts`（generateQuantData、fitQuantification1=ダミー計画行列→olsFit→中心化カテゴリ数量、predictQuant1、correlationRatio=η²）+ Vitest（8）（multiple-regression の olsFit 再利用）
+- [x] 状態層 `lib/store/qualitative-data-analysis.ts`（天気×曜日→売上シナリオ、controls {noise, n, weather, day}・fit/prediction/parts を派生）
+- [x] 描画層 `components/topics/qualitative-data-analysis/`（QuantLab=雑音/n スライダー＋組合せ選択→カテゴリ数量バー（真値併記）・予測の内訳・ŷ=定数+天気+曜日 数式の強連動 / Quant1Stepper=生データ→ダミー符号化→カテゴリ数量→予測の4段階コマ送り / QualQuiz=I類/ダミー/η²/III類 4問）+ frames.ts + Vitest（4）
+- [x] 用語ノード3件（category-quantification / dummy-variable / correlation-ratio）相互リンク（既存 quantification-theory / correspondence-analysis / analysis-of-variance / multiple-regression へ接続）
+- [x] MDX `content/topics/qualitative-data-analysis.mdx`（L0-L2 充実：カテゴリを数量に→数量化I類の4手順→相関比/数量化family/対応分析＋«実質はダミー回帰»とダミー変数トラップの導出/数量化III類=標準化残差SVDの導出、L3-L6 planned）
+- [x] `/topics` 一覧へ反映（status: published）
+
+#### レビュー: 質的データ解析トピック（2026-07-05）
+- **変更概要**: カテゴリを数量に変換して多変量解析する数量化理論を4層実装。QuantLab は «天気×曜日→アイス売上» の数量化I類で、雑音/標本サイズ スライダー＋予測する組合せ選択→推定カテゴリ数量バー（真値を灰で併記・青押上げ/赤押下げ）・予測の内訳・«ŷ=定数+天気+曜日» 数式が同時連動。推定スコアが真値を回復し、雑音を上げると R² が落ちる。Quant1Stepper は «生データ→ダミー符号化→最小二乗でカテゴリ数量→予測» の4段階を小デモ表でコマ送り。«実質はダミー回帰» とダミー変数トラップ（全カテゴリ入れると定数列と共線）の導出・数量化III類=標準化残差のSVDで相関最大の数量を与える導出を収録。
+- **検証結果**: Vitest **793 passed**（+12: quantification 8 / frames 4、registry リンク切れゼロ）。tsc / lint（警告0）/ build成功。`npm run dev` + Playwright 実機確認: 晴×週末で 定数20+天気3.9+曜日3.1=27.1（真値スコア4/3を回復）、天気を雨に変えると天気スコア−4.0・予測19.2と強連動、コンソールエラー0件。
+- **設計判断 / つまずき**: 既存 multiple-regression の olsFit・既存用語（quantification-theory/correspondence-analysis）を再利用。数量化I類を «真のカテゴリ数量を回復する» デモにして推定の正しさを体感させる設計。correlationRatio のテストデータを最初 «群が完全分離» に誤設定し η²=1 で落ちた→両群同平均データに修正（テスト設計ミスの教訓）。MDX の $\text{曇}$ 等はブレース必須（$\text週末$ は2文字目が math モードに漏れKaTeXエラー）→全て `\text{...}` に。**N群（因果推論・質的データ）完走**、次は O群 O-1 欠測値の処理へ。

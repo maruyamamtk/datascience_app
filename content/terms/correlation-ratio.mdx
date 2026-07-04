@@ -1,0 +1,19 @@
+---
+title: 相関比（η²）
+definition: 質的変数が量的変数をどれだけ説明するかの指標。η²=群間平方和/全平方和（0〜1）。カテゴリ間で群平均がどれだけ散らばるかの割合で、一元配置分散分析の効果量。
+aliases: [correlation ratio, 相関比, eta squared, η², イータ二乗]
+seeAlso: [quantification-theory, category-quantification, analysis-of-variance]
+---
+
+# 相関比（η²）
+
+質的変数（群分け）が量的変数をどれだけ説明するかを表す指標：
+
+$$
+\eta^2=\frac{\text{群間平方和}}{\text{全平方和}}=\frac{\sum_g n_g(\bar y_g-\bar y)^2}{\sum_i (y_i-\bar y)^2}
+$$
+
+- カテゴリ（群）ごとに目的変数の平均 $\bar y_g$ がどれだけ散らばるかの割合（0〜1）。1に近いほどその質的変数で目的変数がよく説明される。
+- $\eta^2=0$ は «全群の平均が同じ»（説明力なし）、$\eta^2=1$ は «群内のばらつきがゼロ»（完全に説明）。
+- 一元配置[分散分析](analysis-of-variance)の効果量そのもの。[数量化理論](quantification-theory)I類が1アイテムのときの決定係数 R² に一致する。
+- ピアソン相関の2乗（直線関係の説明力）と違い、相関比は «群平均の違い» を通じた非線形な関連も捉える。
