@@ -841,3 +841,19 @@ MVP 5トピック完了後、SPEC §3 のチェックリスト全項目（A〜S,
 - **変更概要**: オンライン実験の «設計と運用で過誤を制御する» 実務を4層実装。AbTestLab は baseline・MDE・α・目標検出力・実際n スライダー→必要標本サイズ(1群)と実際nの充足バー・検出力ゲージ（目標破線）・«n=(z_{α/2}√2p̄q̄+z_β√…)²/δ²» 数式が同時連動、MDEを小さくすると必要nが急増、nが足りないと検出力が落ちる。PeekingStepper は真に差がないA/A実験でチェック回数1→2→5→10→20回と増やすと «一度でも有意» の実効過誤が名目5%線を超えて伸びる様子をコマ送り。n∝1/δ²の導出・覗き見が事象の和集合で過誤を膨らませる導出を収録。
 - **検証結果**: Vitest **770 passed**（+12: ab-test 7 / peeking frames 5、registry リンク切れゼロ）。tsc / lint（警告0）/ build成功。`npm run dev` + Playwright 実機確認: 既定(p0=10%,MDE=2%,α=.05,power=.8)で必要n=3,841・n=3000での検出力69.7%（未達）、n=6000で検出力93.8%と強連動、覗き見ステッパーで1回=5.2%→20回=25.0%と過誤膨張、コンソールエラー0件。
 - **設計判断 / つまずき**: 既存 normal.ts（standardNormalCdf/zQuantile）・既存用語（power/type-i-error/multiple-comparison）を再利用し重複回避。必要n/検出力の整合性（必要nで計算した検出力≈目標）をテストで担保。覗き見シミュは決定的シード(mulberry32)で単調性をテスト。MDX は数式（\bigcup・|z|>z_{α/2}等）を全て $...$/$$...$$ 内に閉じ、L2 Concept のリスト後に段落を挟んで閉じタグ不整合を回避（既存教訓を適用）。次は N-4 グラフィカルモデリングへ。
+
+### コンテンツ拡充 #65 — [N-4] グラフィカルモデリング
+
+優先度 39/82。前提=分割表の解析・単回帰。条件付き独立をグラフで表す／連鎖・分岐・合流の3基本構造／d分離（条件づけで連鎖・分岐は閉じ合流は開く）／偏相関との対応／合流点バイアス／マルコフブランケット。
+
+- [x] 計算層 `lib/stats/graphical.ts`（generateTriples=連鎖/分岐/合流の3構造生成、correlation/partialCorrelation、dSeparated=d分離ルール、acDependence=周辺相関と偏相関の実測）+ Vitest（7）
+- [x] 状態層 `lib/store/graphical-models.ts`（controls {structure, w, conditionOnB}・marginal/partialGivenB/dsep/effective を派生）
+- [x] 描画層 `components/topics/graphical-models/`（GraphLab=構造選択＋条件づけトグル→DAG図（条件づけノードを紫四角）・周辺/偏相関バー・独立判定・強連動数式 / StructureStepper=連鎖→条件づけ→分岐→合流→条件づけの5段階、A-C経路の開閉を弧で表示 / GraphQuiz=3構造＋変数投入の誤り4問）+ frames.ts + Vitest（4）
+- [x] 用語ノード5件（graphical-model / conditional-independence / d-separation / collider / markov-blanket）相互リンク（既存 statistical-independence / partial-correlation / confounding へ接続）
+- [x] MDX `content/topics/graphical-models.mdx`（L0-L2 充実：グラフで独立を描く→d分離3ルール→一般化と因果への接続＋合流点が «説明のしあい» で開く導出/ガウシアングラフィカルモデル（精度行列のゼロ⇔辺なし）の導出、L3-L6 planned）
+- [x] `/topics` 一覧へ反映（status: published）
+
+#### レビュー: グラフィカルモデリングトピック（2026-07-04）
+- **変更概要**: 確率変数の «条件付き独立» の構造をグラフで表す枠組みを4層実装。GraphLab は連鎖/分岐/合流の構造選択＋辺の強さ＋«Bを条件づける» トグル→3ノードDAG（条件づけノードを紫四角に）・周辺相関/偏相関バー・d分離判定・«corr(A,C) と corr(A,C|B)» 数式が同時連動。連鎖/分岐はBの条件づけで相関が消え、合流は逆に相関が生まれる。StructureStepper は «連鎖→条件づけ→分岐→合流→条件づけ» をコマ送りし、A-C間の経路の開（赤実線）閉（緑破線）を弧で可視化。合流点が «説明のしあい（explaining away）» で開く導出・ガウシアングラフィカルモデル（精度行列のゼロパターン⇔無向グラフの辺）の導出を収録。
+- **検証結果**: Vitest **781 passed**（+11: graphical 7 / frames 4、registry リンク切れゼロ）。tsc / lint（警告0）/ build成功。`npm run dev` + Playwright 実機確認: 連鎖で周辺 corr=0.541→B条件づけ偏相関=0.031（遮断）、合流で周辺 corr=0.033（独立）→B条件づけ偏相関=−0.42（依存が開く=説明のしあい）と d分離の反転を強連動で確認、コンソールエラー0件。
+- **設計判断 / つまずき**: 既存 partial-correlation 用語を再利用。多変量正規での «条件付き独立⇔偏相関ゼロ» を使い、実測相関で d分離を «体感» させる設計（抽象的なグラフ規則を数値と結びつけた）。合流点バイアスを «むやみに変数を調整に入れてはいけない» 因果推論の教訓に接続。MDX の入れ子 $（\text{$B$…}）を避け $B\ \text{を固定…}$ に修正（KaTeX は通るが MDX パーサの $ 計数リスクを回避）。**N群 因果推論クラスタ（N-1〜N-5）完了**、次は N-6 質的データ解析へ。

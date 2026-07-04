@@ -1,0 +1,19 @@
+---
+title: 条件付き独立
+definition: 変数 Z を与えたとき X と Y が独立になること。P(X,Y|Z)=P(X|Z)P(Y|Z)。«Z を知れば X の追加情報は Y に効かない»。グラフィカルモデルの基本単位。
+aliases: [conditional independence, 条件付き独立, X ⫫ Y | Z]
+seeAlso: [statistical-independence, graphical-model, d-separation, partial-correlation]
+---
+
+# 条件付き独立
+
+第3の変数 $Z$ を与えた（条件づけた）もとで $X$ と $Y$ が独立になること：
+
+$$
+P(X,Y\mid Z)=P(X\mid Z)\,P(Y\mid Z)\iff P(X\mid Y,Z)=P(X\mid Z)
+$$
+
+- «$Z$ を知っていれば、さらに $Y$ を知っても $X$ の予測は変わらない»。[統計的独立](statistical-independence)を条件付き分布で言い換えたもの。
+- **周辺独立とは別物**。周辺では従属でも $Z$ を条件づけると独立になる（連鎖・分岐）、逆に周辺独立でも $Z$ を条件づけると従属になる（[合流点](collider)）ことがある。
+- 多変量正規分布では «条件付き独立 ⇔ [偏相関](partial-correlation)ゼロ»。だから偏相関で条件付き独立を検定できる。
+- [グラフィカルモデル](graphical-model)は «どの条件付き独立が成り立つか» をグラフの形（[d分離](d-separation)）で表す。
