@@ -118,3 +118,8 @@
   2. 万一 main に commit してしまったら、`git branch feat/NN-slug`（現在のコミットを退避）→ `git reset --hard origin/main`
      （main を巻き戻す）→ `git checkout feat/NN-slug` で復旧できる。履歴は失われない。
   3. コミット直前に `git branch --show-current` が main でないことを確認する癖をつける。
+
+## SVG座標は丸める：Box-Muller等のtranscendentalがSSR/CSRで1ULP違いハイドレーション不一致（出典 #67）
+- **症状**: 固定シードのはずの散布図Labで «hydration mismatch» コンソールエラー。差分は cx="103.04620519673969"（server）vs cx={103.04620519673966}（client）——最終桁だけ違う。
+- **原因**: mulberry32（整数演算）はビット一致するが、gauss() の Math.log/Math.cos/Math.sqrt（超越関数）は Node と ブラウザの V8 で最終ビット（1ULP）が異なりうる。未丸めの float を SVG 属性（cx/cy）に直接入れると server/client で文字列表現がズレて React が不一致検出。
+- **対策**: SVG に渡す座標は必ず丸める（例 `Math.round(v*100)/100`）。テキスト表示は formatNumber(…,桁) で既に丸まっているので安全。**シード付きデータをSVG散布図でSSRする描画層は、座標スケール関数 sx/sy の出力を丸めておく**（HTMLサイズ削減にもなる）。多数点（数百〜千）を描くLabで顕在化しやすい。

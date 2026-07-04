@@ -1,0 +1,17 @@
+---
+title: 欠測メカニズム（MCAR・MAR・MNAR）
+definition: 欠測が «何に依存して» 起きるかの分類。MCAR=完全にランダム、MAR=観測変数に依存、MNAR=欠測値自身に依存。どの手法が使えるかを決める最重要の前提。
+aliases: [missing mechanism, 欠測メカニズム, MCAR, MAR, MNAR, missing data mechanism]
+seeAlso: [complete-case-analysis, multiple-imputation, regression-imputation]
+---
+
+# 欠測メカニズム（MCAR・MAR・MNAR）
+
+欠測が «何に依存して» 起こるかの分類（Rubin）。どの処理が妥当かを決める。
+
+- **MCAR（Missing Completely At Random）**: 欠測確率が観測値にも欠測値にも無関係（完全な偶然）。観測部分は無作為標本なので[完全ケース分析](complete-case-analysis)でも不偏。
+- **MAR（Missing At Random）**: 欠測確率が **観測変数** に依存するが、観測変数で条件づければ欠測値自身とは独立。観測変数（補助変数）を使う[回帰代入](regression-imputation)・[多重代入](multiple-imputation)で回復できる。
+- **MNAR（Missing Not At Random）**: 欠測確率が **欠測値そのもの** に依存（例：高い収入ほど無回答）。観測変数だけでは救えず、欠測メカニズムのモデル化や感度分析が要る。
+
+- MCAR ⊂ MAR ⊂（一般）。MCAR は検定できる（欠測群と観測群で観測変数の分布を比較）が、MAR と MNAR の区別は **データだけでは判定できない**（欠測値が見えないため）。
+- 「どのメカニズムか」の見立てが、補完の選択と結果の信頼性を左右する。
