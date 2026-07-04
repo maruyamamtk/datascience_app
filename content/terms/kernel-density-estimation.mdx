@@ -1,0 +1,18 @@
+---
+title: カーネル密度推定
+definition: 各データ点にカーネル（山）を置いて平均し、滑らかな確率密度を推定するノンパラメトリック法。f̂(x)=(1/nh)ΣK((x−xᵢ)/h)。ヒストグラムの連続版。
+aliases: [kernel density estimation, KDE, カーネル密度推定]
+seeAlso: [bandwidth, kernel-function, silverman-rule]
+---
+
+# カーネル密度推定（KDE）
+
+各データ点に «山（カーネル）» を置いて足し合わせ、滑らかな密度を作る。
+
+$$
+\hat f(x)=\frac{1}{nh}\sum_{i=1}^n K\!\left(\frac{x-x_i}{h}\right)
+$$
+
+- ヒストグラムと違いビンの境界に依存せず、**連続で滑らか**。分布の形を仮定しない（ノンパラメトリック）。
+- 結果を左右するのは[帯域幅](bandwidth) $h$（[カーネル](kernel-function)の形より効く）。小さいとギザギザ、大きいと潰れる。
+- $h$ の自動選択に[シルバーマンの経験則](silverman-rule)や交差検証を使う。多変量・回帰（カーネル回帰）へも拡張。

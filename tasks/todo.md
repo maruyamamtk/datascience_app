@@ -665,3 +665,19 @@ MVP 5トピック完了後、SPEC §3 のチェックリスト全項目（A〜S,
 - **変更概要**: 主成分・判別・クラスター・因子に続く «その他» の多変量手法をMDS中心に4層実装。MdsLab は距離の歪み distortion スライダー→与えられた距離行列ヒートマップ・MDSが距離だけから復元した地図（6都市）・ストレス（TermController）が同時連動、歪み0で地図を完全再現(ストレス0)、歪みを増やすと布置が崩れる。MdsBuildStepper は «距離のみ→1次元復元→2次元復元» と次元を増やしストレスが下がる過程をコマ送り。距離²と内積の関係から二重中心化 B=−½JD²J で座標が復元できる導出・PCA/MDS/対応分析をつなぐ«固有値分解の共通骨格»の導出を網羅。数量化理論Ⅰ〜Ⅳ類・正準相関・対応分析をL2で位置づけ。古典的MDSは冪乗法+デフレーションで上位固有対を計算。
 - **検証結果**: Vitest **593 passed**（+12: mds 8 / frames 4、registry リンク切れゼロ）。tsc / lint（警告0、未使用n除去）/ build成功。`pnpm start` + Playwright 実機確認: 歪み0 で ストレス0（距離完全再現）、歪み1.2 で ストレス0.072（歪みあり）、MDS復元ステッパー2次元でストレス0.000、コンソールエラー0件。
 - **設計判断**: «座標が未知でも距離があれば地図が描ける» をMDS復元地図で直接体感させ、主成分分析との数学的近さ（固有値分解）をL2導出で明示して多変量解析群を «固有値分解の共通骨格» で締めた。回転・鏡映の自由度は距離を保つので表示上問題なし。frame は MdsBuildStepper のみ使用で競合なし。次は H-6 カーネル密度推定へ。
+
+### コンテンツ拡充 #54 — [H-6] カーネル密度推定
+
+優先度 28/82。前提=連続型確率分布。ヒストグラムの滑らか版・帯域幅のトレードオフ。
+
+- [x] 計算層 `lib/stats/kde.ts`（kernel(4種)/kde/silvermanBandwidth/sampleSd/iqr/densityCurve/integratedSquaredError）+ Vitest（12）
+- [x] 状態層 `lib/store/kernel-density-estimation.ts`（controls {bandwidth, kernel}・二峰性混合正規の真の密度＋固定データ）
+- [x] 描画層 `components/topics/kernel-density-estimation/`（KdeLab=帯域幅・カーネル→個別の山・KDE曲線・真の密度・ISEの強連動 / BandwidthStepper=過小→最適→過大平滑をISE最小基準でコマ送り / KdeQuiz）+ frames.ts + Vitest（5）
+- [x] 用語ノード4件（kernel-density-estimation / bandwidth / kernel-function / silverman-rule）相互リンク
+- [x] MDX `content/topics/kernel-density-estimation.mdx`（L0-L2 充実：各点に山を置いて足す→帯域幅がバイアス–分散のトレードオフである導出→帯域幅選択/カーネル/多変量＋ヒストグラムが一様カーネルKDEである導出、L3-L6 planned）
+- [x] `/topics` 一覧へ反映（status: published）
+
+#### レビュー: カーネル密度推定トピック（2026-07-04）
+- **変更概要**: ヒストグラムの滑らか版KDEを4層実装。KdeLab は帯域幅 h スライダー＋カーネル種別トグル（ガウス/エパネチニコフ/三角/一様）→各データ点の個別カーネル（薄紫の山40本）・KDE曲線（紫）・真の密度（緑破線）・ISE（TermController）・データのラグが同時連動、シルバーマン目安ボタンつき。h小でギザギザ・h大で二峰性が潰れる様子を可視化。BandwidthStepper は h を過小→最適→過大とコマ送りしregime色分け（赤/緑/橙）でバイアス–分散を見せる。帯域幅がバイアス(∝h²)–分散(∝1/nh)のトレードオフである導出・ヒストグラムが一様カーネルKDEである導出を網羅。真の密度は二峰性混合正規でISE評価。
+- **検証結果**: Vitest **610 passed**（+17: kde 12 / frames 5、registry リンク切れゼロ）。tsc / lint（警告0）/ build成功。`pnpm start` + Playwright 実機確認: h=0.88(シルバーマン)で ISE=0.037（過平滑）、h=0.36 で ISE=0.014（二峰性が出て改善・個別カーネル42パス）、帯域幅ステッパーが h=0.35 で ISE最小(緑)を特定（ラボの手動最適と一致）、コンソールエラー0件。
+- **設計判断 / つまずき**: **統計的事実の反映** — シルバーマンは正規前提で二峰性データでは過平滑。frames の regime を「silverman=good」と決め打ちしたら ISE(0.2·silverman)<ISE(silverman) でテスト失敗→ «最適» を ISE の argmin で判定するよう修正（教育的にも «シルバーマンは万能でない» と示せて正しい）。lessons.md に «最適パラメータをテストで固定値に決め打ちしない» を追記。frame は BandwidthStepper のみ使用で競合なし。次は H-7 へ（H群最後）。
