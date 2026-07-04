@@ -761,3 +761,19 @@ MVP 5トピック完了後、SPEC §3 のチェックリスト全項目（A〜S,
 - **変更概要**: «過去の値・過去のショックから次を作る漸化式» として時系列モデルを4層実装。TSModelLab は AR係数 φ・ショック σ スライダー→AR(1)標本パス＋予測(φ^h減衰)・理論ACF(φ^k の線)と標本ACF(棒)の重ね・理論分散 σ²/(1−φ²)（TermController）が同時連動、φ を1に近づけると自己相関の減衰が緩やかになり分散が発散。ModelGalleryStepper は ①ホワイトノイズ→②AR(1)→③MA(1)→④ランダムウォーク を «標本パス＋ACFの指紋» で対比コマ送り（AR=だらだら減衰/MA=早く切れる/walk=減衰しない・非定常）。AR(1)の自己共分散が γ(k)=φγ(k-1) の等比漸化式→ρ(k)=φ^k になる導出・階差でランダムウォークがホワイトノイズに戻る（I=和分）導出を収録。
 - **検証結果**: Vitest **691 passed**（+18: arima 11 / frames 7、registry リンク切れゼロ）。tsc / lint（警告0）/ build成功。`next start` + Playwright 実機確認: φ=0.7 で分散1.96、φ=0.95 で 10.26（1/(1−φ²)で発散）、モデルギャラリーが4モデル巡回（④ランダムウォーク=非定常表示）、コンソールエラー0件。
 - **設計判断 / つまずき**: «自己相関の指紋でモデルを見分ける» を軸に、L0=AR(1)、L1=AR/MA対比ギャラリー、L2=ARIMA/和分/状態空間と段階配置。**MDXバグを1件修正** — 演習の答の平文に数式片「x_t−x_{t-1}=e_t」を裸で書いたら `{t-1}` がJSX式と解釈され prerender 失敗（tsc/testは通るのにbuildだけ落ちる）→`$...$`で囲んで解決。[[lessons: MDX素の波括弧はJSX式]]を新規追記。次は M-3 時系列予測と評価へ。
+
+### コンテンツ拡充 #60 — [M-3] 時系列予測と評価
+
+優先度 34/82（M群 完結）。前提=時系列モデル。指数平滑化／素朴・平均・ドリフトのベースライン／RMSE・MAE・MAPE／訓練・検証分割（バックテスト）。
+
+- [x] 計算層 `lib/stats/forecasting.ts`（exponentialSmoothing/smoothingWeights/forecastNaive/forecastMean/forecastDrift/forecastES/mae/rmse/mape/trainTestSplit）+ Vitest（14）
+- [x] 状態層 `lib/store/time-series-forecasting.ts`（controls {alpha}・平滑化と1期先予測RMSE・重み減衰を派生）
+- [x] 描画層 `components/topics/time-series-forecasting/`（ForecastLab=α→観測・平滑化線・重み減衰バー・RMSEの強連動 / ForecastEvalStepper=訓練/検証分割→素朴・平均・ドリフト・ESをRMSE積み上げ比較のコマ送り / ForecastQuiz）+ frames.ts + Vitest（6）
+- [x] 用語ノード4件（exponential-smoothing / forecast-evaluation / backtesting / forecast-baseline）相互リンク
+- [x] MDX `content/topics/time-series-forecasting.mdx`（L0-L2 充実：指数平滑化の重み減衰→RMSEが二乗ゆえ大外れに敏感な導出→評価指標/バックテスト/データリーク＋シャッフルCVが時系列で楽観的になる導出、L3-L6 planned）
+- [x] `/topics` 一覧へ反映（status: published）
+
+#### レビュー: 時系列予測と評価トピック（2026-07-04）
+- **変更概要**: «過去から先を当て、当たり具合を数値で測る» を4層実装。ForecastLab は平滑化係数 α スライダー→観測系列・平滑化線(＝1期先予測)・過去への重み α(1−α)^j の幾何級数減衰バー・1期先RMSE（TermController）が同時連動、α を上げると直近に速く反応。ForecastEvalStepper は訓練/検証を時間順分割し、素朴・平均・ドリフト・指数平滑化を検証区間へ1手法ずつぶつけてRMSEを積み上げ比較（最小を緑ハイライト）。RMSEが二乗ゆえ大外れに敏感（MAE≤RMSE）な導出・シャッフルCVが自己相関でデータリークし楽観的になる導出を収録。
+- **検証結果**: Vitest **711 passed**（+20: forecasting 14 / frames 6、registry リンク切れゼロ）。tsc / lint（警告0）/ build成功。`next start` + Playwright 実機確認: α=0.30 で(1−α)=0.7・RMSE=2.135・重み12本、評価ステッパーが4手法比較（素朴1.92・平均4.53・ドリフト2.49・ES1.87、最小=ES緑表示）、コンソールエラー0件。
+- **設計判断 / つまずき**: «まずベースライン→高度モデルが上回るかで価値を測る» と «時間順分割でリーク防止» を軸に配置。ForecastEvalStepper のRMSE比較バーで手法の優劣を一目化。前回学んだMDXの裸波括弧・<数字を回避（数式は全て$...$内、$\{1,\dots,c\}$も数式内）。**これでM群（時系列 M1-M3）完了**、次は N群 分割表・因果推論へ（N-5 分割表の解析）。

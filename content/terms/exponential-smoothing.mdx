@@ -1,0 +1,19 @@
+---
+title: 指数平滑化
+definition: 過去の観測に幾何級数的に減衰する重みをかけて予測する時系列手法。単純指数平滑化(SES)は ℓ_t = α·y_t + (1−α)·ℓ_{t-1}。αが大きいほど直近重視。傾きを加えたHolt法、季節を加えたHolt-Winters法がある。
+aliases: [exponential smoothing, 指数平滑化, SES, Holt-Winters, ホルト・ウィンターズ]
+seeAlso: [forecast-evaluation, moving-average, autoregressive-model]
+---
+
+# 指数平滑化
+
+過去の観測に **直近ほど重く・古いほど指数的に軽い** 重みをかけて予測する。単純指数平滑化(SES)：
+
+$$
+\ell_t=\alpha\,y_t+(1-\alpha)\,\ell_{t-1},\qquad \hat y_{t+1}=\ell_t
+$$
+
+- 展開すると $\ell_t=\alpha\sum_{j\ge0}(1-\alpha)^j y_{t-j}$。過去への重み $\alpha(1-\alpha)^j$ が**幾何級数的に減衰**（合計1）。
+- $\alpha$（$0<\alpha\le1$）は «新しい実測をどれだけ取り込むか»。大きいほど反応が速くノイズに敏感、小さいほど滑らかで追従が遅い。
+- SES は **水平予測**（トレンドを外挿しない）。トレンドには傾きも平滑化する **Holt 法**、季節も加えた **Holt-Winters 法**。
+- [移動平均](moving-average)が窓内を等重みで平均するのに対し、指数平滑化は重みを滑らかに減衰させる点が違う。

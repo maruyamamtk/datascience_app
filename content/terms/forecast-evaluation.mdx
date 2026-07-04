@@ -1,0 +1,21 @@
+---
+title: 予測精度の評価
+definition: 予測の «当たり具合» を検証データ上の誤差で測ること。MAE=平均絶対誤差、RMSE=二乗平均平方根誤差（外れに敏感）、MAPE=平均絶対%誤差。訓練/検証を時間順に分けて評価する。
+aliases: [forecast evaluation, 予測評価, MAE, RMSE, MAPE, 予測精度]
+seeAlso: [exponential-smoothing, backtesting, forecast-baseline]
+---
+
+# 予測精度の評価
+
+予測 $\hat y$ の «当たり具合» を、検証データの実測 $y$ との誤差で測る。代表的な指標：
+
+$$
+\mathrm{MAE}=\frac1n\sum|y_i-\hat y_i|,\quad
+\mathrm{RMSE}=\sqrt{\frac1n\sum(y_i-\hat y_i)^2},\quad
+\mathrm{MAPE}=\frac{100}{n}\sum\Big|\frac{y_i-\hat y_i}{y_i}\Big|
+$$
+
+- **MAE**：線形で頑健。**RMSE**：二乗するので **大きな外れを強く罰する**（外れ値に敏感）。常に $\mathrm{RMSE}\ge\mathrm{MAE}$。
+- **MAPE**：%表示で規模の違う系列を比べやすい。ただし実測が0付近だと不安定。
+- 評価は必ず **訓練/検証を時間順に分けて** 行う（未来を学習に使わない＝[バックテスト](backtesting)）。
+- 単純な[ベースライン](forecast-baseline)を基準に、高度なモデルがそれを上回るかで価値を判断する。
