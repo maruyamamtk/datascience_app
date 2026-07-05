@@ -1,0 +1,20 @@
+---
+title: ハザード関数
+definition: 時刻 t まで生存した個体が «その瞬間に» イベントを起こす率 h(t)=f(t)/S(t)。生存関数の減り方の «勢い»。指数分布では一定。
+aliases: [hazard function, ハザード関数, 危険率, hazard rate, 瞬間死亡率, force of mortality]
+seeAlso: [survival-function, kaplan-meier, cox-proportional-hazards]
+---
+
+# ハザード関数
+
+時刻 $t$ まで生存した個体が «次の瞬間に» イベントを起こす率：
+
+$$
+h(t)=\lim_{\Delta t\to 0}\frac{P(t\le T<t+\Delta t\mid T\ge t)}{\Delta t}=\frac{f(t)}{S(t)}=-\frac{d}{dt}\log S(t)
+$$
+
+- «その時点まで生き延びた人にとっての瞬間的な危険度»。[生存関数](survival-function)の減る勢いを表す。
+- 累積ハザード $H(t)=\int_0^t h(u)\,du=-\log S(t)$ から $S(t)=e^{-H(t)}$。
+- **指数分布** ではハザードが一定 $h(t)=\lambda$（記憶なし）。ワイブル分布では単調増加/減少、バスタブ型（故障率）などを表せる。
+- 2群を «ハザードの比が時間によらず一定»（比例ハザード）と仮定するのが[Cox 比例ハザードモデル](cox-proportional-hazards)。ハザード比 HR がその効果量。
+- 平均や中央値より «時間とともにリスクがどう変わるか» を直接記述できるのが利点。

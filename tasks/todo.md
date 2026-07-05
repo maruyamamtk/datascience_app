@@ -889,3 +889,19 @@ MVP 5トピック完了後、SPEC §3 のチェックリスト全項目（A〜S,
 - **変更概要**: 欠測メカニズム（MCAR/MAR/MNAR）で使える手が変わることを4層実装。MissingLab はメカニズム選択＋欠測率/依存の強さ スライダー→散布図（欠測点を灰・真値線緑/完全ケース線赤）・5推定（真値/完全ケース/平均代入/回帰代入/確率的回帰代入）の平均バー・SDバー・«バイアス=完全ケース−真値» 数式が同時連動。MCAR で完全ケースが不偏、MAR で下振れ→回帰代入で回復、MNAR で回帰代入でも残存。ImputationStepper は固定MARで «欠測発生→完全ケース→平均代入→回帰代入→確率的回帰代入» を平均バイアス/SD比バーでコマ送り比較。MARで完全ケースが下振れし回帰代入で回復する導出・単一代入が標準誤差を過小評価する Rubin の分散 T=Ū+(1+1/m)B の導出を収録。
 - **検証結果**: Vitest **808 passed**（+15: missing 8 / frames 7、registry リンク切れゼロ）。tsc / lint（警告0）/ build成功。`npm run dev` + Playwright 実機確認: MCAR バイアス−0.04（不偏）、MAR −1.32（下振れ）、MNAR −1.55（バイアス拡大）と3メカニズムが正しく強連動、コンソールエラー0件。
 - **設計判断 / つまずき**: 既存 olsFit を回帰代入に再利用。«真値（神の視点）vs 各補完» を並べて «どれが平均/ばらつきを回復するか» を一目化。**ハイドレーション不一致を修正** — 散布図SVGで cx が server/client で末尾1桁ズレ（Box-Muller の Math.cos/log が Node と ブラウザ V8 で1ULP違う）→座標スケール sx/sy を Math.round(v*100)/100 で丸めて解消。lessons.md に «SVG座標は丸める» を追記。**O群 起点（O-1）完了**、次は P群へ。
+
+### コンテンツ拡充 #68 — [O-2] 生存時間解析
+
+優先度 42/82。前提=連続型確率分布・分割表。打ち切り（右打ち切り・無情報打ち切り）／生存関数 S(t)／カプラン–マイヤー（積・極限法）／ハザード関数・累積ハザード／ログランク検定／Cox比例ハザードとHR。
+
+- [x] 計算層 `lib/stats/survival.ts`（generateSurvival=指数イベント＋打ち切り、kaplanMeier=積・極限、medianSurvival/survivalAt、trueExponentialSurvival、logRankTest=超幾何の期待/分散、censoredFraction）+ Vitest（7）（standardNormalCdf 再利用）
+- [x] 状態層 `lib/store/survival-analysis.ts`（2群、controls {hazardA, hazardB, censorRate}・kmA/kmB/中央値/HR/打ち切り率/logrank を派生、N=240で走査コスト抑制）
+- [x] 描画層 `components/topics/survival-analysis/`（SurvivalLab=2群ハザード＋打ち切り率→KM階段曲線・打ち切り+記号・中央値線・ログランク χ²/p/HR の強連動数式 / KaplanMeierStepper=6個体でリスク集合→イベント→積・極限の段階組み立て（タイムライン＋曲線） / SurvivalQuiz=打ち切り/KM必要性/階段/ログランク 4問）+ frames.ts + Vitest（5）
+- [x] 用語ノード5件（censoring / kaplan-meier / hazard-function / log-rank-test / cox-proportional-hazards）相互リンク（既存 survival-function へ接続）
+- [x] MDX `content/topics/survival-analysis.mdx`（L0-L2 充実：打ち切りとKM→KM組み立て→ハザード/ログランク/Cox＋積が条件付き確率の連鎖である導出/ログランクが2×2表のMantel-Haenszel統合でありCoxのスコア検定に対応する導出、L3-L6 planned）
+- [x] `/topics` 一覧へ反映（status: published）
+
+#### レビュー: 生存時間解析トピック（2026-07-05）
+- **変更概要**: イベントまでの時間を打ち切り込みで解析する枠組みを4層実装。SurvivalLab は2群（処置A/対照B）のハザード＋打ち切り率スライダー→カプラン–マイヤー階段曲線（打ち切りを+記号）・中央生存時間・«χ²_logrank=(O_A−E_A)²/V»・p値・ハザード比 が同時連動。ハザードを離すと曲線が分離しログランク有意に、打ち切りを上げると段差が疎に。KaplanMeierStepper は6個体（打ち切り2含む）で «リスク集合→(1−d/n)を掛ける→段差» を個体タイムラインと曲線で段階組み立て。KMの積が条件付き確率の連鎖である導出・ログランクが各時刻の2×2表のMantel-Haenszel統合でCoxモデルのスコア検定に対応する導出を収録。
+- **検証結果**: Vitest **820 passed**（+12: survival 7 / KM frames 5、registry リンク切れゼロ）。tsc / lint（警告0）/ build成功。`npm run dev` + Playwright 実機確認: 既定（HR=2.2）で χ²=65.22・p≈0（有意差）、2群ハザードを等しく（HR=1）で χ²=0.13・p=0.72（有意差なし）と強連動、KM/ステッパーSVG描画、コンソールエラー0件。
+- **設計判断 / つまずき**: 既存 standardNormalCdf 再利用、KM走査が距離×n の O(n²) なので N=240 に抑制（曲線可視化には十分）。SVG座標は #67 の教訓を適用し round2 で丸め（ハイドレーション不一致予防）。**MDXビルド失敗** — cox-proportional-hazards.mdx の «HR>1 でリスク増、<1 で減» の裸 `<1` を MDX が JSXタグ開始と誤認→`$\mathrm{HR}<1$` と数式化して解消（tsc/lint/testは通り next build のみで露見）。lessons.md 既出の «裸<記号» パターンの再確認。**O群（O-1/O-2）完了**、次は A群（数学基礎）A-1 線形代数へ。
