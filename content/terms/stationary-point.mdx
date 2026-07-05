@@ -1,0 +1,22 @@
+---
+title: 停留点
+definition: 勾配が零ベクトルになる点 $\nabla f=\mathbf0$（1変数なら $f'=0$）。極小・極大・鞍点の候補で、最適化はこの点を探す。
+aliases: [stationary-point, 停留点, 臨界点, critical-point, 極値の候補]
+seeAlso: [derivative, partial-derivative, hessian-matrix, gradient-descent]
+---
+
+# 停留点
+
+[勾配](partial-derivative)が零になる点：
+
+$$
+\nabla f(x^*)=\mathbf0\quad(\text{1変数なら } f'(x^*)=0).
+$$
+
+接線・接平面が水平になる点で、なめらかな関数が**極値（最小・最大）をとるための必要条件**。1変数の $f'=0$ の多変数版。
+
+- **種類の判定**: 停留点が極小か極大か鞍点かは[ヘッセ行列](hessian-matrix)で分ける——正定値なら極小、負定値なら極大、正負混在なら鞍点。
+- **必要条件であって十分条件でない**: $f'=0$ でも変曲点（1変数）や鞍点（多変数）のことがある。
+- **最適化との関係**: [勾配降下法](gradient-descent)は勾配 0 の点を数値的に探す手続き。[凸関数](convex-function)なら停留点は1つで、それが大域最小と保証される。
+
+統計では[最尤法](maximum-likelihood)で対数尤度の勾配（スコア）を 0 とおくスコア方程式が、まさに停留点を求める式になっている。

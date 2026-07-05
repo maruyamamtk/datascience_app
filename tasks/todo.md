@@ -937,3 +937,18 @@ MVP 5トピック完了後、SPEC §3 のチェックリスト全項目（A〜S,
 - **変更概要**: A群（数学基礎）2本目。微分＝接線の傾き・積分＝面積の2軸を4層実装。DerivativeLab は接点 x₀ スライダー→曲線 f(x)=x³/3−x の接線（破線）と傾き f′(x₀)=x₀²−1 が同時連動、傾きの符号で色分け（増加=青/減少=赤/極値=緑）し «x₀・f(x₀)・f′(x₀)» を強連動数式で表示。RiemannStepper は正の関数 g(x)=0.4x²+0.3 の面積を、短冊（青矩形）を 1→2→4→…→32 本と倍にして詰め、リーマン和が定積分 1.667 へ収束（誤差が本数倍で約1/4）する様子を1コマずつ見せる。(xⁿ)′=nxⁿ⁻¹ を二項定理と差分商の極限から導出・面積関数 A(x)=∫f を微分すると f に戻る（微積分学の基本定理）導出を収録。
 - **検証結果**: Vitest **861 passed**（+20: calculus 14 / Riemann frames 6、registry リンク切れゼロ）。tsc / lint（警告0）/ build成功（300ページ、calculus 静的生成に含まれる）。`npm run dev` + Playwright 実機確認: x₀=1 で f=−0.67・f′=0（緑=極値）、x₀=2 で f′=3（青=増加中）と数値・色が強連動、RiemannStepper で n=32→«近似1.666 / 真値1.667 / 差0.000» の収束、Lab/ステッパーSVG描画（曲線・接線・短冊）スクショ確認、コンソールエラー0件。
 - **設計判断 / つまずき**: 計算層は特定関数に縛らない汎用数値関数（数値微分・リーマン和・台形則）として実装し、既知関数（x²・sin・1次関数）の解析解でテスト。中心差分の数値微分（O(h²)）で極値 x=±1 の傾き≈0 を安定検出。**MDXビルド失敗** — L1 Concept がリスト項目直後にインデント付き `</Concept>` で閉じており、MDX がリスト継続と誤認（tsc/lint/testは通り next build のみで露見）。リスト後に締めの1文（段落）を追加して解消（他Levelと同じ «リスト→段落→閉じタグ» 構造に統一）。SVG座標は round2 で丸め（ハイドレーション不一致予防, #67 教訓）。**A-2完了**、次は A-3 最適化（前提: calculus, linear-algebra）へ。
+
+### コンテンツ拡充 #71 — [A-3] 最適化（optimization）
+- [x] 作業ブランチ feat/71-optimization を作成（main直コミット禁止）
+- [x] 計算層 lib/stats/optimization.ts（gdStep・gradientDescent1D・newton法・収束挙動分類・純関数）+ Vitest 14
+- [x] 状態層 lib/store/optimization.ts（createTopicStore、出発点 x₀・学習率 η → 軌跡・挙動）
+- [x] 描画層 GradientDescentLab（η/x₀操作→軌跡・更新式強連動）/ DescentStepper（コマ送り）/ OptimizationQuiz + frames.ts + Vitest 6
+- [x] 用語ノード7件（gradient-descent・learning-rate・convex-function・newtons-method・hessian-matrix・stationary-point、既存 derivative/partial-derivative/eigen-decomposition へ接続）
+- [x] content/topics/optimization.mdx（ReaderGuide + L0-2フル + L3-6 planned、収束条件 η<2/a 導出）
+- [x] 検証（vitest 881 / tsc / lint / build / Playwright実機）
+- [x] backlog ✅done、todo レビュー追記
+
+#### レビュー: 最適化トピック（2026-07-05）
+- **変更概要**: A群（数学基礎）3本目。目的関数の最小化＝勾配降下を4層実装。GradientDescentLab は出発点 x₀・学習率 η の2スライダー→凸2次 f(x)=½x² 上を点がジグザグ下る軌跡を描き、更新式 x₁=x₀−η·f′(x₀) と挙動（なめらか収束=青/振動収束=橙/発散=赤）が強連動。η を上げると閾値 η=2 で挙動が切り替わる。DescentStepper は学習率固定で1歩ずつ «傾き→逆向きにη歩幅→新位置» を1コマ送りし谷底 x=0 への収束を見せる。収束条件 η<2/a を等比数列 x_k=(1−ηa)^k x₀ の公比 |1−ηa|<1 から導出。凸性（局所最小＝大域最小）・ニュートン法（歩幅を f″ で自動調整）・停留点 ∇f=0 を収録。
+- **検証結果**: Vitest **881 passed**（+20: optimization 14 / descent frames 6、registry リンク切れゼロ）。tsc / lint（警告0）/ build成功。`npm run dev` + Playwright 実機確認: η=0.6→「なめらかに収束」(青)、η=1.5→「振動しながら収束」、η=2.4→「発散」と挙動ラベル・数式が強連動、DescentStepper 更新式 x=2.4→次0.96（=2.4−0.6×2.4）が実機一致、コンソールエラー0件。
+- **設計判断 / つまずき**: 目的関数を凸2次 f=½x²（f″=1, 閾値 η=2）に固定し «学習率の閾値» という最重要概念を綺麗な数で見せる設計。計算層は関数に依存しない汎用（gdStep/newtonStep/軌跡分類）としテスト。挙動分類 isDiverging/isOscillating を純関数化。**MDXビルド失敗** — ReaderGuide の生テキスト «η<2/a» の `<` を MDX が JSX タグ開始と誤認（tsc/lint/testは通り next build のみ露見, #70 教訓の再確認）。当該 `<` を含む式を `$...$` 数式に包んで解消（Derivation title の `<` も念のため言い換え）。**A-3完了**、次は A-4 数値計算（前提: calculus）へ。
