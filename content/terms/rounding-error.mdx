@@ -1,0 +1,17 @@
+---
+title: 丸め誤差
+definition: 実数を有限桁の浮動小数点数に丸めることで生じる誤差。1 演算あたり相対的に計算機イプシロン ε 程度。演算を重ねると積もり、桁落ちで一気に顕在化することもある。
+aliases: [rounding-error, 丸め誤差, まるめ誤差, 誤差の蓄積, round-off error]
+seeAlso: [floating-point, machine-epsilon, catastrophic-cancellation, numerical-differentiation]
+---
+
+# 丸め誤差
+
+[浮動小数点数](floating-point)は有限桁なので、計算結果を «最も近い表現値» に丸めるたびに誤差が出る。これが丸め誤差で、1 演算あたりの相対的な大きさは[計算機イプシロン](machine-epsilon) $\varepsilon\approx2.2\times10^{-16}$ 程度。
+
+数値計算の誤差は大きく 2 種類に分けられ、両者はしばしばトレードオフになる：
+
+- **丸め誤差**: 有限桁の丸めに由来。演算回数が増えるほど積もる。刻み幅 $h$ で割る計算では $\varepsilon/h$ のように **$h$ を小さくすると増える**。
+- **打ち切り誤差 (truncation error)**: 無限級数や極限を有限で打ち切ることに由来（例: [テイラー展開](taylor-expansion)を途中で切る）。ふつう **$h$ を小さくすると減る**。
+
+この 2 つの和が総誤差なので、[数値微分](numerical-differentiation)や数値積分には «誤差が最小になる最適な刻み幅» が存在する（小さすぎても大きすぎてもだめ）。とくに近い 2 数の引き算では[桁落ち](catastrophic-cancellation)で丸め誤差が一気に表面化する。

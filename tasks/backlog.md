@@ -47,6 +47,7 @@
 - ✅ A-1 線形代数 `linear-algebra`（#69）
 - ✅ A-2 微分積分 `calculus`（#70）
 - ✅ A-3 最適化 `optimization`（#71）
+- ✅ A-4 数値計算 `numerical-computation`（#72）
 
 ## キュー（優先順）
 
@@ -97,7 +98,7 @@
 | 43 | #69 | A-1 | 線形代数 | linear-algebra | （なし） | ✅ done |
 | 44 | #70 | A-2 | 微分積分 | calculus | （なし） | ✅ done |
 | 45 | #71 | A-3 | 最適化 | optimization | calculus, linear-algebra | ✅ done |
-| 46 | #72 | A-4 | 数値計算 | numerical-computation | calculus | pending |
+| 46 | #72 | A-4 | 数値計算 | numerical-computation | calculus | ✅ done |
 | 47 | #73 | A-5 | デジタル情報の基礎 | digital-information-basics | （なし） | pending |
 | 48 | #74 | I-1 | 機械学習の枠組み | learning-framework | point-estimation-properties | pending |
 | 49 | #75 | I-2 | 正則化・スパースモデリング | regularization-sparse | multiple-regression, learning-framework | pending |

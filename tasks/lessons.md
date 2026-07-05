@@ -131,3 +131,8 @@
 - **症状**: 固定シードのはずの散布図Labで «hydration mismatch» コンソールエラー。差分は cx="103.04620519673969"（server）vs cx={103.04620519673966}（client）——最終桁だけ違う。
 - **原因**: mulberry32（整数演算）はビット一致するが、gauss() の Math.log/Math.cos/Math.sqrt（超越関数）は Node と ブラウザの V8 で最終ビット（1ULP）が異なりうる。未丸めの float を SVG 属性（cx/cy）に直接入れると server/client で文字列表現がズレて React が不一致検出。
 - **対策**: SVG に渡す座標は必ず丸める（例 `Math.round(v*100)/100`）。テキスト表示は formatNumber(…,桁) で既に丸まっているので安全。**シード付きデータをSVG散布図でSSRする描画層は、座標スケール関数 sx/sy の出力を丸めておく**（HTMLサイズ削減にもなる）。多数点（数百〜千）を描くLabで顕在化しやすい。
+
+## 実測float誤差をSSRで描くと座標丸めでは不足：クライアント限定描画にする（出典 #72）
+- **症状**: 数値微分の «誤差カーブ» polyline で hydration mismatch。SVG座標は既に round2 済みなのに不一致が残った（#67の «座標を丸める» 対策では消えない）。
+- **原因**: #67 は座標の最終1ULPズレだったが、今回は **プロットする値そのもの**が Math.sin/Math.log10 の実測誤差で、丸め誤差優勢な小さい h の領域では Node と ブラウザの V8 で超越関数の結果が桁レベル（有効数字2〜3桁目）で食い違う。誤差の «ノイズ» を可視化する図では、値が本質的にエンジン依存なので座標を2桁丸めても吸収しきれない。
+- **対策**: «実測の浮動小数点ノイズ» を描く要素は SSR せず、`const [mounted,setMounted]=useState(false); useEffect(()=>setMounted(true),[])` で **クライアントマウント後のみ描画**（`{mounted ? <polyline…/> : null}`）。サーバHTMLに当該要素を出さなければ React は不一致検出しない。判断基準: 描く値が決定論的な数式評価なら round2 で十分（#67）、Math.sin/log/randや «誤差そのもの» を測る値なら mounted ゲート。
