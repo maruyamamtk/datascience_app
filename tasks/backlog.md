@@ -90,7 +90,7 @@
 | 39 | #65 | N-4 | グラフィカルモデリング | graphical-models | contingency-tables | ✅ done |
 | 40 | #66 | N-6 | 質的データ解析 | qualitative-data-analysis | contingency-tables | ✅ done |
 | 41 | #67 | O-1 | 欠測値の処理 | missing-data | estimation-methods | ✅ done |
-| 42 | #68 | O-2 | 生存時間解析 | survival-analysis | continuous-distributions | pending |
+| 42 | #68 | O-2 | 生存時間解析 | survival-analysis | continuous-distributions | ✅ done |
 | 43 | #69 | A-1 | 線形代数 | linear-algebra | （なし） | pending |
 | 44 | #70 | A-2 | 微分積分 | calculus | （なし） | pending |
 | 45 | #71 | A-3 | 最適化 | optimization | calculus, linear-algebra | pending |

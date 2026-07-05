@@ -1,0 +1,22 @@
+---
+title: ログランク検定
+definition: 2群（以上）の生存曲線が同じかを調べるノンパラメトリック検定。各イベント時刻での観測イベント数と «帰無仮説下の期待数» の累積のズレを χ² で評価する。
+aliases: [log-rank test, ログランク検定, ログランク, Mantel-Cox test, マンテル・コックス検定]
+seeAlso: [kaplan-meier, survival-function, hazard-function]
+---
+
+# ログランク検定
+
+2群の[生存関数](survival-function)が等しい（$S_A=S_B$）という帰無仮説を検定するノンパラメトリック法。
+
+- 各イベント時刻 $t_i$ で、«もし2群が同分布なら群Aに期待されるイベント数» を超幾何分布から
+  $$
+  E_{A,i}=d_i\cdot\frac{n_{A,i}}{n_i}
+  $$
+  と計算し（$d_i$=その時刻の総イベント数、$n_{A,i}/n_i$=群Aのリスク割合）、観測 $O_{A,i}$ との差を全時刻で積み上げる。
+- 検定統計量は
+  $$
+  \chi^2=\frac{(O_A-E_A)^2}{V}\ \sim\ \chi^2_1,\qquad V=\sum_i \frac{d_i\,n_{A,i}n_{B,i}(n_i-d_i)}{n_i^2(n_i-1)}.
+  $$
+- [カプラン–マイヤー曲線](kaplan-meier)全体の «一貫したズレ» に感度が高い。ハザードが比例するとき最も検出力が高い（曲線が交差すると鈍る）。
+- 各時刻の $2\times2$ 表を統合する Mantel–Haenszel 型の検定。3群以上や層別、重み付け（Gehan–Wilcoxon）にも拡張できる。

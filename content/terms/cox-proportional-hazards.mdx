@@ -1,0 +1,20 @@
+---
+title: Cox比例ハザードモデル
+definition: 共変量が «ハザードを何倍にするか» をモデル化する半パラメトリック回帰。h(t|x)=h₀(t)exp(βx)。基準ハザード h₀(t) の形を仮定せず、ハザード比 exp(β) を推定する。
+aliases: [Cox proportional hazards, Cox回帰, 比例ハザードモデル, proportional hazards model, ハザード比]
+seeAlso: [hazard-function, survival-function, kaplan-meier, log-rank-test]
+---
+
+# Cox比例ハザードモデル
+
+共変量 $x$ が[ハザード](hazard-function)に与える効果をモデル化する半パラメトリック回帰：
+
+$$
+h(t\mid x)=h_0(t)\,\exp(\beta_1 x_1+\dots+\beta_p x_p)
+$$
+
+- **基準ハザード $h_0(t)$**（時間の関数）の形は仮定しない（ノンパラメトリック）。共変量の効果 $\exp(\beta)$ だけをパラメトリックに推定する——だから «半» パラメトリック。
+- $\exp(\beta_j)$ が **ハザード比（HR）**：$x_j$ が1増えるとハザードが何倍になるか。$\mathrm{HR}>1$ でリスク増、$\mathrm{HR}<1$ で減。時間によらず一定（**比例ハザード仮定**）。
+- 部分尤度（partial likelihood）で $\beta$ を推定。基準ハザードを消去できるので $h_0$ を知らずに効果を測れる。
+- [ログランク検定](log-rank-test)は «共変量が1つの2値» のときの Cox モデルに対応する。連続共変量や多変数の調整に拡張したのが Cox 回帰。
+- 比例ハザード仮定が崩れる（曲線が交差する）ときは時間依存共変量・層別 Cox などで対処する。
