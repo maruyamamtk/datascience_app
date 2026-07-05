@@ -1,0 +1,19 @@
+---
+title: 微分（導関数）
+definition: 関数の «瞬間の変化率»。接線の傾きで、割線の傾き $(f(x+h)-f(x))/h$ の $h\to0$ の極限として定義される。$f'(x)=\dfrac{df}{dx}$。増減・極値・最適化の基礎。
+aliases: [derivative, 微分, 導関数, 微分係数, 微分する]
+seeAlso: [limit, integral, tangent-line, partial-derivative, taylor-expansion, fundamental-theorem-of-calculus]
+---
+
+# 微分（導関数）
+
+関数 $f$ の «瞬間の変化率»。点 $x$ での[接線](tangent-line)の傾きで、[割線](tangent-line)の傾きの[極限](limit)として定義する。
+
+$$
+f'(x)=\lim_{h\to0}\frac{f(x+h)-f(x)}{h}.
+$$
+
+- **意味**: $x$ をほんの少し増やしたとき $f$ がどれだけ増えるか。$f'>0$ で増加、$f'<0$ で減少、$f'=0$ で[極値](derivative)（停留点）。
+- **基本公式**: $(x^n)'=nx^{n-1}$、$(\,e^x)'=e^x$、$(\log x)'=1/x$、$(\sin x)'=\cos x$。積の微分・合成関数の連鎖律で組み合わせる。
+- **2階微分** $f''$ は «変化率の変化率»＝曲がり具合（凸凹）。$f''>0$ なら下に凸（谷）、$f''<0$ なら上に凸（山）。
+- 多変数へ広げると[偏微分](partial-derivative)・勾配になり、[積分](integral)とは[微積分学の基本定理](fundamental-theorem-of-calculus)で結ばれる。[最尤法](maximum-likelihood)では対数尤度を微分して 0 とおく。

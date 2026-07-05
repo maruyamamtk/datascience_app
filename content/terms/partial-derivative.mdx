@@ -1,0 +1,21 @@
+---
+title: 偏微分（勾配）
+definition: 多変数関数を «1つの変数だけ» で微分したもの $\partial f/\partial x_i$。全変数の偏微分を並べたベクトルが勾配 $\nabla f$ で、最も急に増える向きを指す。最適化・勾配降下の基礎。
+aliases: [partial-derivative, 偏微分, 勾配, gradient, ナブラ]
+seeAlso: [derivative, maximum-likelihood, jacobian]
+---
+
+# 偏微分（勾配）
+
+多変数関数 $f(x_1,\dots,x_n)$ を、**他の変数を定数とみなして1つの変数だけで[微分](derivative)** したものが偏微分 $\dfrac{\partial f}{\partial x_i}$。
+
+全変数の偏微分を並べたベクトルが**勾配**：
+
+$$
+\nabla f=\left(\frac{\partial f}{\partial x_1},\dots,\frac{\partial f}{\partial x_n}\right).
+$$
+
+- **意味**: 勾配は «その点で $f$ が最も急に増える向き» を指し、大きさが増加の急さ。逆向き $-\nabla f$ にたどると最も速く減る——これが**勾配降下法**。
+- **極値の条件**: なめらかな関数の極値・最適点では勾配が零ベクトル $\nabla f=\mathbf0$（各変数の偏微分がすべて 0）。1変数の $f'=0$ の多変数版。
+- ベクトル値関数の1階微分を並べた行列が[ヤコビ行列](jacobian)、勾配の1階微分（2階偏微分）を並べたのがヘッセ行列。
+- 統計では[最尤法](maximum-likelihood)の対数尤度を各パラメータで偏微分して 0 とおく（スコア方程式）ときに現れる。

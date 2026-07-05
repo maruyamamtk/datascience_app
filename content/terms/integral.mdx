@@ -1,0 +1,19 @@
+---
+title: 積分（定積分）
+definition: 曲線の下の «面積»（累積量）。区間を細い短冊に分けたリーマン和 $\sum f(x_i)\Delta x$ の、分割を細かくした極限。$\int_a^b f(x)\,dx$。微分の逆演算。
+aliases: [integral, 積分, 定積分, リーマン積分, 積分する]
+seeAlso: [derivative, limit, fundamental-theorem-of-calculus, jacobian]
+---
+
+# 積分（定積分）
+
+区間 $[a,b]$ で曲線 $f$ と $x$ 軸に挟まれた «面積»（$f\ge0$ のとき）。区間を $n$ 等分し、幅 $\Delta x$ の短冊の面積を足した**リーマン和**の[極限](limit)：
+
+$$
+\int_a^b f(x)\,dx=\lim_{n\to\infty}\sum_{i=1}^{n} f(x_i)\,\Delta x.
+$$
+
+- **意味**: «掛けて足す»＝累積。速度を積分すれば距離、密度を積分すれば確率（全区間で 1）。
+- **数値近似**: 中点則・台形則・シンプソン則。短冊を細かくするほど真値へ収束する。
+- **[微分](derivative)との関係**: 面積関数 $A(x)=\int_a^x f$ を微分すると $f$ に戻る（[微積分学の基本定理](fundamental-theorem-of-calculus)）。だから原始関数 $F$（$F'=f$）で $\int_a^b f=F(b)-F(a)$ と計算できる。
+- 多変数の重積分では変数変換で[ヤコビアン](jacobian)を掛ける。確率密度の全積分＝1 もこの枠組み。
