@@ -1,0 +1,23 @@
+---
+title: ヘッセ行列
+definition: 多変数関数の2階偏微分をすべて並べた対称行列 $H_{ij}=\partial^2 f/\partial x_i\partial x_j$。関数の «曲がり» を表し、正定値なら極小・負定値なら極大・不定なら鞍点。
+aliases: [hessian-matrix, ヘッセ行列, ヘッシアン, Hessian, ヘシアン]
+seeAlso: [partial-derivative, convex-function, newtons-method, eigen-decomposition]
+---
+
+# ヘッセ行列
+
+多変数関数 $f(x_1,\dots,x_n)$ の**2階[偏微分](partial-derivative)をすべて並べた対称行列**：
+
+$$
+H_{ij}=\frac{\partial^2 f}{\partial x_i\,\partial x_j}.
+$$
+
+[勾配](partial-derivative) $\nabla f$ が «傾き（1階）» なら、ヘッセ行列は «曲がり（2階）»。1変数の $f''$ の多変数版。
+
+- **極値の判定**: 停留点 $\nabla f=\mathbf0$ で、ヘッセ行列の[固有値](eigen-decomposition)がすべて正（**正定値**）なら極小、すべて負なら極大、正負が混在すれば鞍点。
+- **[凸性](convex-function)**: 定義域全体でヘッセ行列が半正定値 $\iff$ $f$ は凸。
+- **曲がりと収束**: 固有値が方向ごとの曲率。勾配降下の収束の速さは «最大固有値／最小固有値（条件数）» で決まり、細長い谷では遅くなる。
+- **[ニュートン法](newtons-method)**: $x\leftarrow x-H^{-1}\nabla f$ とヘッセの逆行列で歩幅を自動調整する。
+
+テイラー展開の2次項 $\tfrac12(x-a)^\top H (x-a)$ に現れ、関数を局所的に2次関数（お椀）で近似するのがヘッセ行列。

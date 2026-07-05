@@ -1,0 +1,20 @@
+---
+title: 勾配降下法
+definition: 目的関数を最小化するため、勾配 $\nabla f$（最も急に増える向き）の逆へ学習率 $\eta$ の歩幅で少しずつ進む反復法。$x_{k+1}=x_k-\eta\nabla f(x_k)$。
+aliases: [gradient-descent, 勾配降下法, 最急降下法, gradient descent, GD]
+seeAlso: [partial-derivative, learning-rate, convex-function, newtons-method, stationary-point]
+---
+
+# 勾配降下法
+
+目的関数 $f$ を最小化する最も基本的な反復法。今いる点で[勾配](partial-derivative) $\nabla f$（最も急に増える向き）を求め、その**逆向き**へ[学習率](learning-rate) $\eta$ の歩幅で進むことを繰り返す：
+
+$$
+x_{k+1}=x_k-\eta\,\nabla f(x_k).
+$$
+
+- **直感**: 坂を «傾きの逆＝下り» に一定歩幅で下る。谷底に近づくほど傾き（勾配）が緩み、歩幅も自然に縮む。
+- **停止**: 勾配が 0 に近い[停留点](stationary-point) $\nabla f=\mathbf0$ に達すると更新が止まる。そこが最小点の候補。
+- **[学習率](learning-rate)の効き**: 小さすぎると遅く、大きすぎると行き過ぎて振動・発散する。凸2次 $f=\tfrac12 ax^2$ では $\eta<2/a$ が収束条件。
+- **凸性**: [凸関数](convex-function)なら局所最小＝大域最小なので、勾配降下で見つけた谷が大域最適と保証される。
+- 歩幅を[ヘッセ行列](hessian-matrix)（2階微分）で自動調整したのが[ニュートン法](newtons-method)。機械学習では勾配を一部データで近似する確率的勾配降下（SGD）が主力。
