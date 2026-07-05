@@ -1,0 +1,24 @@
+---
+title: 単位行列と逆行列
+definition: 単位行列 $I$ は «何もしない» 変換（$I\mathbf x=\mathbf x$）。逆行列 $A^{-1}$ は $A$ を打ち消す変換で $AA^{-1}=I$。$\det A\neq0$ のときだけ存在する。
+aliases: [identity matrix, inverse matrix, 単位行列, 逆行列, 正則, 正則行列, invertible]
+seeAlso: [determinant, matrix-rank, linear-transformation]
+---
+
+# 単位行列と逆行列
+
+- **単位行列 $I$**: 対角が1、他が0。掛けても何も変えない «恒等» の[線形変換](linear-transformation) $I\mathbf x=\mathbf x$。
+- **逆行列 $A^{-1}$**: $A$ の変換をちょうど巻き戻す変換。
+
+$$
+AA^{-1}=A^{-1}A=I.
+$$
+
+- **存在条件**: [行列式](determinant) $\det A\neq0$（＝フル[階数](matrix-rank)＝正則）のときだけ逆行列を持つ。$\det A=0$ の «つぶれる» 変換は情報が失われ、巻き戻せない。
+- 2×2 の公式:
+
+$$
+A^{-1}=\frac{1}{ad-bc}\begin{pmatrix}d & -b\\ -c & a\end{pmatrix}.
+$$
+
+- **統計での役割**: 連立方程式 $A\mathbf x=\mathbf b$ の解 $\mathbf x=A^{-1}\mathbf b$、重回帰の正規方程式 $\hat\beta=(X^\top X)^{-1}X^\top y$ に現れる。$X^\top X$ が正則でないと解が一意にならない。
