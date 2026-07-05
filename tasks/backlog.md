@@ -44,6 +44,7 @@
 - ✅ H-6 カーネル密度推定 `kernel-density-estimation`（#54）
 - ✅ L-1 マルコフ連鎖 `markov-chains`（#55）
 - ✅ L-2 確率過程 `stochastic-processes`（#56）
+- ✅ A-1 線形代数 `linear-algebra`（#69）
 
 ## キュー（優先順）
 
@@ -91,7 +92,7 @@
 | 40 | #66 | N-6 | 質的データ解析 | qualitative-data-analysis | contingency-tables | ✅ done |
 | 41 | #67 | O-1 | 欠測値の処理 | missing-data | estimation-methods | ✅ done |
 | 42 | #68 | O-2 | 生存時間解析 | survival-analysis | continuous-distributions | ✅ done |
-| 43 | #69 | A-1 | 線形代数 | linear-algebra | （なし） | pending |
+| 43 | #69 | A-1 | 線形代数 | linear-algebra | （なし） | ✅ done |
 | 44 | #70 | A-2 | 微分積分 | calculus | （なし） | pending |
 | 45 | #71 | A-3 | 最適化 | optimization | calculus, linear-algebra | pending |
 | 46 | #72 | A-4 | 数値計算 | numerical-computation | calculus | pending |

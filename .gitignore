@@ -43,3 +43,6 @@ next-env.d.ts
 # Playwright (検証用の一時成果物)
 .playwright-mcp/
 issue*-poc-verified.png
+
+# セッション引き継ぎメモ（ローカルのみ）
+HANGOVER.md

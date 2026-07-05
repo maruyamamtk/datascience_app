@@ -1,0 +1,154 @@
+---
+title: 線形代数
+summary: 行列を «ベクトルを動かす操作» として見る。単位円→楕円の変換で行列式（面積拡大率）・トレース・固有値/固有ベクトル（向きを保つ方向）・階数を操作で体感し、主成分分析や回帰の土台をつくる。
+status: published
+---
+
+import { LinearTransformLab } from "@/components/topics/linear-algebra/LinearTransformLab";
+import { EigenvectorStepper } from "@/components/topics/linear-algebra/EigenvectorStepper";
+import { LinearAlgebraQuiz } from "@/components/topics/linear-algebra/LinearAlgebraQuiz";
+
+<Topic title="線形代数" summary="行列を «ベクトルを動かす操作» として見る。単位円→楕円の変換で行列式（面積拡大率）・トレース・固有値/固有ベクトル（向きを保つ方向）・階数を操作で体感し、主成分分析や回帰の土台をつくる。">
+
+<ReaderGuide>
+
+- **初学者** → L0〜L1（行列＝ベクトルを動かす操作・列ベクトルの行き先・行列式＝面積拡大率）
+- **一通り使える人** → L2（固有値/固有ベクトル・特性方程式・階数と逆行列・対称行列）
+- **「完全に理解した」人** → L3 以降（一般次元の固有値分解・特異値分解・二次形式・正定値性は到達途上）
+
+前提: なし（数学の土台トピック）。この先の[主成分分析](/topics/principal-component-analysis)・[重回帰分析](/topics/multiple-regression)・[最適化](/topics/optimization)がここを土台にする。
+
+</ReaderGuide>
+
+<Level level={0} title="ブラックボックス（行列＝ベクトルを動かす操作）">
+  <Concept>
+
+行列は «数の表» ではなく、**ベクトルを別のベクトルへ動かす操作**（[線形変換](linear-transformation)）と見るのがいちばん分かりやすい。$2\times2$ 行列 $A$ をベクトル $\mathbf x$ に掛けると、平面が丸ごと伸縮・回転・せん断される。
+
+$$
+\begin{pmatrix}a & b\\ c & d\end{pmatrix}\begin{pmatrix}x\\ y\end{pmatrix}=\begin{pmatrix}ax+by\\ cx+dy\end{pmatrix}
+$$
+
+原点は動かず、まっすぐな格子はまっすぐなまま——だから «線形»。どれだけ引き伸ばすか（面積）、どの向きが変わらないか（[固有ベクトル](eigen-decomposition)）を読み取れれば、主成分分析も回帰もこの言葉で語れる。
+
+  </Concept>
+  <Interact>
+
+下のラボで行列の4成分 $a,b,c,d$ を動かすと、単位円（灰）が変換後の楕円（青）へ移り、基底ベクトルの行き先（矢印）・[固有ベクトル](eigen-decomposition)方向（緑の破線）・[行列式](determinant)（面積拡大率）・トレース・階数が同時に追従する。$a,d$ を大きくすると軸方向に伸び、$b,c$ を入れるとせん断（傾き）が生じ、$\det A=0$ にすると楕円が線につぶれるのを確かめよう。
+
+<LinearTransformLab />
+
+  </Interact>
+  <Exercise>
+
+確認: 「行列 $A$ の1列目は、基底ベクトル $\mathbf e_1=(1,0)$ を掛けたときの行き先を表す」——○か×か。
+（答: ○。$A\mathbf e_1$ は $A$ の1列目そのもの。同様に2列目は $\mathbf e_2=(0,1)$ の行き先。だから «列を見れば変換全体が決まる»）
+
+  </Exercise>
+</Level>
+
+<Level level={1} title="古典的理解（行列式＝面積拡大率・列ベクトル）">
+  <Concept>
+
+$A$ の2つの列 $(a,c)$ と $(b,d)$ は、基底 $\mathbf e_1,\mathbf e_2$ の «行き先»。この2本が張る平行四辺形の符号付き面積が[行列式](determinant)：
+
+$$
+\det A=ad-bc.
+$$
+
+$|\det A|$ が面積拡大率、符号が向き（正なら回転の向きを保存、負なら鏡映で裏返し）。$\det A=0$ なら2つの列が同じ直線に乗り、平面が線につぶれる（[階数](matrix-rank)が1に落ち、[逆行列](identity-inverse-matrix)を持たない）。下のステッパーは L2 の固有ベクトル探索だが、まずここで «列＝行き先・det＝面積» を手を動かして掴もう。
+
+  </Concept>
+  <Derivation title="なぜ ad−bc が «面積» になるのか（平行四辺形の面積）">
+
+2本のベクトル $\mathbf u=(a,c)$ と $\mathbf v=(b,d)$ が張る平行四辺形の面積を求める。面積は «外積の大きさ»、つまり $\|\mathbf u\|\,\|\mathbf v\|\sin\theta$（$\theta$ は2本のなす角）。これを成分で書くと
+
+$$
+\|\mathbf u\|\|\mathbf v\|\sin\theta=u_x v_y-u_y v_x=ad-cb.
+$$
+
+導出は、$\|\mathbf u\|\|\mathbf v\|\cos\theta=\mathbf u\cdot\mathbf v=ab+cd$（内積）と $\|\mathbf u\|^2\|\mathbf v\|^2=(a^2+c^2)(b^2+d^2)$ から $\sin^2\theta=1-\cos^2\theta$ を計算すると、きれいに $(ad-bc)^2$ が出てくる。符号は «$\mathbf u$ から $\mathbf v$ への回転の向き» を表し、反時計回りなら正。これが行列式の幾何的な正体で、単位正方形（面積1）が面積 $|ad-bc|$ の平行四辺形に移ることを意味する。
+
+  </Derivation>
+  <Interact>
+
+確認問題（下の演習）に進む前に、上のラボへ戻って «$\det A$ の符号» を意識して遊ぶとよい。$b,c$ を0のままにして $a,d$ の片方を負にすると鏡映（裏返し）が起き、面積は $|ad|$ のままだが向きが反転する。$a\cdot d=b\cdot c$ に合わせると $\det=0$ で楕円が線につぶれる。
+
+  </Interact>
+  <Exercise>
+
+<LinearAlgebraQuiz />
+
+  </Exercise>
+</Level>
+
+<Level level={2} title="仮定体系（固有値・固有ベクトル・階数）">
+  <Concept>
+
+ほとんどの向きは変換で回転してしまうが、**向きが変わらず長さだけ伸縮する特別な方向**がある。それが[固有ベクトル](eigen-decomposition) $\mathbf v$、伸縮率が[固有値](eigen-decomposition) $\lambda$：
+
+$$
+A\mathbf v=\lambda\mathbf v.
+$$
+
+- **求め方**: $(A-\lambda I)\mathbf v=\mathbf0$ が非自明解を持つ条件 $\det(A-\lambda I)=0$、すなわち特性方程式 $\lambda^2-(\operatorname{tr}A)\lambda+\det A=0$ を解く。解と係数の関係から $\lambda_1+\lambda_2=\operatorname{tr}A$、$\lambda_1\lambda_2=\det A$。
+- **判別式** $(\operatorname{tr}A)^2-4\det A$ が負なら実固有値を持たず、変換は回転成分を含む（実固有方向なし）。
+- **[対称行列](covariance-matrix)**（$b=c$）は必ず実固有値を持ち、固有ベクトルが直交する——[主成分分析](/topics/principal-component-analysis)で[共分散行列](covariance-matrix)を[固有値分解](eigen-decomposition)する土台。
+- **[階数](matrix-rank)と[逆行列](identity-inverse-matrix)**: フルランク（$\det\neq0$）なら逆行列を持ち連立方程式が一意に解ける。ランク落ちは «つぶれる» 変換で、回帰の[多重共線性](/topics/regression-diagnostics)と同じ問題。
+
+下のステッパーは対称行列 $A=\begin{pmatrix}2&1\\1&2\end{pmatrix}$ で «探針ベクトルを回して固有方向を探す» 様子を1コマずつ見せる。
+
+  </Concept>
+  <Derivation title="なぜ det(A−λI)=0 で固有値が求まるのか（非自明解の条件）">
+
+固有ベクトルは «掛けても向きが変わらない» $\mathbf v\neq\mathbf0$ で、$A\mathbf v=\lambda\mathbf v$。移項すると
+
+$$
+(A-\lambda I)\mathbf v=\mathbf0.
+$$
+
+これは «行列 $A-\lambda I$ を掛けると零ベクトルに移る $\mathbf v$ がある» という意味。もし $A-\lambda I$ が[逆行列](identity-inverse-matrix)を持てば、両辺に掛けて $\mathbf v=\mathbf0$ しか出ない——固有ベクトルにならない。だから «$\mathbf v\neq\mathbf0$ の解を持つ» には $A-\lambda I$ が[つぶれる（ランク落ち）](matrix-rank)、つまり
+
+$$
+\det(A-\lambda I)=0
+$$
+
+でなければならない。$2\times2$ で展開すると
+
+$$
+\det\begin{pmatrix}a-\lambda & b\\ c & d-\lambda\end{pmatrix}=(a-\lambda)(d-\lambda)-bc=\lambda^2-(a+d)\lambda+(ad-bc)=0,
+$$
+
+すなわち $\lambda^2-(\operatorname{tr}A)\lambda+\det A=0$。これを解けば固有値、各 $\lambda$ を戻して $(A-\lambda I)\mathbf v=\mathbf0$ を解けば固有ベクトルが得られる。判別式が負なら実数解がなく、実固有方向を持たない（回転を含む）。
+
+  </Derivation>
+  <Interact>
+
+<EigenvectorStepper />
+
+  </Interact>
+  <Exercise>
+
+確認: 「$2\times2$ 行列の固有値がどちらも実数になるのは、判別式 $(\operatorname{tr}A)^2-4\det A$ が0以上のときで、負のときは実固有ベクトルを持たない」——○か×か。
+（答: ○。判別式が負だと特性方程式が実数解を持たず、変換が回転成分を含むため «向きを変えない実ベクトル» が存在しない。対称行列は判別式が常に0以上で、必ず実固有値・直交固有ベクトルを持つ）
+
+  </Exercise>
+</Level>
+
+<Level level={3} title="一般次元と分解" status="planned">
+  一般の $n\times n$ 行列の固有値分解 $A=V\Lambda V^{-1}$、対称行列のスペクトル分解（直交行列 $Q$ で $A=Q\Lambda Q^\top$）、対角化可能性と重複固有値・ジョルダン標準形（前提: 固有値分解）。
+</Level>
+
+<Level level={4} title="特異値分解と二次形式" status="planned">
+  特異値分解 $A=U\Sigma V^\top$（非正方・低ランク近似・主成分分析との関係）、二次形式 $\mathbf x^\top A\mathbf x$ と正定値・半正定値、正定値性の判定（固有値・主小行列式）。
+</Level>
+
+<Level level={5} title="内積空間とノルム" status="planned">
+  ベクトル空間・基底・次元の抽象化、内積・直交・正規直交基底、グラム–シュミット直交化、QR分解、各種ノルムと距離（最小二乗・射影の一般化）。
+</Level>
+
+<Level level={6} title="数値線形代数とフロンティア" status="planned">
+  大規模行列の数値解法（反復法・べき乗法・ランチョス法）、条件数と数値安定性、疎行列・ランダム化SVD、テンソルへの拡張は研究が活発（到達途上）。
+</Level>
+
+</Topic>

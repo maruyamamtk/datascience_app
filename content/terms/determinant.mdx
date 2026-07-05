@@ -1,0 +1,19 @@
+---
+title: 行列式
+definition: 正方行列に定まるスカラー。2×2 では $\det A=ad-bc$。線形変換による «面積（体積）の符号付き拡大率» を表し、$\det A=0$ なら変換がつぶれて逆行列を持たない。
+aliases: [determinant, 行列式, det]
+seeAlso: [linear-transformation, identity-inverse-matrix, eigen-decomposition]
+---
+
+# 行列式
+
+[線形変換](linear-transformation)による «面積（体積）の符号付き拡大率»。2×2 なら
+
+$$
+\det A=ad-bc.
+$$
+
+- **幾何的意味**: 単位正方形（面積1）が変換後に張る平行四辺形の符号付き面積。$|\det A|$＝面積拡大率、符号＝向き（正なら保存、負なら鏡映で裏返し）。
+- $\det A=0$ のとき平面が線や点につぶれ、[逆行列](identity-inverse-matrix)を持たない（[階数](matrix-rank)が落ちる）。
+- **固有値との関係**: $\det A=\lambda_1\lambda_2$（[固有値](eigen-decomposition)の積）。トレースは固有値の和。
+- 積の行列式は積 $\det(AB)=\det A\,\det B$。回転行列は $\det=1$（面積・向きを保存）。

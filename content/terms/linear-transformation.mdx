@@ -1,0 +1,19 @@
+---
+title: 線形変換
+definition: 行列を掛ける操作 $\mathbf x\mapsto A\mathbf x$。原点を固定したまま «直線を直線に・格子を格子に» 保ちながら平面（空間）を伸縮・回転・せん断する写像。
+aliases: [linear transformation, 線形変換, 一次変換, linear map]
+seeAlso: [determinant, eigen-decomposition, matrix-rank]
+---
+
+# 線形変換
+
+行列 $A$ をベクトルに掛ける操作 $\mathbf x\mapsto A\mathbf x$ を «平面（空間）を動かす変換» とみなす見方。
+
+$$
+\begin{pmatrix}a & b\\ c & d\end{pmatrix}\begin{pmatrix}x\\ y\end{pmatrix}=\begin{pmatrix}ax+by\\ cx+dy\end{pmatrix}
+$$
+
+- **性質**: $A(\mathbf u+\mathbf v)=A\mathbf u+A\mathbf v$、$A(k\mathbf u)=kA\mathbf u$。原点は動かず、直線は直線に、等間隔の格子は等間隔のまま。
+- **列の意味**: $A$ の各列は基底ベクトル $\mathbf e_1=(1,0)$, $\mathbf e_2=(0,1)$ の «行き先»。列を見れば変換全体が決まる。
+- 伸縮・回転・せん断・鏡映はすべて線形変換。拡大率（面積）は[行列式](determinant)、向きを保つ方向は[固有ベクトル](eigen-decomposition)で読み取る。
+- つぶれて次元が落ちるかは[階数](matrix-rank)で判定する。

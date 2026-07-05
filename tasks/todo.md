@@ -905,3 +905,19 @@ MVP 5トピック完了後、SPEC §3 のチェックリスト全項目（A〜S,
 - **変更概要**: イベントまでの時間を打ち切り込みで解析する枠組みを4層実装。SurvivalLab は2群（処置A/対照B）のハザード＋打ち切り率スライダー→カプラン–マイヤー階段曲線（打ち切りを+記号）・中央生存時間・«χ²_logrank=(O_A−E_A)²/V»・p値・ハザード比 が同時連動。ハザードを離すと曲線が分離しログランク有意に、打ち切りを上げると段差が疎に。KaplanMeierStepper は6個体（打ち切り2含む）で «リスク集合→(1−d/n)を掛ける→段差» を個体タイムラインと曲線で段階組み立て。KMの積が条件付き確率の連鎖である導出・ログランクが各時刻の2×2表のMantel-Haenszel統合でCoxモデルのスコア検定に対応する導出を収録。
 - **検証結果**: Vitest **820 passed**（+12: survival 7 / KM frames 5、registry リンク切れゼロ）。tsc / lint（警告0）/ build成功。`npm run dev` + Playwright 実機確認: 既定（HR=2.2）で χ²=65.22・p≈0（有意差）、2群ハザードを等しく（HR=1）で χ²=0.13・p=0.72（有意差なし）と強連動、KM/ステッパーSVG描画、コンソールエラー0件。
 - **設計判断 / つまずき**: 既存 standardNormalCdf 再利用、KM走査が距離×n の O(n²) なので N=240 に抑制（曲線可視化には十分）。SVG座標は #67 の教訓を適用し round2 で丸め（ハイドレーション不一致予防）。**MDXビルド失敗** — cox-proportional-hazards.mdx の «HR>1 でリスク増、<1 で減» の裸 `<1` を MDX が JSXタグ開始と誤認→`$\mathrm{HR}<1$` と数式化して解消（tsc/lint/testは通り next build のみで露見）。lessons.md 既出の «裸<記号» パターンの再確認。**O群（O-1/O-2）完了**、次は A群（数学基礎）A-1 線形代数へ。
+
+### コンテンツ拡充 #69 — [A-1] 線形代数
+
+優先度 43/82（A群 数学基礎 起点）。前提=なし。行列＝線形変換（ベクトルを動かす操作）／列ベクトル＝基底の行き先／行列式＝面積の符号付き拡大率／トレース／固有値・固有ベクトル（向きを保つ方向・特性方程式）／階数と正則・逆行列／対称行列。
+
+- [x] 計算層 `lib/stats/linear-algebra.ts`（apply2/det2/trace2/columns2、unitCirclePoints/transformPoints、angleBetweenDeg/normalize2/norm2、eigen2=特性方程式で固有値/固有ベクトル、matrixRank=行簡約）+ Vitest（16）（既存 linalg.ts の Matrix 型を再利用）
+- [x] 状態層 `lib/store/linear-algebra.ts`（controls {a,b,c,d}・matrix/ellipse/columns/det/trace/eigen/rank を派生、CIRCLE_N=72）
+- [x] 描画層 `components/topics/linear-algebra/`（LinearTransformLab=a,b,c,d スライダー→単位円→楕円変換・基底ベクトルの行き先矢印・固有ベクトル方向（緑破線）・«det/tr/λ» 強連動数式（det<0で赤・複素で固有値非表示） / EigenvectorStepper=対称行列[[2,1],[1,2]]で探針を回して像A·vが一直線になる固有方向（45°λ=3・135°λ=1）を探すコマ送り / LinearAlgebraQuiz=行列式/固有ベクトル定義/固有値とtr・det/階数落ち 4問）+ frames.ts + Vitest（5）
+- [x] 用語ノード4件（linear-transformation / determinant / matrix-rank / identity-inverse-matrix）相互リンク（既存 eigen-decomposition / covariance-matrix / multicollinearity へ接続、固有値は既存 eigen-decomposition を再利用し重複回避）
+- [x] MDX `content/topics/linear-algebra.mdx`（L0-L2 充実：行列＝ベクトルを動かす操作→列と行列式=面積→固有値/階数＋ad−bc が平行四辺形の面積である導出/det(A−λI)=0 が非自明解の条件である導出、L3-L6 planned）
+- [x] `/topics` 一覧へ反映（status: published）
+
+#### レビュー: 線形代数トピック（2026-07-05）
+- **変更概要**: A群（数学基礎）の起点。行列を «ベクトルを動かす操作（線形変換）» として見る4層実装。LinearTransformLab は2×2行列の4成分 a,b,c,d スライダー→単位円（灰破線）が変換後の楕円（青）へ移り、基底ベクトルの行き先（e₁→青/e₂→赤の矢印）・固有ベクトル方向（緑破線）・«A=(...), det A, tr A, λ» 強連動数式（det<0で赤ハイライト＝裏返し、判別式<0で固有値を「複素」表示）・行列式/トレース/階数のStatが同時連動。EigenvectorStepper は対称行列[[2,1],[1,2]]で探針ベクトルを15°刻みで回し、像A·vとのなす角が0°になる固有方向（45°→λ=3、135°→λ=1）を1コマずつ探す。ad−bc が2列ベクトルの張る平行四辺形の面積である導出・det(A−λI)=0 が非自明解を持つ条件（固有方程式）である導出を収録。
+- **検証結果**: Vitest **841 passed**（+21: linear-algebra 16 / eigen frames 5、registry リンク切れゼロ）。tsc / lint（警告0）/ build成功（linear-algebra が静的生成に含まれる）。`npm run dev` + Playwright 実機確認: 既定で det=1.44・tr=2.6・λ=1.8/0.8、a=−1に変更で det=−1.44（赤ハイライト）・tr=0.2・λ=1.3/−1.1 と強連動、EigenvectorStepper で45°→«なす角0°→固有ベクトル λ=3.0» を検出、Lab描画（円→楕円・矢印・固有方向線）スクショ確認、コンソールエラー0件。
+- **設計判断 / つまずき**: 既存 lib/stats/linalg.ts（Matrix型/transpose/matMul/inverse）は残しつつ、可視化向けの2×2特化 API（Mat2/Vec2）を新設して疎結合を保った。固有値は既存 eigen-decomposition 用語を再利用し、新規用語は変換・行列式・階数・逆行列の4件に絞って重複回避。SVG座標は #67 の教訓を適用し全て round2 で丸め（単位円の Math.cos/sin による SSR/CSR 1ULP ズレを予防）→ハイドレーションエラー0で確認。**A群起点（A-1）完了**、次は A-2 微分積分へ。
