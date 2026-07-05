@@ -1,0 +1,20 @@
+---
+title: 計算機イプシロン
+definition: 1 と «1 の次に表せる浮動小数点数» の差 $\varepsilon$。浮動小数点の相対精度（丸めの粒度）を表し、倍精度で $2^{-52}\approx2.22\times10^{-16}$。1 回の演算あたりの相対丸め誤差の目安。
+aliases: [machine-epsilon, 計算機イプシロン, マシンイプシロン, machine epsilon, ε, ulp]
+seeAlso: [floating-point, rounding-error, numerical-differentiation]
+---
+
+# 計算機イプシロン
+
+[浮動小数点数](floating-point)で **1 に足しても値が変わらなくなる境目** の量を計算機イプシロン $\varepsilon$ と呼ぶ。正確には «1 の次に表せる数と 1 の差»：
+
+$$
+\varepsilon = 2^{-52}\approx 2.22\times10^{-16}\quad(\text{倍精度}).
+$$
+
+- **意味**: 相対的な丸めの粒度。どんな数 $x$ も、丸めによる相対誤差はおよそ $\varepsilon$ 以下（有効数字 15〜16 桁）。
+- **最小の正の数とは別物**: 表せる最小の正の数（$\approx10^{-308}$）と混同しない。$\varepsilon$ は «精度»、最小数は «範囲» の話。
+- **誤差解析の単位**: 1 演算あたりの[丸め誤差](rounding-error)は相対的に $\varepsilon$ 程度。$n$ 回の演算では最悪 $n\varepsilon$ 程度まで積もりうる。
+
+[数値微分](numerical-differentiation)の最適刻み幅 $h^*\approx\varepsilon^{1/3}$ や、線形方程式の解の誤差 $\approx\kappa\,\varepsilon$（$\kappa$ は[条件数](condition-number)）など、数値計算の誤差の «目盛り» としてあちこちに現れる。

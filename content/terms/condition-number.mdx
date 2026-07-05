@@ -1,0 +1,20 @@
+---
+title: 条件数
+definition: 入力の相対的な «ゆらぎ» が出力の相対誤差を最大何倍に増幅するかを表す量 κ。κ が大きい問題は «悪条件» で、丸め誤差に敏感。線形方程式では κ(A)=‖A‖‖A⁻¹‖。
+aliases: [condition-number, 条件数, 悪条件, ill-conditioned, κ, コンディション数]
+seeAlso: [rounding-error, floating-point, machine-epsilon]
+---
+
+# 条件数
+
+条件数 $\kappa$ は «問題そのものの感度» を表す。入力を相対的に $\delta$ だけ動かしたとき、出力の相対的な変化が最大どれだけになるかの比：
+
+$$
+\frac{\lVert\Delta(\text{出力})\rVert}{\lVert\text{出力}\rVert}\ \lesssim\ \kappa\cdot\frac{\lVert\Delta(\text{入力})\rVert}{\lVert\text{入力}\rVert}.
+$$
+
+- **線形方程式 $Ax=b$**: $\kappa(A)=\lVert A\rVert\,\lVert A^{-1}\rVert$（2 ノルムでは最大特異値 ÷ 最小特異値）。$\kappa$ が大きいほど、$b$ の小さな誤差が解 $x$ に大きく効く。
+- **悪条件**: $\kappa$ が大きい問題を «悪条件 (ill-conditioned)» という。計算法をどれだけ工夫しても、[丸め誤差](rounding-error) $\varepsilon$ が $\kappa\cdot\varepsilon$ 程度まで増幅されうる（[計算機イプシロン](machine-epsilon)参照）。
+- **アルゴリズムとの区別**: 条件数は «問題の性質» で、計算手順のまずさ（数値的不安定性）とは別。悪条件な問題は良いアルゴリズムでも精度が出ない。
+
+回帰の設計行列が多重共線性で悪条件になると、係数推定が不安定になる——正則化（リッジ）は条件数を下げて安定化する手立てと見なせる。
