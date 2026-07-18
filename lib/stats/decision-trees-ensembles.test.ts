@@ -17,6 +17,7 @@ import {
   decisionBoundaryGrid,
   ensemblePredict,
   entropyImpurity,
+  enumerateSplitCandidates,
   gbPredict,
   generateClassificationData,
   generateRegressionData,
@@ -105,6 +106,53 @@ describe("bestSplit", () => {
     const data = generateClassificationData(30, 111, 0.1);
     const split = bestSplit(data, "entropy");
     if (split) expect(split.gain).toBeGreaterThanOrEqual(-1e-9);
+  });
+
+  it("minSamplesLeafを指定すると、それ未満の葉になる分割は選ばれない", () => {
+    // 1点だけ外れた位置にあるデータ: 閾値なしのminSamplesLeafなら1点だけの葉に割ることもできるが、
+    // minSamplesLeaf=2を指定すると両側とも2点以上を持つ分割しか選ばれないはず。
+    const data: ClassPoint[] = [
+      { x1: 0.05, x2: 0.5, label: 0 },
+      { x1: 0.4, x2: 0.5, label: 0 },
+      { x1: 0.5, x2: 0.5, label: 0 },
+      { x1: 0.6, x2: 0.5, label: 1 },
+      { x1: 0.7, x2: 0.5, label: 1 },
+      { x1: 0.8, x2: 0.5, label: 1 },
+    ];
+    const split = bestSplit(data, "gini", [0, 1], 2);
+    expect(split).not.toBeNull();
+    expect(split!.leftN).toBeGreaterThanOrEqual(2);
+    expect(split!.rightN).toBeGreaterThanOrEqual(2);
+  });
+});
+
+describe("enumerateSplitCandidates", () => {
+  it("bestSplitが選ぶ分割は、この関数が返す候補の中で利得が最大のものと一致する", () => {
+    const data = generateClassificationData(24, 99, 0.08);
+    const best = bestSplit(data, "gini");
+    const candidates = enumerateSplitCandidates(data, "gini");
+    const maxGain = Math.max(...candidates.map((c) => c.gain));
+    expect(best?.gain).toBeCloseTo(maxGain, 10);
+  });
+
+  it("2点未満は空配列", () => {
+    expect(enumerateSplitCandidates([{ x1: 0.5, x2: 0.5, label: 0 }], "gini")).toEqual([]);
+  });
+
+  it("minSamplesLeaf未満の葉になる候補は除外される", () => {
+    const data: ClassPoint[] = [
+      { x1: 0.05, x2: 0.5, label: 0 },
+      { x1: 0.4, x2: 0.5, label: 0 },
+      { x1: 0.5, x2: 0.5, label: 0 },
+      { x1: 0.6, x2: 0.5, label: 1 },
+    ];
+    const withoutMin = enumerateSplitCandidates(data, "gini", [0, 1], 1);
+    const withMin2 = enumerateSplitCandidates(data, "gini", [0, 1], 2);
+    expect(withMin2.length).toBeLessThan(withoutMin.length);
+    for (const c of withMin2) {
+      expect(c.leftN).toBeGreaterThanOrEqual(2);
+      expect(c.rightN).toBeGreaterThanOrEqual(2);
+    }
   });
 });
 
@@ -265,6 +313,17 @@ describe("buildEnsemble / ensemblePredict / oobErrorRate", () => {
     const a = buildEnsemble(data, 5, "bagging", "gini", 2, 99);
     const b = buildEnsemble(data, 5, "bagging", "gini", 2, 99);
     expect(a.map((t) => predictTree(t.tree, 0.3, 0.6))).toEqual(b.map((t) => predictTree(t.tree, 0.3, 0.6)));
+  });
+
+  it("同じシードなら、本数を増やしても1本目の木は変わらない（比較用の«単木»をtrees[0]で代用できる根拠）", () => {
+    const many = buildEnsemble(data, 12, "bagging", "gini", 3, 555);
+    const single = buildEnsemble(data, 1, "bagging", "gini", 3, 555);
+    expect(predictTree(many[0].tree, 0.4, 0.4)).toBe(predictTree(single[0].tree, 0.4, 0.4));
+    expect([...many[0].inBagIndices].sort()).toEqual([...single[0].inBagIndices].sort());
+    // ランダムフォレスト（特徴量サブサンプリングも rng を消費する）でも同様に一致する。
+    const manyRf = buildEnsemble(data, 12, "randomForest", "gini", 3, 777);
+    const singleRf = buildEnsemble(data, 1, "randomForest", "gini", 3, 777);
+    expect(predictTree(manyRf[0].tree, 0.4, 0.4)).toBe(predictTree(singleRf[0].tree, 0.4, 0.4));
   });
 });
 

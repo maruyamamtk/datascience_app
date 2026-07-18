@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import { MathFormula, type MathFormulaHandle } from "@/components/math/MathFormula";
 import { formatNumber, term } from "@/components/math/tex";
 import { Callout } from "@/components/viz";
-import { CLASS_TRAIN, MAX_DEPTH_MAX, MAX_DEPTH_MIN, useDecisionTreesEnsemblesStore } from "@/lib/store/decision-trees-ensembles";
+import { CLASS_TRAIN, GRID_RESOLUTION, MAX_DEPTH_MAX, MAX_DEPTH_MIN, useDecisionTreesEnsemblesStore } from "@/lib/store/decision-trees-ensembles";
 import type { Criterion } from "@/lib/stats/decision-trees-ensembles";
 
 const round2 = (v: number) => Math.round(v * 100) / 100;
@@ -41,7 +41,7 @@ export function DecisionTreeLab() {
     m.setHighlight("gain", true, d.criterion === "gini" ? "#2563eb" : "#0891b2");
   }, [d.rootImpurity, d.rootGain, d.criterion]);
 
-  const cellSize = round2((W - 2 * PAD) / 28);
+  const cellSize = round2((W - 2 * PAD) / GRID_RESOLUTION);
 
   return (
     <div id="decision-tree-lab" className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5">

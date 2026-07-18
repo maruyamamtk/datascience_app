@@ -123,22 +123,26 @@ export function impurity(points: readonly ClassPoint[], criterion: Criterion): n
 
 export type Split = { feature: 0 | 1; threshold: number; gain: number; leftN: number; rightN: number };
 
-const featureValue = (p: ClassPoint, feature: 0 | 1): number => (feature === 0 ? p.x1 : p.x2);
+export const featureValue = (p: ClassPoint, feature: 0 | 1): number => (feature === 0 ? p.x1 : p.x2);
 
 /**
- * 候補特徴量（既定は両方、ランダムフォレストなら 1 個に絞る）の中から、
- * 情報利得 = 親の不純度 − Σ(子の重み×子の不純度) を最大化する軸平行の閾値を探す。
- * 閾値候補は各特徴量のソート済みユニーク値の中点（教科書的な CART の全探索）。
+ * 候補特徴量（既定は両方、ランダムフォレストなら 1 個に絞る）について、考えられる軸平行の
+ * 閾値（各特徴量のソート済みユニーク値の中点＝教科書的な CART の全探索）を «すべて» 列挙する。
+ * `bestSplit` はこの中から情報利得が最大のものを選ぶだけの薄いラッパーで、分岐探索ステッパー
+ * （コマ送りで全候補を1つずつ見せる Level1 UI）もこの同じ関数を使う——«貪欲探索が実際に何を
+ * 比較しているか» を、木の構築とステッパーの可視化で二重実装せずに一致させるため。
+ * minSamplesLeaf を指定すると、その葉サイズ未満になる分割は候補から除外する。
  */
-export function bestSplit(
+export function enumerateSplitCandidates(
   points: readonly ClassPoint[],
   criterion: Criterion,
   featureSubset: readonly (0 | 1)[] = [0, 1],
-): Split | null {
+  minSamplesLeaf = 1,
+): Split[] {
   const n = points.length;
-  if (n < 2) return null;
+  if (n < 2) return [];
   const parentImpurity = impurity(points, criterion);
-  let best: Split | null = null;
+  const candidates: Split[] = [];
 
   for (const feature of featureSubset) {
     const values = [...new Set(points.map((p) => featureValue(p, feature)))].sort((a, b) => a - b);
@@ -146,13 +150,25 @@ export function bestSplit(
       const threshold = (values[i] + values[i + 1]) / 2;
       const left = points.filter((p) => featureValue(p, feature) <= threshold);
       const right = points.filter((p) => featureValue(p, feature) > threshold);
-      if (left.length === 0 || right.length === 0) continue;
+      if (left.length < minSamplesLeaf || right.length < minSamplesLeaf) continue;
       const weighted = (left.length / n) * impurity(left, criterion) + (right.length / n) * impurity(right, criterion);
-      const gain = parentImpurity - weighted;
-      if (!best || gain > best.gain + 1e-12) {
-        best = { feature, threshold, gain, leftN: left.length, rightN: right.length };
-      }
+      candidates.push({ feature, threshold, gain: parentImpurity - weighted, leftN: left.length, rightN: right.length });
     }
+  }
+  return candidates;
+}
+
+/** 情報利得を最大化する軸平行の閾値を探す（`enumerateSplitCandidates` の中から最良を選ぶ）。 */
+export function bestSplit(
+  points: readonly ClassPoint[],
+  criterion: Criterion,
+  featureSubset: readonly (0 | 1)[] = [0, 1],
+  minSamplesLeaf = 1,
+): Split | null {
+  const candidates = enumerateSplitCandidates(points, criterion, featureSubset, minSamplesLeaf);
+  let best: Split | null = null;
+  for (const c of candidates) {
+    if (!best || c.gain > best.gain + 1e-12) best = c;
   }
   return best;
 }
@@ -199,7 +215,7 @@ export function buildTree(points: readonly ClassPoint[], depth: number, opts: Tr
   }
 
   const featureSubset: readonly (0 | 1)[] = opts.featureSubsetFn ? opts.featureSubsetFn() : [0, 1];
-  const split = bestSplit(points, opts.criterion, featureSubset);
+  const split = bestSplit(points, opts.criterion, featureSubset, minLeaf);
   if (!split || split.gain <= 1e-12) {
     return { depth, nSamples, impurity: imp, prediction };
   }

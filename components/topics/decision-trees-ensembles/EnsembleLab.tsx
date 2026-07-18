@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import { MathFormula, type MathFormulaHandle } from "@/components/math/MathFormula";
 import { formatNumber, term } from "@/components/math/tex";
 import { Callout } from "@/components/viz";
-import { CLASS_TRAIN, useDecisionTreesEnsemblesStore } from "@/lib/store/decision-trees-ensembles";
+import { CLASS_TRAIN, GRID_RESOLUTION, useDecisionTreesEnsemblesStore } from "@/lib/store/decision-trees-ensembles";
 import type { EnsembleMethod } from "@/lib/stats/decision-trees-ensembles";
 
 const round2 = (v: number) => Math.round(v * 100) / 100;
@@ -38,7 +38,7 @@ export function EnsembleLab() {
     m.setHighlight("oob", true, "#dc2626");
   }, [d.nTrees, d.oobError]);
 
-  const cellSize = round2((W - 2 * PAD) / 28);
+  const cellSize = round2((W - 2 * PAD) / GRID_RESOLUTION);
   const gain = d.ensembleTestAcc - d.singleTreeTestAcc;
 
   return (

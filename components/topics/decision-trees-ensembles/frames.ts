@@ -10,20 +10,22 @@
  */
 
 import type { VizFrame } from "@/components/viz";
-import { type ClassPoint, type Criterion, generateClassificationData, impurity } from "@/lib/stats/decision-trees-ensembles";
+import {
+  type ClassPoint,
+  type Criterion,
+  enumerateSplitCandidates,
+  generateClassificationData,
+  impurity,
+  type Split,
+} from "@/lib/stats/decision-trees-ensembles";
 
 /** ステッパー専用の小さい判別データ（ラボ本体とは別シード）。 */
 export const SPLIT_SEED = 271828;
 export const SPLIT_N = 22;
 export const SPLIT_NOISE = 0.05;
 
-export type SplitCandidate = {
-  feature: 0 | 1;
-  threshold: number;
-  gain: number;
-  leftN: number;
-  rightN: number;
-};
+/** 分岐候補1つぶんの情報（lib/stats の `Split` と同じ形。`bestSplit` が最良を選ぶ元データ）。 */
+export type SplitCandidate = Split;
 
 export type SplitSearchPayload = {
   points: ClassPoint[];
@@ -36,30 +38,13 @@ export type SplitSearchPayload = {
   criterion: Criterion;
 };
 
-/** 根ノードの分割候補（特徴量×閾値の全組）を、bestSplit と同じ規則で列挙する。 */
-function enumerateCandidates(points: readonly ClassPoint[], criterion: Criterion): SplitCandidate[] {
-  const n = points.length;
-  const parentImpurity = impurity(points, criterion);
-  const candidates: SplitCandidate[] = [];
-  for (const feature of [0, 1] as const) {
-    const values = [...new Set(points.map((p) => (feature === 0 ? p.x1 : p.x2)))].sort((a, b) => a - b);
-    for (let i = 0; i < values.length - 1; i++) {
-      const threshold = (values[i] + values[i + 1]) / 2;
-      const left = points.filter((p) => (feature === 0 ? p.x1 : p.x2) <= threshold);
-      const right = points.filter((p) => (feature === 0 ? p.x1 : p.x2) > threshold);
-      if (left.length === 0 || right.length === 0) continue;
-      const weighted = (left.length / n) * impurity(left, criterion) + (right.length / n) * impurity(right, criterion);
-      candidates.push({ feature, threshold, gain: parentImpurity - weighted, leftN: left.length, rightN: right.length });
-    }
-  }
-  return candidates;
-}
-
 /** 分岐探索ステッパーのフレーム列（候補を1つ調べるたびに1コマ）を作る。 */
 export function buildSplitSearchFrames(criterion: Criterion = "gini"): VizFrame<SplitSearchPayload>[] {
   const points = generateClassificationData(SPLIT_N, SPLIT_SEED, SPLIT_NOISE);
   const parentImpurity = impurity(points, criterion);
-  const candidates = enumerateCandidates(points, criterion);
+  // 木の構築（lib/stats の bestSplit）とまったく同じ候補列挙関数を使う——
+  // «貪欲探索が実際に何を比較しているか» をステッパーと決定木本体で二重実装しない。
+  const candidates = enumerateSplitCandidates(points, criterion);
 
   const frames: VizFrame<SplitSearchPayload>[] = [];
   let bestIndex = -1;

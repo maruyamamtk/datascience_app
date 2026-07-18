@@ -3,7 +3,7 @@
 import { useEffect, useMemo } from "react";
 import { Callout, StepPlayer, frameAt, useFramePlayer } from "@/components/viz";
 import { CLASS_TRAIN, useAdaBoostStepperStore } from "@/lib/store/decision-trees-ensembles";
-import { buildAdaBoostFrames } from "./boosting-frames";
+import { BOUNDARY_RESOLUTION, buildAdaBoostFrames } from "./boosting-frames";
 
 const round2 = (v: number) => Math.round(v * 100) / 100;
 const W = 300;
@@ -14,7 +14,6 @@ const py = (v: number) => round2(PAD + (1 - v) * (H - 2 * PAD));
 
 const LABEL_FILL = { 0: "#2563eb", 1: "#d97706" } as const;
 const LABEL_BG = { 0: "#dbeafe", 1: "#fef3c7" } as const;
-const BOUNDARY_RESOLUTION = 22;
 
 /**
  * AdaBoost ステッパー（Level3）。標本重み（バブルの大きさ）を持ちながら決定株を1本ずつ逐次追加し、

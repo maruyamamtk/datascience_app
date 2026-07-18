@@ -95,7 +95,7 @@ export type MainDerived = {
   ensembleBoundary: GridCell[];
   ensembleTestAcc: number;
   oobError: number;
-  /** 比較用: 同じ深さの木1本だけ（ブートストラップなし）のテスト精度。 */
+  /** 比較用: アンサンブルの1本目の木（ブートストラップ標本1本ぶん）だけで予測したときのテスト精度。 */
   singleTreeTestAcc: number;
 };
 
@@ -123,8 +123,10 @@ export const useDecisionTreesEnsemblesStore = createTopicStore<MainControls, Mai
     const ensembleTestAcc = accuracy(CLASS_TEST, (x1, x2) => ensemblePredict(trees, x1, x2).label);
     const oobError = oobErrorRate(CLASS_TRAIN, trees);
 
-    const singleTrees = buildEnsemble(CLASS_TRAIN, 1, ensembleMethod, criterion, maxDepth, ENSEMBLE_SEED);
-    const singleTreeTestAcc = accuracy(CLASS_TEST, (x1, x2) => ensemblePredict(singleTrees, x1, x2).label);
+    // 比較用の「単木」は trees[0] と同一（同じシードの makeLcg は毎回同じ順で乱数を払い出すため、
+    // 1本目のブートストラップ標本・分割はアンサンブルの本数によらず一致する）。
+    // buildEnsemble を余分にもう一度呼ばず、既に育てた1本目を再利用する。
+    const singleTreeTestAcc = accuracy(CLASS_TEST, (x1, x2) => ensemblePredict(trees.slice(0, 1), x1, x2).label);
 
     return {
       maxDepth,

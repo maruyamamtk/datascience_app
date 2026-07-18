@@ -14,8 +14,8 @@ import { CLASS_TRAIN } from "@/lib/store/decision-trees-ensembles";
 
 /** AdaBoost ステッパーのラウンド数。 */
 export const ADABOOST_ROUNDS = 6;
-/** 決定境界プレビューの解像度（ステッパーは軽量に保つ）。 */
-const BOUNDARY_RESOLUTION = 22;
+/** 決定境界プレビューの解像度（ステッパーは軽量に保つ）。描画側（AdaBoostStepper.tsx）もこの値を使う。 */
+export const BOUNDARY_RESOLUTION = 22;
 
 export type AdaBoostFramePayload = {
   round: number;
