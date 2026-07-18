@@ -162,3 +162,16 @@
 - **症状（設計時に気づいた潜在バグ）**: 2つのステッパーが同じストアの `frame`（`index`/`count`/`playing`）を共有すると、両方の `useEffect(() => setFrameCount(frames.length), …)` が同じ `count` を奪い合い、片方の StepPlayer を操作すると **もう片方の再生位置も動いてしまう**（同一の `index` を参照するため）。
 - **対策**: メインの Lab 用ストアとは別に、ステッパーごとに `createTopicStore<Record<string, never>, Record<string, never>>({ initialControls: {}, derive: () => ({}) })` で «空 controls・空 derived・独自の `frame` だけを持つストア» を追加で生成する。フレーム «中身»（候補・ラウンドの中身）はステッパーの `frames.ts`/`boosting-frames.ts` が `useMemo` で作る純関数のままで、ストアは `frame`（位置と再生状態）の single source of truth を steppers の数だけ分離するだけでよい。Playwright で「2つの `StepPlayer` の `1コマ後へ` ボタンをそれぞれ押しても、もう一方のカウンタが動かない」ことを確認して設計の妥当性を検証した。
 - **判断の目安**: 1トピックにステッパーが1つだけなら、既存パターン通りメインストアの `frame` を共用してよい（ステッパー用に別ストアを作るのはオーバーエンジニアリング）。**2つ目のステッパーを追加する時点で、必ずステッパー専用の空ストアに切り替える**。
+
+## nested worktree では `pnpm lint`（`next lint`）が親チェックアウトの設定を誤検出して失敗する（出典 #77）
+- **症状**: `.claude/worktrees/<agent-id>/` のように**リポジトリ本体のディレクトリツリーの内側**に worktree が作られていると、`pnpm lint`（内部で `next lint` を実行）が
+  `Plugin "@next/next" was conflicted between ".eslintrc.json » …" と "../../../.eslintrc.json » …"` で失敗する。`next build` 内でも同じ警告が出るが、こちらはビルド自体は最後まで成功する（静的生成は止まらない）。
+- **原因**: Next.js のワークスペースルート自動検出が、worktree 自身の `.eslintrc.json`/`node_modules` に加えて、親ディレクトリを遡って**リポジトリ本体（別の worktree）の `.eslintrc.json`/`node_modules`** も見つけてしまい、`@next/eslint-plugin-next` を二重に解決してしまう。worktree がリポジトリ本体の外（兄弟ディレクトリ）にあれば起きない。
+- **対策**: 同じ `.eslintrc.json` を使う **`npx eslint .`**（Next の `next lint` ラッパーを介さない素の ESLint CLI）で代替確認する——ワークスペースルート探索をしないため、この誤検出を起こさず同一ルールセットで検証できる。lint 結果は `npx eslint .` の出力（エラー0件・既存warningのみ）を根拠として記録してよい。
+- **判断の目安**: `pnpm lint` が「Plugin conflicted」で落ちても、`pnpm test`/`tsc`/`pnpm build` が通っていて `npx eslint .` がクリーンなら、これは worktree 配置に起因する環境要因でありコードの問題ではない。修正不要（worktree の配置を変える権限がない場合はこの代替コマンドで検証を続行してよい）。
+
+## worktree 環境では、指示された `feat/NN-slug` ブランチ名が別 worktree で使用中のことがある（出典 #77）
+- **症状**: `git checkout -b feat/77-naive-bayes-knn` が `fatal: a branch named 'feat/77-naive-bayes-knn' already exists` で失敗。`git worktree list` で確認すると、リポジトリ本体の worktree（別セッション用）がそのブランチ名を**コミットなしでチェックアウトしただけ**の状態で掴んでいた。
+- **原因**: 複数の agent セッションが同じリポジトリに対して並行して起動されており、それぞれ独立した worktree を持つ。ブランチ名は `.git` 全体で共有されるため、片方が名前を予約すると同じ名前を他方の worktree でチェックアウトできない（git の制約）。
+- **対策**: 自分の worktree の外（`cd` して他の worktree のパスを操作すること）は権限で拒否される（Write/Edit ツールも "isolated in the worktree" エラーになる）ため、**衝突したブランチ名を奪い返そうとせず、末尾に連番などを付けた別名（例: `feat/77-naive-bayes-knn-2`）で作業を続行する**。PR 本文に `Closes #77` を含めれば issue のクローズには支障ない。
+- **判断の目安**: `git checkout -b` がブランチ名衝突で失敗したら、まず `git worktree list` で衝突相手が「自分の worktree ではない」ことを確認し、他 worktree のブランチ解放を試みずに別名へフォールバックする（他worktreeへの書き込み・checkout変更は権限的にできない前提で動く）。

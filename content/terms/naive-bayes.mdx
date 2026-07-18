@@ -1,0 +1,15 @@
+---
+title: ナイーブベイズ
+definition: ベイズの定理 $P(k\mid x)\propto P(x\mid k)P(k)$ を使い、特徴量どうしはクラスが分かれば独立と仮定して尤度を各特徴量の密度の積に分解する確率的な分類器。事後確率が最大のクラスを選ぶ。
+aliases: [naive Bayes, 単純ベイズ, Naive Bayes classifier, ガウス型ナイーブベイズ]
+seeAlso: [bayes-theorem, conditional-independence, likelihood-function, prior-probability, posterior-probability]
+---
+
+# ナイーブベイズ
+
+[ベイズの定理](bayes-theorem) $P(k\mid x)=\dfrac{P(x\mid k)P(k)}{P(x)}$ をそのまま分類に使う手法。分母 $P(x)$ はどのクラスでも共通なので、事後確率 $P(k\mid x)$ が最大のクラスを選ぶ問題は、分子（事前確率×尤度）を最大にするクラスを選ぶ問題に帰着する。
+
+- **«ナイーブ»な仮定**: 特徴量 $x_1,x_2,\dots$ が、クラス $k$ が分かった条件のもとで[条件付き独立](conditional-independence)——$P(x_1,x_2\mid k)=P(x_1\mid k)P(x_2\mid k)$——であると仮定する。実際には特徴量が相関していても、この単純化のおかげで各特徴量の[尤度](likelihood-function)を別々に計算して掛け合わせるだけで済む。
+- **ガウス型**: 各クラス・各特徴量が正規分布に従うと仮定し、標本平均・標本分散から尤度密度を推定する。特徴量がカテゴリなら多項分布・ベルヌーイ分布を使う変種もある。
+- 分類は [事前確率](prior-probability) × 尤度 の大小比較だけで完了し、正規化して[事後確率](posterior-probability)を出すのは «確率らしく見せる» ための後処理にすぎない。
+- 少ないデータでも安定して学習できる一方、独立の仮定が大きく外れる（特徴量どうしが強く相関する）データでは精度が落ちることがある。
