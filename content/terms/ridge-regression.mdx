@@ -1,0 +1,21 @@
+---
+title: リッジ回帰
+definition: 最小二乗の損失に係数の二乗和 λΣβⱼ² を罰則として加える正則化（L2正則化）。係数をちょうど0にはせず全体を縮小し、多重共線性による不安定さを抑える。
+aliases: [ridge regression, リッジ回帰, L2正則化, Tikhonov正則化]
+seeAlso: [multicollinearity, l1-regularization, least-squares, soft-thresholding]
+---
+
+# リッジ回帰（L2正則化）
+
+[最小二乗](least-squares)の損失に **係数の二乗和** を罰則として加える。
+
+$$
+\min_\beta\ \|y-X\beta\|^2+\lambda\sum_j\beta_j^2
+$$
+
+- 正規方程式の解は $\hat\beta=(X^\top X+\lambda I)^{-1}X^\top y$。$\lambda I$ を足すことで
+  [多重共線性](multicollinearity)で特異に近くなった $X^\top X$ が数値的に安定する。
+- L1正則化（[Lasso](l1-regularization)）とは違い、係数を **ちょうど0にはしない**——全体を一様に縮める。
+  座標ごとの最適解は[軟閾値作用素](soft-thresholding)ではなく単純な比例縮小になる。
+- $\lambda\to0$ で通常の最小二乗に一致し、$\lambda\to\infty$ で係数はすべて0（切片だけ）に近づく。
+  «バイアスを入れて分散を下げる» 縮小推定の代表。
