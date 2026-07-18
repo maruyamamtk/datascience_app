@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm vitest *)",
+      "Bash(npx vitest *)",
+      "Bash(pnpm test *)",
+      "Bash(pnpm lint *)",
+      "Bash(npx tsc *)",
+      "Bash(pnpm tsc *)",
+      "Bash(gcloud storage ls *)",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_console_messages",
+      "mcp__playwright__browser_take_screenshot",
+      "mcp__playwright__browser_click",
+      "mcp__playwright__browser_snapshot",
+      "mcp__playwright__browser_close",
+      "mcp__playwright__browser_hover",
+      "mcp__playwright__browser_wait_for"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "playwright"
+  ]
+}
