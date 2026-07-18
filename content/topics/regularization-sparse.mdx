@@ -1,0 +1,178 @@
+---
+title: 正則化・スパースモデリング
+summary: 罰則付き最小二乗（リッジ回帰・Lasso）を、次数9の多項式をわずか10点の訓練データにフィットするラボで体感するトピック。λ（罰則の強さ）を上げると、リッジ（L2）は係数全体を滑らかに縮小し、Lasso（L1）は一部の係数をちょうど0にして自動的に変数を選ぶ（スパースモデリング）。軟閾値作用素の導出から正則化パスまでを扱う。
+status: published
+---
+
+import { RegularizationLab } from "@/components/topics/regularization-sparse/RegularizationLab";
+import { RegularizationPathStepper } from "@/components/topics/regularization-sparse/RegularizationPathStepper";
+import { RegularizationQuiz } from "@/components/topics/regularization-sparse/RegularizationQuiz";
+
+<Topic title="正則化・スパースモデリング" summary="罰則付き最小二乗（リッジ回帰・Lasso）を、次数9の多項式をわずか10点の訓練データにフィットするラボで体感する。λ（罰則の強さ）を上げると、リッジ（L2）は係数全体を滑らかに縮小し、Lasso（L1）は一部の係数をちょうど0にして自動的に変数を選ぶ（スパースモデリング）。軟閾値作用素の導出から正則化パスまでを扱う。">
+
+<ReaderGuide>
+
+- **初学者** → L0〜L1（罰則付き最小二乗とは何か、[リッジ回帰](ridge-regression)が係数を縮小して安定させる仕組み）
+- **一通り使える人** → L2（[Lasso](l1-regularization)がなぜ係数をちょうど0にできるか、[軟閾値作用素](soft-thresholding)の導出、[正則化パス](regularization-path)）
+- **「完全に理解した」人** → L3 以降（カーネル法・主成分回帰/PLS・Elastic Net・ベイズ的解釈は到達途上）
+
+前提: [重回帰分析](/topics/multiple-regression)の[多重共線性](multicollinearity)（説明変数どうしの強い相関で係数推定が不安定になる）、[機械学習の枠組み](/topics/learning-framework)の «モデルが複雑すぎると分散が増えて過学習する» という見方。正則化は «分散を直接抑える道具» として、この2つの問題を同時に解決する。
+
+</ReaderGuide>
+
+<Level level={0} title="ブラックボックス（罰則付き最小二乗）">
+  <Concept>
+
+次数の高い多項式を少ないデータにフィットすると、[機械学習の枠組み](/topics/learning-framework)で見たように激しく過学習する。その正体は «係数が暴れる» こと——高次の項どうしは強く相関する（[多重共線性](multicollinearity)）ため、わずかなデータの違いで最小二乗の係数が桁違いに跳ね上がる。
+
+**正則化** は、最小二乗の損失に «係数が大きくなりすぎないように» 罰則を足して、この暴れを抑える。
+
+$$
+\min_\beta\ \underbrace{\|y-X\beta\|^2}_{\text{当てはまり}}+\lambda\,\underbrace{P(\beta)}_{\text{罰則}}
+$$
+
+罰則の強さ $\lambda$ が大きいほど係数は小さく保たれる。罰則 $P(\beta)$ の形で２つの流派に分かれる——**[リッジ回帰](ridge-regression)**（L2, $P(\beta)=\sum\beta_j^2$）は係数を全体的に縮め、**[Lasso](l1-regularization)**（L1, $P(\beta)=\sum|\beta_j|$）は一部の係数を «ちょうど0» にする。
+
+  </Concept>
+  <Interact>
+
+下のラボは、次数9の多項式をわずか10点の訓練データにフィットする（[機械学習の枠組み](/topics/learning-framework)と同じ «次数が高すぎる» 設定）。$\lambda$ を最小まで下げると係数が暴れ曲線が波打つ。上げていくと曲線が滑らかに安定し、右の係数バーが縮んでいく。Ridge/Lassoを切り替えると、Lassoだけバーがちょうど0（灰色）になる変数が現れることを確かめよう。
+
+<RegularizationLab />
+
+  </Interact>
+  <Exercise>
+
+確認: 「λ を大きくすればするほど、モデルの予測精度（テスト誤差）は必ず良くなる」——○か×か。
+（答: ×。λ→∞ だと係数がすべて0に近づき、モデルは訓練データの平均を返すだけになる（適合不足）。λ が小さすぎれば不安定（過学習）、大きすぎれば単純すぎる。ちょうどよい λ は交差検証で選ぶ）
+
+  </Exercise>
+</Level>
+
+<Level level={1} title="古典的理解（リッジ回帰の導出）">
+  <Concept>
+
+**[リッジ回帰](ridge-regression)**（L2正則化）は損失に係数の二乗和を足す。
+
+$$
+J(\beta)=\|y-X\beta\|^2+\lambda\sum_j\beta_j^2=\|y-X\beta\|^2+\lambda\|\beta\|^2
+$$
+
+最小二乗と同じく $J(\beta)$ は $\beta$ の２次関数なので、微分して0とおけば **閉じた式** で解ける（下で導出）。
+
+$$
+\hat\beta_{\text{ridge}}=(X^\top X+\lambda I)^{-1}X^\top y
+$$
+
+$\lambda\to0$ で通常の最小二乗に戻り、$\lambda\to\infty$ で $\hat\beta\to0$ に近づく。ちょうど良い中間が「安定しているが縮みすぎていない」係数を与える。
+
+  </Concept>
+  <Derivation title="正規方程式 (XᵀX+λI)β=Xᵀy の導出と、多重共線性への効き目">
+
+**導出。** $J(\beta)=(y-X\beta)^\top(y-X\beta)+\lambda\beta^\top\beta$ を展開すると
+
+$$
+J(\beta)=y^\top y-2\beta^\top X^\top y+\beta^\top X^\top X\beta+\lambda\beta^\top\beta.
+$$
+
+高校数学の $\frac{d}{dx}x^2=2x$ の行列版として、$\nabla_\beta(\beta^\top A\beta)=2A\beta$（$A$ が対称のとき）・$\nabla_\beta(\beta^\top b)=b$ を使うと、
+
+$$
+\nabla_\beta J(\beta)=-2X^\top y+2X^\top X\beta+2\lambda\beta.
+$$
+
+これを $0$ とおいて整理すると $(X^\top X+\lambda I)\beta=X^\top y$、すなわち $\hat\beta=(X^\top X+\lambda I)^{-1}X^\top y$。$J$ は凸（$X^\top X+\lambda I$ が正定値、$\lambda>0$ なら常に）なので、この停留点が唯一の最小点。
+
+**なぜ多重共線性に効くのか。** $X^\top X$ は対称行列なので固有値分解 $X^\top X=Q\Lambda Q^\top$（$\Lambda=\mathrm{diag}(\mu_1,\dots,\mu_p)$、$\mu_j\ge0$）ができる。多重共線性があると、ある固有値 $\mu_j$ が $0$ に近づき、$(X^\top X)^{-1}$ の対応する方向の «割り算» が極端に大きくなって係数が暴れる。ここに $\lambda I$ を足すと
+
+$$
+X^\top X+\lambda I=Q(\Lambda+\lambda I)Q^\top,\qquad \mu_j+\lambda\ \ge\ \lambda>0
+$$
+
+となり、どんなに小さい固有値も $\lambda$ だけは下駄を履く。$0$ 割りに近い不安定さが消え、係数が有限の範囲に収まる——これが «バイアスを入れて分散を下げる» の中身。
+
+  </Derivation>
+  <Interact>
+
+ラボの手法をリッジのままにして $\lambda$ を動かし、係数バー（右）がどの次数も «ちょうど0» にはならず一様に縮んでいく様子と、左の曲線が滑らかに安定していく様子を確かめよう。
+
+  </Interact>
+  <Exercise>
+
+確認: リッジ回帰で $\lambda$ を極端に大きくすると係数はどうなるか。
+（答: すべて $0$ に «近づく» が、正規方程式の形からわかるとおり $\lambda$ が有限である限りちょうど $0$ にはならない。Lassoとの違いはここ）
+
+  </Exercise>
+</Level>
+
+<Level level={2} title="仮定体系（Lasso・スパースモデリング）">
+  <Concept>
+
+**[Lasso](l1-regularization)**（L1正則化）は罰則を係数の絶対値の和にする。
+
+$$
+J(\beta)=\|y-X\beta\|^2+\lambda\sum_j|\beta_j|
+$$
+
+リッジと違い $|\beta_j|$ は $\beta_j=0$ で微分できない（尖っている）ため、閉じた式は存在しない。しかし各係数を1つずつ、他を固定して解く **座標降下法** なら解ける——その1ステップの答えが **[軟閾値作用素](soft-thresholding)**（下で導出）。
+
+**なぜL1だけがスパースになるか（幾何学的な直観）。** 罰則付き最小二乗は「制約付き最小二乗」と同じ意味を持つ——$\sum\beta_j^2\le t$（リッジ）または $\sum|\beta_j|\le t$（Lasso）という «許される範囲» の中で $\|y-X\beta\|^2$ を最小化していると考えてよい。リッジの許容範囲は **なめらかな円**（角がない）、Lassoの許容範囲は **角のあるひし形**。最小二乗の «当てはまりが同じ良さの等高線»（楕円）を範囲の外側から広げていくと、ひし形は軸の上に角があるので、そこに最初に触れやすい——角の上では一部の座標がちょうど $0$ になる。円には角がないので、触れる点はふつうどの座標も $0$ ではない。
+
+正則化の強さ $\lambda$ を小さい方から大きい方へ動かしたときの係数の推移が **[正則化パス](regularization-path)**。Lassoのパスでは、無関係な変数の係数が途中で次々と $0$ に落ちる（下のステッパー）——これが «自動的な変数選択»＝スパースモデリングで、大量の候補変数から効くものだけを残す実務的な武器になる。
+
+  </Concept>
+  <Derivation title="軟閾値作用素の導出（なぜLassoはちょうど0にできるのか）">
+
+座標降下法では、係数 $\beta_j$ 以外を固定して $\beta_j$ だけの1変数関数として最小化する。標準化された列（$\sum_i x_{ij}^2=z_j$）と、$j$ 番目を除いた部分残差 $r_i=y_i-\sum_{k\ne j}x_{ik}\beta_k$ を使うと、
+
+$$
+J(\beta_j)=\sum_i(r_i-x_{ij}\beta_j)^2+\lambda|\beta_j|
+=z_j\beta_j^2-2\rho_j\beta_j+\lambda|\beta_j|+\text{定数},\qquad \rho_j=\sum_i x_{ij}r_i.
+$$
+
+$\beta_j>0$ の範囲では $|\beta_j|=\beta_j$ なので、高校数学どおり微分して $0$ とおく。
+
+$$
+\frac{d}{d\beta_j}J=2z_j\beta_j-2\rho_j+\lambda=0\ \Longrightarrow\ \beta_j=\frac{\rho_j-\lambda/2}{z_j}\quad(\text{ただし }\rho_j>\lambda/2\text{ のときだけ }\beta_j>0\text{ が成立})
+$$
+
+同様に $\beta_j<0$ の範囲では $\beta_j=(\rho_j+\lambda/2)/z_j$（$\rho_j<-\lambda/2$ のとき）。そして $|\rho_j|\le\lambda/2$ の範囲では、$\beta_j=0$ における劣微分 $[-\lambda,\lambda]$（$|\beta_j|$ の $0$ での «傾きの候補»）が $-2\rho_j$ を吸収できるので $\beta_j=0$ が最適——**罰則の傾きが残差との相関を上回ると、その変数は完全に切り捨てられる**。3つの場合をまとめると軟閾値作用素になる。
+
+$$
+\hat\beta_j=\frac{S(\rho_j,\lambda/2)}{z_j},\qquad S(z,\gamma)=\mathrm{sign}(z)\max(|z|-\gamma,0)
+$$
+
+リッジの $\hat\beta_j=\rho_j/(z_j+\lambda)$（比例縮小、$\rho_j\neq0$ なら常に非ゼロ）と見比べると、L1だけが «$|\rho_j|$ が小さければ問答無用で $0$» という質的に違う振る舞いを持つことがわかる。
+
+  </Derivation>
+  <Interact>
+
+正則化パスのステッパーは、8個の候補変数のうち本当に効くのは3個だけ（残り5個は真の係数が0）という設定を使う。λ を増やしていくと、無関係な変数（青→灰色）が先に脱落し、真に効く3変数（緑）が最後まで残ることを確かめよう。
+
+<RegularizationPathStepper />
+
+  </Interact>
+  <Exercise>
+
+<RegularizationQuiz />
+
+  </Exercise>
+</Level>
+
+<Level level={3} title="非線形への拡張（カーネル法）" status="planned">
+  線形の正則化回帰を非線形に拡張する[カーネル関数](kernel-function)（カーネルリッジ回帰・カーネルSVMの土台）。特徴空間を陽に作らず内積だけで非線形性を扱う «カーネルトリック»。前提トピック判別分析（H-2）のSVMへ接続。
+</Level>
+
+<Level level={4} title="次元削減との接続（主成分回帰・PLS）" status="planned">
+  [主成分](principal-component)で次元削減してから回帰する主成分回帰（PCR、出力情報は使わない）と、入力・出力の両方の情報を使って潜在変数を抽出する部分最小二乗法（PLS、NIPALSアルゴリズム）。スモールデータ解析で特に有効。前提トピック主成分分析（H-1）へ接続。
+</Level>
+
+<Level level={5} title="正則化の一般化（Elastic Net・構造化正則化）" status="planned">
+  L1とL2を組み合わせるElastic Net（相関の強い変数群を一括で選ぶ）、Group Lasso（変数群ごとにスパース化）、LARS（正則化パスを効率的にたどるアルゴリズム）の詳細。
+</Level>
+
+<Level level={6} title="ベイズ的解釈と高次元回帰の理論" status="planned">
+  リッジ＝ガウス事前分布・Lasso＝ラプラス事前分布によるMAP推定としての正則化の再解釈、高次元回帰（変数の数がサンプル数を超える設定）でのLassoの選択一致性、選択後推測（post-selection inference）——学習理論のフロンティア。
+</Level>
+
+</Topic>

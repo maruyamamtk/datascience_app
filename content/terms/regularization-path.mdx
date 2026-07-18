@@ -1,0 +1,15 @@
+---
+title: 正則化パス
+definition: 正則化の強さλを動かしたときの係数の推移。Lassoでは係数が次々とちょうど0になる臨界点が現れ、モデルの複雑さと変数選択の過程を一望できる。
+aliases: [regularization path, 正則化パス, ソリューションパス, solution path, LARS]
+seeAlso: [l1-regularization, ridge-regression, cross-validation]
+---
+
+# 正則化パス
+
+- 正則化の強さ $\lambda$ を小さい方から大きい方へ連続的に動かし、各 $\lambda$ での係数 $\hat\beta(\lambda)$ を並べたもの。
+- **[Lasso](l1-regularization)** ではある $\lambda$ を境に係数がちょうど0になる（区分的に折れ線）——どの変数が
+  «先に脱落するか»（＝重要度が低いか）が一望できる。**リッジ回帰** では滑らかに縮むだけで0にはならない。
+- 実務では [交差検証](cross-validation)で、パス上の «汎化誤差が最小になる $\lambda$» を選ぶ。
+- **LARS（最小角回帰）** は Lasso の正則化パスを効率的に計算するアルゴリズム——残差と最も相関の大きい変数を
+  逐次的にモデルへ加えていく仕組みで、パス全体を少ない計算量でたどれる。

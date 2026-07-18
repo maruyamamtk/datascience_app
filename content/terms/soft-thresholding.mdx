@@ -1,0 +1,21 @@
+---
+title: 軟閾値作用素
+definition: Lassoの座標降下法で各係数を更新する関数 S(z,γ)=sign(z)·max(|z|−γ,0)。|z|がγ以下ならちょうど0にする——L1正則化がスパース性を生む核。
+aliases: [soft-thresholding, 軟閾値作用素, ソフト閾値作用素, soft-threshold operator]
+seeAlso: [l1-regularization, ridge-regression]
+---
+
+# 軟閾値作用素
+
+$$
+S(z,\gamma)=\mathrm{sign}(z)\max(|z|-\gamma,\,0)=
+\begin{cases}
+z-\gamma & z>\gamma\\
+0 & |z|\le\gamma\\
+z+\gamma & z<-\gamma
+\end{cases}
+$$
+
+- [Lasso](l1-regularization)（L1正則化）の座標降下法で、他の係数を固定したときの各係数の最適解を一発で与える関数。
+- **|z|≤γ の範囲をまるごと0に潰す** のが特徴——ここが「なだらかに縮める」だけの[リッジ回帰](ridge-regression)（L2正則化）との決定的な違いで、L1罰則がスパース（係数がちょうど0）な解を生む理由そのもの。
+- L1罰則 $\lambda|\beta|$ は $\beta=0$ で微分不能（劣微分は $[-\lambda,\lambda]$ の区間）——その劣微分から $S(z,\lambda)$ が導かれる。

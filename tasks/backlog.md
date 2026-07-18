@@ -50,6 +50,7 @@
 - ✅ A-4 数値計算 `numerical-computation`（#72）
 - ✅ A-5 デジタル情報の基礎 `digital-information-basics`（#73）
 - ✅ I-1 機械学習の枠組み `learning-framework`（#74）
+- ✅ I-2 正則化・スパースモデリング `regularization-sparse`（#75）
 
 ## キュー（優先順）
 
@@ -103,7 +104,7 @@
 | 46 | #72 | A-4 | 数値計算 | numerical-computation | calculus | ✅ done |
 | 47 | #73 | A-5 | デジタル情報の基礎 | digital-information-basics | （なし） | ✅ done |
 | 48 | #74 | I-1 | 機械学習の枠組み | learning-framework | point-estimation-properties | ✅ done |
-| 49 | #75 | I-2 | 正則化・スパースモデリング | regularization-sparse | multiple-regression, learning-framework | pending |
+| 49 | #75 | I-2 | 正則化・スパースモデリング | regularization-sparse | multiple-regression, learning-framework | ✅ done |
 | 50 | #76 | I-3 | 決定木・アンサンブル（LightGBM） | decision-trees-ensembles | learning-framework | pending |
 | 51 | #77 | I-4 | 単純ベイズ・k近傍法 | naive-bayes-knn | probability-basics, learning-framework | pending |
 | 52 | #78 | I-5 | 強化学習 | reinforcement-learning | markov-chains, learning-framework | pending |
