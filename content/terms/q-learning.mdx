@@ -1,0 +1,20 @@
+---
+title: Q学習
+definition: 環境の遷移確率を知らないまま、経験（状態・行動・報酬・次状態）だけから行動価値関数Q(s,a)を推定するモデルフリーな強化学習アルゴリズム。TD誤差の分だけQ値を更新する。
+aliases: [Q-learning, Q学習]
+seeAlso: [value-function, bellman-equation, epsilon-greedy, learning-rate, discount-factor]
+---
+
+# Q学習
+
+**[ベルマン最適方程式](bellman-equation)** $Q^*(s,a)=\mathbb E[r+\gamma\max_{a'}Q^*(s',a')]$ を、期待値を取らずに**サンプル1つ分**（実際に観測した $r,s'$）だけで近似的に更新する手法。
+
+$$
+Q(s,a)\ \leftarrow\ Q(s,a) + \alpha\Big[\underbrace{r+\gamma\max_{a'}Q(s',a')}_{\text{TD目標}} - Q(s,a)\Big]
+$$
+
+- $\alpha$（[学習率](learning-rate)）: 「予想とのズレ（TD誤差）」をどれだけ反映するかの歩幅。
+- $\gamma$（[割引率](discount-factor)）: 将来の価値をどれだけ重視するか。
+- 行動選択は **[ε-greedy](epsilon-greedy)** などで探索と活用のバランスを取りながら行うが、**更新式そのものは「次状態での最良の行動」を仮定して計算する**（実際に次にどの行動を選ぶかとは無関係）——この «行動選択の方策» と «更新に使う方策» が異なる性質を **off-policy**（方策オフ型）と呼ぶ。
+- 全ての状態・行動の組を十分な回数訪れ、学習率を適切に減衰させれば、Q学習は理論上 $Q^*$ に収束することが知られている。
+- 状態数が膨大でQテーブルを表として持てない場合、$Q(s,a)$ をニューラルネットワークで近似する **DQN（Deep Q-Network）** に拡張される（Qテーブルの1マスずつの更新が、ネットワークのパラメータ更新に置き換わる）。

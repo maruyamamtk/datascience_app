@@ -1,0 +1,15 @@
+---
+title: 価値関数
+definition: ある状態（または状態と行動の組）から先、方策に従って行動し続けたときに得られる割引後の期待報酬の合計。状態価値関数V(s)と行動価値関数Q(s,a)の2種類がある。
+aliases: [value function, 価値関数, 状態価値関数, 行動価値関数, V関数, Q関数]
+seeAlso: [markov-decision-process, policy, bellman-equation, discount-factor, q-learning]
+---
+
+# 価値関数
+
+«この状態（や、この状態でこの行動をとること）は、将来を通してどれくらい «得» か» を数値化したもの。
+
+- **状態価値関数**: $V^\pi(s)=\mathbb E\!\left[\sum_{k=0}^{\infty}\gamma^k r_{t+k}\ \middle|\ s_t=s,\ \pi\right]$ ——方策 $\pi$ に従って状態 $s$ から先を進めたときの、[割引率](discount-factor) $\gamma$ で割り引いた将来報酬の合計の期待値。
+- **行動価値関数**（Q関数）: $Q^\pi(s,a)=\mathbb E\!\left[\sum_{k=0}^{\infty}\gamma^k r_{t+k}\ \middle|\ s_t=s,\ a_t=a,\ \pi\right]$ ——状態 $s$ で «まず行動 $a$ をとり、その後は方策 $\pi$ に従う» ときの期待収益。
+- 2つの関係: $V^\pi(s)=\sum_a \pi(a\mid s)\,Q^\pi(s,a)$（行動価値を方策の確率で平均すると状態価値になる）。
+- 最適価値関数 $V^*, Q^*$ は **[ベルマン方程式](bellman-equation)** という再帰的な関係式を満たし、これを反復的に解く（またはサンプルから推定する）のが動的計画法や[Q学習](q-learning)の考え方。
