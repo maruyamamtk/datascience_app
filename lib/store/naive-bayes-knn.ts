@@ -54,6 +54,20 @@ export const K_MAX = 25;
 export const NB_BOUNDARY: GridCell[] = decisionBoundaryGrid((x1, x2) => naiveBayesPredict(CLASS_STATS, x1, x2).label, GRID_RESOLUTION);
 export const NB_TEST_ACC: number = accuracy(CLASS_TEST, (x1, x2) => naiveBayesPredict(CLASS_STATS, x1, x2).label);
 
+/**
+ * k近傍法の決定境界・テスト正解率は k にしか依存しない（クエリ点の座標には依存しない）。
+ * k の取りうる範囲（K_MIN..K_MAX）は小さく固定なので、起動時に k ごとの結果を一度だけ
+ * 事前計算してテーブルに持つ——ドラッグで queryX1/queryX2 だけが動くたびに毎回グリッド全体
+ * （resolution²×訓練点数の距離計算）を再計算するのを避ける（CLAUDE.md §2「重い計算は
+ * 再計算を間引く/メモ化」・60fps目標）。
+ */
+const KNN_BOUNDARY_BY_K = new Map<number, GridCell[]>();
+const KNN_TEST_ACC_BY_K = new Map<number, number>();
+for (let k = K_MIN; k <= K_MAX; k++) {
+  KNN_BOUNDARY_BY_K.set(k, decisionBoundaryGrid((x1, x2) => knnPredict(CLASS_TRAIN, { x1, x2 }, k).label, GRID_RESOLUTION));
+  KNN_TEST_ACC_BY_K.set(k, accuracy(CLASS_TEST, (x1, x2) => knnPredict(CLASS_TRAIN, { x1, x2 }, k).label));
+}
+
 export type MainControls = {
   /** «新しい点» の座標。ナイーブベイズ・k近傍法どちらのラボも同じ点を分類し、手法を比較する。 */
   queryX1: number;
@@ -84,8 +98,8 @@ export const useNaiveBayesKnnStore = createTopicStore<MainControls, MainDerived>
     const nb = naiveBayesPredict(CLASS_STATS, queryX1, queryX2);
     const query = { x1: queryX1, x2: queryX2 };
     const knn = knnPredict(CLASS_TRAIN, query, k);
-    const knnBoundary = decisionBoundaryGrid((x1, x2) => knnPredict(CLASS_TRAIN, { x1, x2 }, k).label, GRID_RESOLUTION);
-    const knnTestAcc = accuracy(CLASS_TEST, (x1, x2) => knnPredict(CLASS_TRAIN, { x1, x2 }, k).label);
+    const knnBoundary = KNN_BOUNDARY_BY_K.get(k) ?? [];
+    const knnTestAcc = KNN_TEST_ACC_BY_K.get(k) ?? Number.NaN;
     return { queryX1, queryX2, k, nb, knn, knnBoundary, knnTestAcc };
   },
 });

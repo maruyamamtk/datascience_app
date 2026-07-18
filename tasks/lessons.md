@@ -163,12 +163,12 @@
 - **対策**: メインの Lab 用ストアとは別に、ステッパーごとに `createTopicStore<Record<string, never>, Record<string, never>>({ initialControls: {}, derive: () => ({}) })` で «空 controls・空 derived・独自の `frame` だけを持つストア» を追加で生成する。フレーム «中身»（候補・ラウンドの中身）はステッパーの `frames.ts`/`boosting-frames.ts` が `useMemo` で作る純関数のままで、ストアは `frame`（位置と再生状態）の single source of truth を steppers の数だけ分離するだけでよい。Playwright で「2つの `StepPlayer` の `1コマ後へ` ボタンをそれぞれ押しても、もう一方のカウンタが動かない」ことを確認して設計の妥当性を検証した。
 - **判断の目安**: 1トピックにステッパーが1つだけなら、既存パターン通りメインストアの `frame` を共用してよい（ステッパー用に別ストアを作るのはオーバーエンジニアリング）。**2つ目のステッパーを追加する時点で、必ずステッパー専用の空ストアに切り替える**。
 
-## nested worktree では `pnpm lint`（`next lint`）が親チェックアウトの設定を誤検出して失敗する（出典 #77）
+## nested worktree では `.eslintrc.json` に `root: true` が無いと `pnpm lint` が親チェックアウトの設定まで誤って合流させる（出典 #77）
 - **症状**: `.claude/worktrees/<agent-id>/` のように**リポジトリ本体のディレクトリツリーの内側**に worktree が作られていると、`pnpm lint`（内部で `next lint` を実行）が
   `Plugin "@next/next" was conflicted between ".eslintrc.json » …" と "../../../.eslintrc.json » …"` で失敗する。`next build` 内でも同じ警告が出るが、こちらはビルド自体は最後まで成功する（静的生成は止まらない）。
-- **原因**: Next.js のワークスペースルート自動検出が、worktree 自身の `.eslintrc.json`/`node_modules` に加えて、親ディレクトリを遡って**リポジトリ本体（別の worktree）の `.eslintrc.json`/`node_modules`** も見つけてしまい、`@next/eslint-plugin-next` を二重に解決してしまう。worktree がリポジトリ本体の外（兄弟ディレクトリ）にあれば起きない。
-- **対策**: 同じ `.eslintrc.json` を使う **`npx eslint .`**（Next の `next lint` ラッパーを介さない素の ESLint CLI）で代替確認する——ワークスペースルート探索をしないため、この誤検出を起こさず同一ルールセットで検証できる。lint 結果は `npx eslint .` の出力（エラー0件・既存warningのみ）を根拠として記録してよい。
-- **判断の目安**: `pnpm lint` が「Plugin conflicted」で落ちても、`pnpm test`/`tsc`/`pnpm build` が通っていて `npx eslint .` がクリーンなら、これは worktree 配置に起因する環境要因でありコードの問題ではない。修正不要（worktree の配置を変える権限がない場合はこの代替コマンドで検証を続行してよい）。
+- **原因**: ルートの `.eslintrc.json` に **`"root": true` が設定されていなかった**ため、ESLint の legacy config は既定の挙動どおり**親ディレクトリを遡って追加の `.eslintrc.*` を探しにいく**。worktree がリポジトリ本体の内側（`.claude/worktrees/...`）にあると、3階層上でリポジトリ本体（別の worktree）の `.eslintrc.json`/`node_modules` を見つけてしまい、同じ `@next/eslint-plugin-next` を2つの設定チェーン経由で解決してしまい「conflicted」エラーになる。worktree がリポジトリ本体の外（兄弟ディレクトリ）にあれば起きない。
+- **対策（根本修正）**: リポジトリ直下の `.eslintrc.json` に `"root": true` を追加する——ESLint に「このディレクトリで config 探索を打ち切る」と明示し、親ディレクトリへの誤ったカスケードを止める。ほぼ全てのプロジェクトで本来設定すべき項目で、通常の（nestedでない）チェックアウトでは挙動を一切変えない安全な1行修正。修正後は `pnpm lint` が通常どおりグリーンになることを確認した。
+- **判断の目安**: `pnpm lint` が「Plugin conflicted」で落ちたら、まず `.eslintrc.json`（または `eslint.config.*`）に `root: true` 相当の設定があるか確認する。無ければ追加して直す（根本原因の修正であり、worktree 配置を諦めて代替コマンドで済ませる必要はない）。すでに `root: true` があるのに起きる場合や、そもそも `.eslintrc.json` を編集する権限がない場合に限り、同じ設定を使う `npx eslint .`（Next の `next lint` ラッパーを介さない素の ESLint CLI、ワークスペースルート探索をしない）で代替確認してよい。
 
 ## worktree 環境では、指示された `feat/NN-slug` ブランチ名が別 worktree で使用中のことがある（出典 #77）
 - **症状**: `git checkout -b feat/77-naive-bayes-knn` が `fatal: a branch named 'feat/77-naive-bayes-knn' already exists` で失敗。`git worktree list` で確認すると、リポジトリ本体の worktree（別セッション用）がそのブランチ名を**コミットなしでチェックアウトしただけ**の状態で掴んでいた。
