@@ -1,0 +1,221 @@
+---
+title: 決定木・アンサンブル
+summary: 決定木（判別木・回帰木）を軸平行な矩形の入れ子として体感し、バギング・ランダムフォレストが並列に木を育てて分散を下げる仕組み、AdaBoost・勾配ブースティングが弱学習器を逐次追加してバイアスを下げる仕組みを、同じ判別データの上でコマ送りに見ていくトピック。LightGBMの位置づけまでを扱う。
+status: published
+---
+
+import { DecisionTreeLab } from "@/components/topics/decision-trees-ensembles/DecisionTreeLab";
+import { SplitFinderStepper } from "@/components/topics/decision-trees-ensembles/SplitFinderStepper";
+import { EnsembleLab } from "@/components/topics/decision-trees-ensembles/EnsembleLab";
+import { AdaBoostStepper } from "@/components/topics/decision-trees-ensembles/AdaBoostStepper";
+import { GradientBoostingSnapshot } from "@/components/topics/decision-trees-ensembles/GradientBoostingSnapshot";
+import { DecisionTreesQuiz } from "@/components/topics/decision-trees-ensembles/DecisionTreesQuiz";
+
+<Topic title="決定木・アンサンブル" summary="決定木（判別木・回帰木）を軸平行な矩形の入れ子として体感し、バギング・ランダムフォレストが並列に木を育てて分散を下げる仕組み、AdaBoost・勾配ブースティングが弱学習器を逐次追加してバイアスを下げる仕組みを、同じ判別データの上でコマ送りに見ていく。LightGBMの位置づけまでを扱う。">
+
+<ReaderGuide>
+
+- **初学者** → L0〜L1（[決定木](decision-tree)が if-then ルールの木であること、[ジニ不純度](gini-impurity)・[情報利得](information-gain)で分岐を選ぶ仕組み）
+- **一通り使える人** → L2〜L3（[バギング](bagging)・ランダムフォレストによる分散低減、AdaBoost・勾配ブースティングによるバイアス低減）
+- **「完全に理解した」人** → L4 以降（異質処置効果の推定、特徴量重要度の理論、LightGBMの効率化技法は到達途上）
+
+前提: [機械学習の枠組み](/topics/learning-framework)の «複雑さを上げると訓練誤差は下がるが汎化誤差はU字を描く» «バイアス分散分解» という見方。決定木は «複雑さ＝木の深さ» という形でこの枠組みに当てはまる新しいモデルクラスで、バギング・ランダムフォレストは «分散を下げる»、ブースティングは «バイアスを下げる» ことでU字の底を目指す道具として位置づく。
+
+</ReaderGuide>
+
+<Level level={0} title="ブラックボックス（決定木で判別する）">
+  <Concept>
+
+**[決定木](decision-tree)** は、特徴量に閾値を置いて「もし $x_1\le t$ ならこちら、そうでなければあちら」を繰り返し、if-thenルールの木として予測するモデル。回帰にも判別にも使える——葉ノードで多数決すれば判別木、平均を返せば回帰木。
+
+決定木の最大の特徴は、分割がいつも **軸に平行な直線（多次元なら超平面）** だということ。曲がった境界そのものは引けないが、矩形を入れ子にして継ぎ足すことで、木を深くするほど階段状に細かく近似できる。
+
+  </Concept>
+  <Interact>
+
+下のラボは、波打つ曲線が真の境界の2特徴量 $x_1,x_2$ の判別データ。深さ（複雑さ）と分岐基準（[ジニ不純度](gini-impurity) / [エントロピー](entropy-impurity)）を変えて、決定境界がどう階段状になるか、[機械学習の枠組み](/topics/learning-framework)と同じ «複雑さを上げすぎると過学習する» 現象が起きるかを確かめよう。
+
+<DecisionTreeLab />
+
+  </Interact>
+  <Exercise>
+
+確認: 「決定木は曲線の境界を引けないので、曲がったデータにはまったく対応できない」——○か×か。
+（答: ×。個々の分割は直線（軸平行）だが、矩形を細かく入れ子にすることで曲線の境界を階段状に近似できる。木を深くするほど階段の刻みが細かくなる——ただし深くしすぎると訓練データのノイズまで刻んで過学習する）
+
+  </Exercise>
+</Level>
+
+<Level level={1} title="古典的理解（分岐基準の導出）">
+  <Concept>
+
+決定木はノードごとに「どの特徴量の、どの閾値で切ると一番良いか」を貪欲に決める。«良さ» を測るのが **不純度**——ノードにクラスがどれだけ混ざっているかの指標で、[ジニ不純度](gini-impurity) $\mathrm{Gini}=1-\sum_k p_k^2$ や[エントロピー](entropy-impurity) $H=-\sum_k p_k\log_2 p_k$ が使われる。どちらも五分五分で最大、1クラスだけの純粋なノードで0になる。
+
+分割の良さは **[情報利得](information-gain)**——分割前の不純度から、分割後の子ノードの «加重平均» 不純度を引いた減少量。
+
+$$
+\text{Gain}=I(\text{親})-\left(\frac{n_L}{n}I(\text{左})+\frac{n_R}{n}I(\text{右})\right)
+$$
+
+決定木は、考えられるすべての特徴量×閾値の組み合わせについて情報利得を計算し、最大のものを選ぶ——これを葉ノードが十分純粋になるか、深さの上限に達するまで再帰的に繰り返す（CARTアルゴリズム）。
+
+  </Concept>
+  <Derivation title="ジニ不純度・エントロピーが «五分五分で最大・純粋で0» になることの確認">
+
+**ジニ不純度。** 2クラスなら $p_1=1-p_0$ なので、
+
+$$
+\mathrm{Gini}=1-p_0^2-p_1^2=1-p_0^2-(1-p_0)^2.
+$$
+
+展開すると $\mathrm{Gini}=2p_0-2p_0^2=2p_0(1-p_0)$。高校数学の2次関数の頂点と同じ形——$p_0(1-p_0)$ は $p_0=1/2$ で最大値 $1/4$ を取る（平方完成: $p_0(1-p_0)=-(p_0-\tfrac12)^2+\tfrac14$）ので、$\mathrm{Gini}$ の最大値は $2\times\tfrac14=\tfrac12$、$p_0=0$ または $1$（純粋）で最小値 $0$。
+
+**エントロピー。** $H(p_0)=-p_0\log_2 p_0-(1-p_0)\log_2(1-p_0)$ を $p_0$ で微分すると（積の微分と $\log_2 x=\ln x/\ln 2$ を使う）
+
+$$
+\frac{dH}{dp_0}=-\log_2 p_0+\log_2(1-p_0)=\log_2\frac{1-p_0}{p_0}.
+$$
+
+これが $0$ になるのは $p_0=1-p_0$、つまり $p_0=1/2$ のとき（それより左では正、右では負なので極大）。$p_0\to0$ または $p_0\to1$ で $H\to0$。ジニ不純度と同じ «五分五分で最大・純粋で0» という形になるが、対数を含むぶん計算コストが高い。
+
+  </Derivation>
+  <Derivation title="回帰木の分割基準（分散減少）はSSE最小化と同じもの">
+
+判別木の «不純度» に対応するのが、回帰木では **分散**。あるノードの予測は葉の中の $y$ の平均 $\bar y$ にするのが最良——理由は高校数学の平方完成で確認できる。
+
+$$
+\mathrm{SSE}(c)=\sum_i(y_i-c)^2
+$$
+
+を $c$ で微分すると $\dfrac{d}{dc}\mathrm{SSE}=-2\sum_i(y_i-c)$。これを $0$ とおくと $\sum_i y_i=nc$、すなわち $c=\bar y$（平均）が $\mathrm{SSE}$ を最小にする——最小二乗の1点版そのもの。このとき $\mathrm{SSE}(\bar y)=\sum_i(y_i-\bar y)^2=n\cdot\mathrm{Var}$ なので、
+
+$$
+\text{SSEを最小にする分割}\iff\text{分散減少}=\mathrm{Var}(\text{親})-\left(\frac{n_L}{n}\mathrm{Var}(\text{左})+\frac{n_R}{n}\mathrm{Var}(\text{右})\right)\text{を最大にする分割}
+$$
+
+——判別木の情報利得とまったく同じ «加重平均を引く» 形。不純度を分散に、多数決を平均に置き換えるだけで、決定木のアルゴリズムは回帰にそのまま使える。
+
+  </Derivation>
+  <Interact>
+
+下のステッパーは、根ノードでの分岐探索を1候補ずつコマ送りにしたもの。すべての特徴量×閾値の組み合わせを試し、情報利得が更新されるたびにオレンジの線に置き換わる——決定木の «貪欲探索» の中身をそのまま追える。
+
+<SplitFinderStepper />
+
+  </Interact>
+  <Exercise>
+
+確認: 情報利得がちょうど $0$ になる分割はどんな分割か。
+（答: 分割しても子ノードの加重平均不純度が親と変わらない分割——たとえば左右にクラスの比率が同じだけ振り分けられる分割。決定木はこれより情報利得が正の分割だけを選ぶので、情報利得が $0$ 以下の候補しか残っていなければそのノードは葉になる）
+
+  </Exercise>
+</Level>
+
+<Level level={2} title="仮定体系（バギング・ランダムフォレスト）">
+  <Concept>
+
+決定木は単体では **不安定**（データが少し変わると木の形が大きく変わる＝高分散）。[機械学習の枠組み](/topics/learning-framework)のバイアス分散分解に当てはめると、深い木は低バイアス・高分散——ここに直接効くのが **[バギング](bagging)**。
+
+[ブートストラップ](bootstrap)で元データと同じ大きさの再標本を何本も作り、木を **並列・独立** に育てて多数決（分類）／平均（回帰）する。**[ランダムフォレスト](random-forest)** はさらに各分割で使う特徴量をランダムに一部だけに絞り、木どうしの相関を下げて分散低減効果を強める。
+
+各木のブートストラップに «選ばれなかった点»（[OOB](out-of-bag-error)）だけで多数決すれば、held-outデータを別に取り分けなくても汎化誤差を見積もれる——[交差検証](/topics/learning-framework#level-2)に近い役割。
+
+  </Concept>
+  <Derivation title="«平均する» となぜ分散が下がるのか（バギングの根拠）">
+
+$B$本の木の予測をそれぞれ確率変数 $X_1,\dots,X_B$（各分散 $\sigma^2$）とみなす。完全に独立なら、平均 $\bar X=\frac1B\sum_t X_t$ の分散は高校数学の $\mathrm{Var}(aX)=a^2\mathrm{Var}(X)$ と独立変数の分散の加法性を使って
+
+$$
+\mathrm{Var}(\bar X)=\mathrm{Var}\!\left(\frac1B\sum_{t=1}^{B}X_t\right)=\frac{1}{B^2}\sum_{t=1}^{B}\mathrm{Var}(X_t)=\frac{\sigma^2}{B}.
+$$
+
+$B\to\infty$ で分散は $0$ に近づく——木を増やすほど良い、という単純な話に見える。しかしブートストラップ標本どうしは元データを共有するため木の予測は互いに **相関** する（相関係数 $\rho$）。共分散を含めて計算し直すと
+
+$$
+\mathrm{Var}(\bar X)=\rho\sigma^2+\frac{1-\rho}{B}\sigma^2\ \xrightarrow{B\to\infty}\ \rho\sigma^2.
+$$
+
+$B$ をいくら増やしても分散は $\rho\sigma^2$ より下がらない——**相関 $\rho$ を下げること** が本質的に効く。ランダムフォレストが各分割で特徴量をランダムに絞るのは、まさにこの $\rho$ を下げてバギングより一段と分散を減らす工夫。
+
+  </Derivation>
+  <Interact>
+
+下のラボは、木の本数 $T$ とバギング／ランダムフォレストを切り替えられる。$T$ を増やすと決定境界が滑らかになり（個々の木のノイズが打ち消し合う＝分散低減）、テスト正解率が単木より上がっていく様子と、OOB誤り率が別データなしに汎化誤差を言い当てる様子を確かめよう。
+
+<EnsembleLab />
+
+  </Interact>
+  <Exercise>
+
+確認: 「バギングは木の本数を増やせば増やすほど、理論上どこまでも分散を $0$ に近づけられる」——○か×か。
+（答: ×。木どうしの予測が独立ならその通りだが、ブートストラップ標本は元データを共有するため相関 $\rho$ を持つ。分散の下限は $\rho\sigma^2$ で、本数 $T$ をいくら増やしてもそこより下がらない。ランダムフォレストが特徴量をランダムに絞るのは $\rho$ 自体を下げるため）
+
+  </Exercise>
+</Level>
+
+<Level level={3} title="予測最適化（ブースティング: AdaBoost・勾配ブースティング）">
+  <Concept>
+
+[バギング](bagging)は弱学習器を «並列・独立» に育てて **分散** を下げた。**[ブースティング](boosting)** は逆に弱学習器を **逐次** 追加し、前段の誤りに次段が注目することで主に **バイアス** を下げる——浅い木（決定株など、単体では弱いモデル）を積み重ねて強いモデルを作る発想。
+
+- **AdaBoost**: 標本の «重み» を持ち、誤分類した点の重みを上げながら決定株を1本ずつ追加する。各株の «発言権» $\alpha$ は加重誤差が小さいほど大きい。
+- **勾配ブースティング**: 二乗誤差なら «残差»（まだ説明できていない部分）に浅い回帰木を逐次フィットする——関数空間での最急降下法。
+- **LightGBM**: 勾配ブースティングの高速な実装。連続値をヒストグラム化して分割探索を間引き、レベルごとに均等に育てる代わりに損失が最も減る葉を選んで伸ばす **Leaf-wise 成長** を使う（GOSS・EFBといった追加の高速化技法もある）。
+
+大規模データでも実用的な速度で勾配ブースティングを回すための工夫であり、数理の骨格は勾配ブースティングそのもの。
+
+  </Concept>
+  <Derivation title="AdaBoost の発言権 α=½ln((1−err)/err) の導出（指数損失の最小化）">
+
+AdaBoost はラベルを $y\in\{-1,+1\}$ で扱う。ラウンド $m$ で決定株 $h_m$（出力も $\pm1$）を選んだあと、その «発言権» $\alpha_m$ を、重み付き指数損失
+
+$$
+E_w\!\left[e^{-\alpha y h_m(x)}\right]=(1-\mathrm{err}_m)\,e^{-\alpha}+\mathrm{err}_m\,e^{\alpha}
+$$
+
+を最小にするように決める（$\mathrm{err}_m$ は $h_m$ の加重誤差＝$y\ne h_m(x)$ の点が持つ重みの合計）。正しく分類された点は $yh_m(x)=1$ で損失 $e^{-\alpha}$、誤分類された点は $yh_m(x)=-1$ で損失 $e^{\alpha}$ になることを使っている。
+
+高校数学の指数関数の微分 $(e^x)'=e^x$ を使って $\alpha$ で微分し $0$ とおくと、
+
+$$
+\frac{d}{d\alpha}\Big[(1-\mathrm{err}_m)e^{-\alpha}+\mathrm{err}_m e^{\alpha}\Big]=-(1-\mathrm{err}_m)e^{-\alpha}+\mathrm{err}_m e^{\alpha}=0.
+$$
+
+整理すると $\mathrm{err}_m e^{\alpha}=(1-\mathrm{err}_m)e^{-\alpha}$、つまり $e^{2\alpha}=\dfrac{1-\mathrm{err}_m}{\mathrm{err}_m}$。両辺の対数を取れば
+
+$$
+\boxed{\ \alpha_m=\frac12\ln\frac{1-\mathrm{err}_m}{\mathrm{err}_m}\ }
+$$
+
+加重誤差 $\mathrm{err}_m$ が $0$ に近いほど $\alpha_m$ は大きく（強い発言権）、$\mathrm{err}_m=0.5$（当てずっぽう）で $\alpha_m=0$（発言権なし）、$\mathrm{err}_m>0.5$ なら $\alpha_m<0$（逆に張る）になる。この $\alpha_m$ を使って標本重みを $w_i\leftarrow w_i\exp(-\alpha_m y_i h_m(x_i))$ と更新すると、誤分類点（$y_ih_m(x_i)=-1$）は重みが $e^{\alpha_m}$ 倍に増え、次ラウンドの決定株はそこを優先的に正しく分けようとする。
+
+  </Derivation>
+  <Interact>
+
+下のステッパーは、決定株を1本ずつ追加していくAdaBoostの過程。バブルの大きさが標本重み、赤いリングがそのラウンドで誤分類された点——重みが更新されて次の株が «前段の弱点» に向かう様子を確かめよう。続く図は勾配ブースティング（回帰）で、残差に回帰木を逐次フィットして曲線を組み立てる過程を3断面で重ねたもの。
+
+<AdaBoostStepper />
+
+<GradientBoostingSnapshot />
+
+  </Interact>
+  <Exercise>
+
+<DecisionTreesQuiz />
+
+  </Exercise>
+</Level>
+
+<Level level={4} title="因果（決定木・アンサンブルと異質処置効果）" status="planned">
+  決定木・ランダムフォレストを因果推論に応用する **Causal Tree / Causal Forest**（個人ごとに処置効果が異なる «異質処置効果» を、目的変数ではなく処置効果そのものを分割基準にして推定する）。[因果推論](/topics/causal-inference-models)・[因果識別](/topics/causal-identification)の枠組みに、決定木の «データ駆動でサブグループを見つける» 強みを掛け合わせる領域。
+</Level>
+
+<Level level={5} title="高次元/最先端（特徴量重要度・LightGBMの内部技法）" status="planned">
+  分割に使われた回数や不純度減少量から作る特徴量重要度の不安定性（相関の強い変数間で重要度が分散する問題）、より頑健な permutation importance・SHAP値によるモデル解釈。LightGBMのヒストグラムベース分割・GOSS（勾配の小さいサンプルを間引く）・EFB（疎な特徴量をまとめる）・Leaf-wise成長の詳細、XGBoost・CatBoostとの比較。
+</Level>
+
+<Level level={6} title="フロンティア（木とニューラルネットの融合）" status="planned">
+  勾配ブースティング木と深層学習を組み合わせる試み（TabNet・NODEなど微分可能な木）、表形式データにおける «なぜ今も勾配ブースティング木がニューラルネットに勝つことが多いか» という経験的な議論、大規模言語モデル時代の表形式データ学習——古典的なアンサンブルの手法がまだ最前線であり続けている領域。
+</Level>
+
+</Topic>

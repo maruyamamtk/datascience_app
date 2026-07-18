@@ -1,0 +1,16 @@
+---
+title: 情報利得
+definition: 分割前後の不純度の減少量。情報利得=親の不純度−Σ(子の重み×子の不純度)。決定木はこれを最大化する分割を貪欲に選ぶ。
+aliases: [information gain, 情報利得, 不純度減少]
+seeAlso: [decision-tree, gini-impurity, entropy-impurity]
+---
+
+# 情報利得
+
+$$
+\text{Gain}=I(\text{親})-\left(\frac{n_L}{n}I(\text{左})+\frac{n_R}{n}I(\text{右})\right)
+$$
+
+- $I$ は[ジニ不純度](gini-impurity)や[エントロピー](entropy-impurity)などの不純度指標。
+- [決定木](decision-tree)の各ノードで、考えられるすべての特徴量×閾値の組み合わせについて情報利得を計算し、最大のものを選ぶ（貪欲探索）。
+- 回帰木では不純度の代わりに分散（SSE/n）を使い、«分散減少» が同じ役割を果たす。

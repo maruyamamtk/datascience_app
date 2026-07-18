@@ -1,0 +1,14 @@
+---
+title: バギング
+definition: Bootstrap Aggregatingの略。訓練データをブートストラップ再標本して複数のモデルを並列に独立して学習し、多数決（分類）や平均（回帰）で予測を統合する手法。主に分散を下げる。
+aliases: [bagging, バギング, Bootstrap Aggregating, ブートストラップ集約]
+seeAlso: [bootstrap, random-forest, out-of-bag-error, decision-tree]
+---
+
+# バギング
+
+[ブートストラップ](bootstrap)で元の訓練データと同じ大きさの再標本を$B$個作り、それぞれで独立に（多くは[決定木](decision-tree)を）学習して、予測を多数決／平均で統合する。
+
+- 個々のモデルが不安定（高分散）であるほど効果が大きい——決定木はその典型。
+- 木を並列・独立に育てる点が[ブースティング](boosting)の «逐次» 学習と対照的。
+- 各木ごとに «ブートストラップに含まれなかった点»（[OOB](out-of-bag-error)）が生じ、held-outデータなしに汎化誤差を見積もれる。

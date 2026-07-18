@@ -1,0 +1,16 @@
+---
+title: ジニ不純度
+definition: ノード内のクラスの混ざり具合を測る指標 Gini=1−Σpₖ²。純粋（1クラスのみ）で0、五分五分で最大。決定木の分岐基準の一つ。
+aliases: [gini impurity, ジニ不純度, gini index]
+seeAlso: [decision-tree, entropy-impurity, information-gain]
+---
+
+# ジニ不純度
+
+$$
+\mathrm{Gini}=1-\sum_k p_k^2
+$$
+
+- 2クラスなら $1-p_0^2-p_1^2$。$p_0=p_1=0.5$（五分五分）で最大 $0.5$、どちらかが $1$（純粋）なら $0$。
+- [エントロピー](entropy-impurity)と定性的には似た振る舞いをするが対数計算がなく高速——決定木ライブラリの既定値としてよく使われる。
+- [決定木](decision-tree)は、分割後の子ノードの加重平均ジニ不純度が最小になる（＝[情報利得](information-gain)が最大になる）分割を貪欲に選ぶ。
