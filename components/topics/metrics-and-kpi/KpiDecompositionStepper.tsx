@@ -3,19 +3,16 @@
 import { useEffect, useMemo, useRef } from "react";
 import { MathFormula, type MathFormulaHandle } from "@/components/math/MathFormula";
 import { formatNumber, term } from "@/components/math/tex";
-import { Callout, frameAt, Highlight, isHighlighted, StepPlayer } from "@/components/viz";
+import { Callout, frameAt, Highlight, isHighlighted, StepPlayer, useFramePlayer } from "@/components/viz";
 import type { FactorKey } from "@/lib/stats/metrics-and-kpi";
 import { useMetricsKpiStore } from "@/lib/store/metrics-and-kpi";
+import { yen } from "./format";
 import { buildKpiDecompositionFrames } from "./kpi-decomposition-frames";
 
 const FORMULA = `\\text{売上}=${term("traffic", "?")}\\times${term("conv", "?")}\\times${term("aov", "?")}=${term(
   "revenue",
   "?",
 )}`;
-
-function yen(v: number): string {
-  return `${Math.round(v).toLocaleString("ja-JP")}円`;
-}
 
 const FACTOR_TITLE: Record<FactorKey, string> = {
   traffic: "トラフィック",
@@ -38,6 +35,8 @@ export function KpiDecompositionStepper() {
   const setPlaying = useMetricsKpiStore((s) => s.setPlaying);
 
   const frames = useMemo(() => buildKpiDecompositionFrames(), []);
+  useFramePlayer({ playing, index, count, onAdvance: nextFrame, onStop: () => setPlaying(false), intervalMs: 1800 });
+
   const frame = frameAt(frames, index);
   const p = frame?.payload;
 

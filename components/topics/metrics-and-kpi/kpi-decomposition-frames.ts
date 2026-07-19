@@ -6,6 +6,7 @@
  */
 import type { VizFrame } from "@/components/viz";
 import { decomposeRevenue, factorSensitivity, type FactorKey, type RevenueFactors } from "@/lib/stats/metrics-and-kpi";
+import { yen } from "./format";
 
 export const DEMO_FACTORS: RevenueFactors = { traffic: 50000, conversionRate: 0.02, aov: 8000 };
 export const DEMO_DELTA_PCT = 10;
@@ -52,7 +53,7 @@ export function buildKpiDecompositionFrames(
       highlights: ["revenue", factor],
       callout: {
         title: `${FACTOR_LABEL[factor]} を+${deltaPct}%改善すると`,
-        body: `売上は ${baseRevenue.toLocaleString("ja-JP")}円 → ${Math.round(s.revenueAfter).toLocaleString("ja-JP")}円（${s.revenueDeltaPct >= 0 ? "+" : ""}${s.revenueDeltaPct.toFixed(1)}%）に動く。`,
+        body: `売上は ${yen(baseRevenue)} → ${yen(s.revenueAfter)}（${s.revenueDeltaPct >= 0 ? "+" : ""}${s.revenueDeltaPct.toFixed(1)}%）に動く。`,
         note: "乗法分解では、どの要素を+10%改善しても売上への相対インパクトは同じ+10%——«どこが伸ばしやすいか»という実現可能性の違いが、実務での優先順位を決める。",
         kind: "supplement",
       },

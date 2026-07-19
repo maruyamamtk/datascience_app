@@ -17,6 +17,7 @@ import {
   THRESHOLD_STEP,
   useMetricsKpiStore,
 } from "@/lib/store/metrics-and-kpi";
+import { yen } from "./format";
 
 const FORMULA_ACC = `\\mathrm{Accuracy}=\\dfrac{TP+TN}{N}=\\dfrac{${term("tp", "?")}+${term("tn", "?")}}{${term(
   "n",
@@ -41,10 +42,6 @@ const PADT = 12;
 const PADB = 24;
 const cx = (t: number) => round2(PADL + ((t - THRESHOLD_MIN) / (THRESHOLD_MAX - THRESHOLD_MIN)) * (W - PADL - PADR));
 const cy = (v: number) => round2(PADT + (1 - Math.max(0, Math.min(1, v))) * (H - PADT - PADB));
-
-function yen(v: number): string {
-  return `${Math.round(v).toLocaleString("ja-JP")}円`;
-}
 
 /**
  * 技術指標（正解率）とビジネスKPI（期待ビジネスインパクト）の乖離ラボ（Level0/1）。
