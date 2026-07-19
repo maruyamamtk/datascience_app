@@ -1,8 +1,9 @@
 /**
  * 不均衡データ・異常検知トピックの散布図で共有する座標・配色ヘルパー（純関数）。
  * SmoteLab / CostSensitiveLab / AnomalyLab の3コンポーネントが同じ [0,1]² → SVG座標変換と
- * ヒートマップ配色を必要とするため、grid-layout.ts（reinforcement-learning）と同じ方針で
- * 共有モジュールへ切り出す（tasks/lessons.md #78 の判断基準: 同一ロジックが2箇所以上で必要なら共有）。
+ * ヒートマップ配色を必要とするため、grid-layout.ts（reinforcement-learning, #78のレビューで
+ * 「完全に同一の描画ロジックが2箇所以上で必要になった場合は共有ヘルパーに切り出す」という
+ * 判断基準を採用）と同じ方針で共有モジュールへ切り出す。
  */
 
 export const round2 = (v: number): number => Math.round(v * 100) / 100;

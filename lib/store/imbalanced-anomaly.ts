@@ -183,10 +183,7 @@ const IFOREST_SCORES: number[] = ANOMALY_POINTS.map((p) => isolationScore(IFORES
 export const MSPC_MOMENTS: Moments2D = computeMoments(ANOMALY_POINTS);
 const MSPC_T2: number[] = ANOMALY_POINTS.map((p) => mahalanobisT2(p, MSPC_MOMENTS));
 const MSPC_Q: number[] = ANOMALY_POINTS.map((p) => pcaResidualQ(p, MSPC_MOMENTS));
-export const MSPC_T2_SCORES = MSPC_T2;
-export const MSPC_Q_SCORES = MSPC_Q;
 const MSPC_SCORES: number[] = MSPC_T2.map((t2, i) => t2 + MSPC_Q[i]);
-export const LOF_LRD_TABLE = LOF_LRD_BY_K;
 
 export type GridCellScore = { x1: number; x2: number; score: number };
 
