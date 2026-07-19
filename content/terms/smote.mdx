@@ -1,0 +1,19 @@
+---
+title: SMOTE
+definition: Synthetic Minority Oversampling Techniqueの略。少数派クラスのある点と、その少数派クラス内でのk近傍点を結ぶ線分上に新しい合成サンプルを生成するオーバーサンプリング手法。
+aliases: [SMOTE, Synthetic Minority Oversampling Technique, 合成少数派オーバーサンプリング]
+seeAlso: [class-imbalance, adasyn, oversampling, k-nearest-neighbors, euclidean-distance]
+---
+
+# SMOTE
+
+**[クラス不均衡](class-imbalance)** に対する代表的な **[オーバーサンプリング](oversampling)** 手法。少数派クラスの単純な複製（同じ点を増やすだけ）と違い、既存点の «間» を埋めるように新しい合成サンプルを作る。
+
+$$
+x_{\text{new}} = x_i + \delta\,(x_{z_i} - x_i), \qquad \delta \in [0,1)
+$$
+
+- 少数派クラスのある点 $x_i$ に対し、同じ少数派クラス内での **[k近傍法](k-nearest-neighbors)**（[ユークリッド距離](euclidean-distance)基準）で近傍点 $x_{z_i}$ を選ぶ。
+- 2点を結ぶ線分上のランダムな位置（$\delta$）に合成サンプルを打つ——線形補間そのもの。
+- 発展形に、決定境界に近い «境界» の点を重点的に狙う **Borderline SMOTE** や、学習の困難度に応じて生成数を変える **[ADASYN](adasyn)** がある。
+- アンダーサンプリング（多数派を減らす）と組み合わせて使われることも多い。

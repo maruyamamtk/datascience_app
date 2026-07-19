@@ -1,0 +1,20 @@
+---
+title: ADASYN
+definition: Adaptive Synthetic Samplingの略。SMOTEと同じ線分補間で合成サンプルを作るが、多数派に囲まれ学習しづらい少数派点ほど多くのサンプルを適応的に生成するオーバーサンプリング手法。
+aliases: [ADASYN, Adaptive Synthetic Sampling, 適応的合成サンプリング]
+seeAlso: [smote, class-imbalance, oversampling, k-nearest-neighbors]
+---
+
+# ADASYN
+
+**[SMOTE](smote)** と同じ «線分上に合成サンプルを打つ» という手順を使うが、**種にする少数派点をどれだけ選ぶか** を学習の難しさに応じて変える点が異なる。
+
+各少数派点 $x_i$ について、全データ（多数派+少数派）内での **[k近傍法](k-nearest-neighbors)** のうち多数派が占める割合を局所的な困難度とする。
+
+$$
+\Delta_i = \frac{\text{k近傍中の多数派の数}}{k}, \qquad g_i = \frac{\Delta_i}{\sum_j \Delta_j}
+$$
+
+- $\Delta_i$ が大きい（=多数派に囲まれている=決定境界に近い）少数派点ほど、正規化した重み $g_i$ が大きくなる。
+- 種点をこの重み $g_i$ に比例した確率で選んでからSMOTEと同じ線分補間を行うことで、«学習しづらい境界» に合成サンプルが集中する。
+- **[クラス不均衡](class-imbalance)** データで、決定境界付近を重点的に埋めたいときにSMOTE（一様な巡回）より有効なことが多い。

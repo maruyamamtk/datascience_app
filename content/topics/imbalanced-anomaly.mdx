@@ -1,0 +1,221 @@
+---
+title: 不均衡データ・異常検知
+summary: クラス間のサンプル数が著しく偏った不均衡データへの対処（SMOTE・ADASYN・コスト考慮型学習）と、正常パターンから逸脱する点を見つける異常検知（LOF・Isolation Forest・MSPC・オートエンコーダ）を、2次元散布図のコマ送りと数式の強連動で扱うトピック。少数派クラスの近傍点を結ぶ線分上に合成サンプルが1つずつ生まれる過程、しきい値スライダーで異常判定境界が動く過程を操作しながら学ぶ。
+status: published
+---
+
+import { SmoteLab } from "@/components/topics/imbalanced-anomaly/SmoteLab";
+import { AdasynWeightStepper } from "@/components/topics/imbalanced-anomaly/AdasynWeightStepper";
+import { CostSensitiveLab } from "@/components/topics/imbalanced-anomaly/CostSensitiveLab";
+import { AnomalyLab } from "@/components/topics/imbalanced-anomaly/AnomalyLab";
+import { ImbalancedAnomalyQuiz } from "@/components/topics/imbalanced-anomaly/ImbalancedAnomalyQuiz";
+
+<Topic title="不均衡データ・異常検知" summary="クラス間のサンプル数が著しく偏った不均衡データへの対処（SMOTE・ADASYN・コスト考慮型学習）と、正常パターンから逸脱する点を見つける異常検知（LOF・Isolation Forest・MSPC・オートエンコーダ）を扱う。少数派クラスの近傍点を結ぶ線分上に合成サンプルが1つずつ生まれる過程、しきい値スライダーで異常判定境界が動く過程を操作しながら学ぶ。">
+
+<ReaderGuide>
+
+- **初学者** → L0〜L1（<Term id="class-imbalance">クラス不均衡</Term>がなぜ問題か、<Term id="smote">SMOTE</Term>が合成サンプルを作る仕組み、<Term id="cost-sensitive-learning">コスト考慮型学習</Term>のしきい値の考え方）
+- **一通り使える人** → L2（<Term id="local-outlier-factor">LOF</Term>・<Term id="isolation-forest">Isolation Forest</Term>・<Term id="mspc">MSPC</Term>の3手法を«スコアが高いほど異常»という共通の物差しで比較する）
+- **「完全に理解した」人** → L3以降（不均衡×異常検知の組み合わせ、深層学習ベースの異常検知、研究フロンティアは到達途上）
+
+前提: [機械学習の枠組み](/topics/learning-framework)の«経験誤差 vs 汎化誤差»という見方——不均衡データでは«経験誤差（正解率）が低くても本当に見るべき指標は別»という発展形として本トピックを読むと理解しやすい。SMOTE・LOFはいずれも[k近傍法](/topics/naive-bayes-knn)の«距離が近い点を探す»操作を土台にしており、Isolation Forestは[決定木・アンサンブル](/topics/decision-trees-ensembles)のランダム分割の考え方を教師なしに応用したものと位置づけられる。
+
+</ReaderGuide>
+
+<Level level={0} title="ブラックボックス（不均衡データは何が問題で、SMOTEは何をするか）">
+  <Concept>
+
+分類問題で、あるクラス（多数派）のサンプル数が他方（少数派）より著しく多い状態を **<Term id="class-imbalance">クラス不均衡</Term>** と呼ぶ。医療診断の陽性判定・不正取引検知・故障予兆検知など、実務で本当に見つけたい対象ほど少数派になりがちで、この問題に直面する。
+
+クラス不均衡が厄介なのは、**正解率（accuracy）が高いモデルでも役に立たないことがある** 点——多数派が95%を占めるデータで «常に多数派を予測する» だけの分類器でも正解率は約95%になる（accuracy paradox）。少数派を1件も当てられていないのに、指標の数字だけは良く見えてしまう。
+
+対処法の1つが **<Term id="oversampling">オーバーサンプリング</Term>**（少数派を増やす）。その代表が **<Term id="smote">SMOTE</Term>**——既存の少数派点を単純に複製するのではなく、少数派クラス内の近い点どうしを結ぶ線分の «間» に新しい合成サンプルを作る。
+
+  </Concept>
+  <Interact>
+
+下のラボは多数派（灰）40点・少数派（オレンジ）8点の不均衡データ。«合成サンプル数» を増やすと、少数派の近傍点を結ぶ線分上に合成点（緑）が1つずつ増えていく。近傍数kや、SMOTE⇄ADASYNの切替も試してみよう。
+
+<SmoteLab />
+
+  </Interact>
+  <Exercise>
+
+確認: 「SMOTEは少数派クラスの既存サンプルをそのまま複製して増やす」——○か×か。
+（答: ×。SMOTEは少数派クラス内の近傍点どうしを結ぶ線分上に**新しい合成サンプル**を作る。単純な複製は同じ点を繰り返すだけで過学習を招きやすいが、SMOTEは既存点の«間»を埋めるため、より多様なサンプルが得られる）
+
+  </Exercise>
+</Level>
+
+<Level level={1} title="古典的理解（SMOTE/ADASYNの補間式・コスト考慮型学習のしきい値）">
+  <Concept>
+
+SMOTEが合成サンプルを作る式は、2点を結ぶ線分上の内分点そのもの（高校数学の内分点の公式と同じ形）。
+
+$$
+x_{\text{new}} = x_i + \delta\,(x_{z_i} - x_i), \qquad \delta \in [0,1)
+$$
+
+$x_i$ が種になる少数派点、$x_{z_i}$ がその少数派クラス内での近傍点、$\delta$ が線分上のどこに打つかを決めるランダムな位置。**<Term id="adasyn">ADASYN</Term>** はこの補間の仕組み自体はSMOTEと同じだが、«どの点を種として多く選ぶか» を学習の難しさに応じて変える。
+
+  </Concept>
+  <Derivation title="ADASYNの適応重み g_i はどう決まるか">
+
+各少数派点 $x_i$ について、**全データ**（多数派+少数派）の中でのk近傍を取り、そのうち多数派が占める割合を «局所的な学習の困難度» とする。
+
+$$
+\Delta_i = \frac{\text{k近傍中の多数派の数}}{k}
+$$
+
+$\Delta_i$ が大きい少数派点は «多数派に囲まれている=決定境界に近い=学習しづらい» と解釈できる。この $\Delta_i$ を全少数派点で合計が1になるよう正規化したものが適応重み。
+
+$$
+g_i = \frac{\Delta_i}{\displaystyle\sum_j \Delta_j}
+$$
+
+ADASYNは、種点をこの重み $g_i$ に比例した確率で選んでから、SMOTEと同じ線分補間を行う。結果として、決定境界に近い «境界» の少数派点ほど多くの合成サンプルが集まる——単純な巡回（SMOTE）では均等に扱われていた部分に、学習上の «重要度» という物差しを入れたのがADASYNの本質。
+
+  </Derivation>
+  <Interact>
+
+下のステッパーは、少数派の点を1つずつ巡り、k近傍中の多数派比率Δ_iから重みg_iを求める計算を数式のハイライトで追う（k=5固定の例）。赤の輪＝多数派近傍、青の輪＝少数派近傍。
+
+<AdasynWeightStepper />
+
+  </Interact>
+  <Exercise>
+
+確認: 「ADASYNで生成される合成サンプルの«位置»の決め方（線分上のどこに打つか）は、SMOTEと異なる」——○か×か。
+（答: ×。線分補間の式 $x_{\text{new}}=x_i+\delta(x_{z_i}-x_i)$ 自体はSMOTEと同じ。ADASYNが変えているのは«どの少数派点 $x_i$ を種として選ぶ頻度»——多数派に囲まれた困難な点ほど多く選ばれる）
+
+  </Exercise>
+
+  <Concept>
+
+不均衡データのもう1つの対処が **<Term id="cost-sensitive-learning">コスト考慮型学習</Term>**——偽陽性（誤報）と偽陰性（見逃し）のコストが同じではないという前提に立ち、判定のしきい値を調整する。
+
+  </Concept>
+  <Derivation title="期待コストを最小化するしきい値 p* の導出">
+
+ある点の «陽性らしさ» を確率スコア $p(x)\in[0,1]$ で表すとする。陽性（$y=1$）と予測したときの期待コストは、実際に陰性なら偽陽性コスト $C_{FP}$ がかかる確率 $1-p(x)$ 分だけ発生し、陰性（$y=0$）と予測したときは、実際に陽性なら偽陰性コスト $C_{FN}$ がかかる確率 $p(x)$ 分だけ発生する。«陽性と予測する» ほうが期待コストが小さいのは、
+
+$$
+C_{FN}\cdot p(x) \;>\; C_{FP}\cdot(1-p(x))
+$$
+
+のとき。これを $p(x)$ について解くと、
+
+$$
+C_{FN}\cdot p(x) + C_{FP}\cdot p(x) > C_{FP}
+\quad\Longrightarrow\quad
+p(x) > \frac{C_{FP}}{C_{FP}+C_{FN}}
+$$
+
+右辺が期待コストを最小化する最適しきい値 $p^*$。$C_{FP}=C_{FN}$（コストが対称）なら $p^*=0.5$——確率が高い方を選ぶという «普通» の判定と一致する。$C_{FN}$（見逃しのコスト）が $C_{FP}$（誤報のコスト）よりずっと大きいときは分母が大きくなるため $p^*$ は0.5より小さくなり、«疑わしきは陽性» 側に判定を倒すことになる。
+
+  </Derivation>
+  <Interact>
+
+下のラボは各点の«陽性らしさスコア»を数直線上に並べたもの。偽陽性・偽陰性のコストを動かすと、最適しきい値p*（緑の実線）が式と共に動き、しきい値0.5との混同行列・期待コストの差が連動する。
+
+<CostSensitiveLab />
+
+  </Interact>
+</Level>
+
+<Level level={2} title="仮定体系（LOF・Isolation Forest・MSPCの前提と収束条件）">
+  <Concept>
+
+**<Term id="anomaly-detection">異常検知</Term>** は3つの異なる «視点» から <Term id="outlier">外れ値</Term> を測る手法群として整理できる。
+
+- **<Term id="local-outlier-factor">LOF</Term>（局所外れ値因子）**: 近傍点との «局所的な密度の比» で測る——密度が場所によって異なるデータでも機能する。
+- **<Term id="isolation-forest">Isolation Forest</Term>**: ランダムな分割木で «少ない分割で孤立するか» を測る——距離計算そのものが不要。
+- **<Term id="mspc">MSPC</Term>**（多変量統計プロセス管理）: データ全体の平均・分散から見た «大域的なズレ»（T²）と、主成分への射影残差（Q）で測る。
+
+3手法とも「値が大きいほど異常」という向きに揃うため、下のラボでは «スコア上位◯%を異常とみなす» という共通のパーセンタイルしきい値で統一して比較する。
+
+  </Concept>
+  <Derivation title="LOF比・Isolation Forestのパス長正規化・MSPCのT²/Qの導出">
+
+**LOFの構成要素。** ある点 $i$ の «k距離» はk番目に近い点までの距離。到達可能距離は近すぎる点どうしの距離を底上げして平滑化する。
+
+$$
+\text{reach-dist}(i,j) = \max\big(\text{k距離}(j),\ \text{dist}(i,j)\big)
+$$
+
+局所到達可能密度は «到達可能距離の平均の逆数»（値が大きいほど密集）。
+
+$$
+\text{lrd}(i) = \frac{1}{\dfrac{1}{k}\sum_{j\in N_k(i)}\text{reach-dist}(i,j)}
+$$
+
+LOFは自分のlrdと近傍のlrdの平均を比較する比。
+
+$$
+\text{LOF}(i) = \frac{\dfrac{1}{k}\sum_{j\in N_k(i)}\text{lrd}(j)}{\text{lrd}(i)}
+$$
+
+自分だけ密度が疎ならLOFは1をずっと上回る。
+
+**Isolation Forestのパス長正規化。** ランダム分割木で点 $x$ が葉に到達するまでの分割回数（パス長 $h(x)$）を全木で平均する。木の高さは平均するとおよそ $\log_2 n$ のオーダーになる（二分探索木の性質）ため、比較可能な «異常スコア» にするには正規化が要る。$n$ 個のデータに対する二分探索木の平均パス長 $c(n)=2H(n-1)-2(n-1)/n$（$H$は調和数）を使い、
+
+$$
+s(x) = 2^{-E[h(x)]/c(n)}
+$$
+
+とすると、$E[h(x)]\to 0$（1〜2回で孤立）で $s\to1$（異常）、$E[h(x)]\to c(n)$（平均的な深さ）で $s\to0.5$（正常）に揃う。
+
+**MSPCのT²・Q。** <Term id="covariance-matrix">共分散行列</Term>を $\Sigma$、平均を $\mu$ とすると、T²統計量はマハラノビス距離の2乗。
+
+$$
+T^2 = (x-\mu)^\top \Sigma^{-1}(x-\mu)
+$$
+
+Q統計量は、データを<Term id="principal-component">主成分</Term>1本（第1主成分の方向 $u$）へ射影して復元した点 $\hat x=\mu+\big((x-\mu)^\top u\big)u$ との残差。
+
+$$
+Q = \|x-\hat x\|^2
+$$
+
+隠れ層1・活性化関数が恒等関数の線形 <Term id="autoencoder">オートエンコーダ</Term> は、まさにこの «主成分1本への射影→復元» と同じ計算をしているため、その再構成誤差はQ統計量と数学的に一致する——オートエンコーダはMSPCの非線形拡張と位置づけられる。
+
+  </Derivation>
+  <Interact>
+
+下のラボは正常クラスタ32点+外れ値5点のデータ。手法を切り替え、しきい値（上位◯%）を動かすと、粗いヒートマップと異常判定（赤い点）が変わる。スコア上位10件を1件ずつ辿るステッパーで、選んだ手法の数式（LOF比／Isolation Forestのパス長／T²+Q）が該当点の値と強連動する。
+
+<AnomalyLab />
+
+  </Interact>
+  <Exercise>
+
+<ImbalancedAnomalyQuiz />
+
+  </Exercise>
+</Level>
+
+<Level level={3} title="予測最適化（不均衡×異常検知の組み合わせ、評価指標の選び方）" status="planned">
+
+不均衡データと異常検知はしばしば同じ問題の裏表——«少数派クラスの分類»と«正常からの逸脱検知»は、少数派の割合が極端に小さくなるほど連続的につながる。ROC曲線・AUC・PR曲線（適合率-再現率曲線, 不均衡データではROCより情報量が多いことが知られる）による評価、アンサンブル学習（バギング・ブースティング・ランダムフォレスト）を不均衡データに適用する工夫（バランスド・ランダムフォレスト等）、[正則化・スパースモデリング](/topics/regularization-sparse)との組み合わせによる高次元異常検知を扱う。
+
+</Level>
+
+<Level level={4} title="応用（半教師あり異常検知・逐次モニタリング）" status="planned">
+
+ラベル付き異常データがごく少数だけ手に入る半教師あり異常検知、時系列データを逐次監視し異常の «発生時点» を検出するオンライン異常検知（管理図・CUSUM等、MSPCの時系列拡張）、多変量正規性を仮定できないデータへのカーネル化・ノンパラメトリック手法を扱う。
+
+</Level>
+
+<Level level={5} title="高次元/最先端（深層学習ベースの異常検知）" status="planned">
+
+オートエンコーダを敵対的生成ネットワーク（GAN）で拡張したAnoGAN等の生成モデルベース異常検知、正常データの分布密度を直接推定するフロー・拡散モデルベースの手法、高次元・少数ラベルの設定でSMOTE系の手法がどこまで有効かという実証的な議論を扱う。
+
+</Level>
+
+<Level level={6} title="フロンティア（基盤モデル時代の異常検知）" status="planned">
+
+画像・時系列・ログなど多様なモダリティを横断して少数の異常例から汎化する基盤モデルベースの異常検知、大規模言語モデルを使った異常の説明生成（«なぜ異常と判定したか»の言語化）——研究が活発に進む領域であり、ここは到達途上として正直に示す。
+
+</Level>
+
+</Topic>
