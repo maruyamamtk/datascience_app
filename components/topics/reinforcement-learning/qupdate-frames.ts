@@ -10,7 +10,7 @@
  */
 
 import type { CalloutKind, VizFrame } from "@/components/viz";
-import { ACTION_ARROW, type EpisodeStep, makeLcg, runEpisode, trainEpisodes } from "@/lib/stats/reinforcement-learning";
+import { ACTION_ARROW, ACTIONS, type EpisodeStep, makeLcg, runEpisode, trainEpisodes } from "@/lib/stats/reinforcement-learning";
 
 export const Q_STEPPER_WARMUP_EPISODES = 60;
 export const Q_STEPPER_SEED = 271828;
@@ -52,7 +52,7 @@ export function buildQUpdateDemoSteps(): EpisodeStep[] {
 /** Q学習更新ステッパーのフレーム列を作る（1ステップ=1フレーム）。 */
 export function buildQUpdateFrames(steps: EpisodeStep[] = buildQUpdateDemoSteps()): VizFrame<QUpdateFramePayload>[] {
   return steps.map((step, i) => {
-    const arrow = ACTION_ARROW[["up", "down", "left", "right"][step.action] as "up" | "down" | "left" | "right"];
+    const arrow = ACTION_ARROW[ACTIONS[step.action]];
     const isLast = i === steps.length - 1;
     let note: string | undefined;
     let kind: CalloutKind = "explain";
