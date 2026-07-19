@@ -188,3 +188,9 @@
   // "**" の出現位置を2つずつ(開き,閉じ)とみなし、開きは leftFlanking、閉じは rightFlanking を満たすか判定
   ```
 - **判断の目安**: MDX/Markdownの太字を含む新規コンテンツは、Playwrightで`<strong>`要素の有無を確認するだけでなく、上記のようなスキャナで機械的に全ファイルを検査してから「太字崩れ0件」と報告する。目視は疲れると見落とすが、フランキング規則の実装は見落とさない。
+
+## 1コンポーネントに複数の`<MathFormula>`を置くときは、それぞれに専用の`ref`を張る——1つの`ref`を使い回すと2つ目以降の項が更新されない（出典 #78）
+- **症状**: QUpdateStepper.tsx が同一コンポーネント内に2つの独立したKaTeX数式（`<MathFormula tex={FORMULA}>`と`<MathFormula tex={FORMULA2}>`）を描画し、useEffect内で`m.setValue("sqsa2", ...)`のように2つ目の式にしか存在しない項idを更新しようとしていたが、`ref`は最初の`<MathFormula>`にしか張っていなかった。tsc/lint/test/buildは全て通過し、Playwrightでステッパーを実際に1コマ進めて2つ目の数式の表示値（プレースホルダ"?"のまま変わらない）を目視確認して初めて気づいた——コードレビュー（4並列サブエージェント）でも3エージェント全てが独立にこのバグを検出した。
+- **原因**: `MathFormulaHandle`（`TermController`）の`setValue`/`setHighlight`は`this.root.querySelector`でDOM探索範囲を**そのrefが指すコンポーネント自身のコンテナに限定**する（term-controller.ts）。1つ目の`<MathFormula>`の`ref`で2つ目の`<MathFormula>`の項id（DOM上は別のKaTeXサブツリーに存在）を探しても見つからず、`setValue`は`false`を返して静かに失敗する（例外もconsole警告も出ない）——lessons.md「同一ページに同じ`term-*` idを複数配置しても問題ない」（#31の教訓）は「同じ内容のコンポーネントを複数箇所に再掲する」場合の話であり、「1つのコンポーネント内で複数の異なる`<MathFormula>`をそれぞれ動的更新したい」場合はrefの数を式の数だけ用意する必要がある——似て非なるケースなので混同しないこと。
+- **対策**: 1つのコンポーネントが複数の`<MathFormula>`（複数行に分けた数式、TD目標行と更新後Q行など）を動的更新する必要がある場合、`useRef<MathFormulaHandle>(null)`を式の数だけ用意し（`mathRef`, `mathRef2`, ...）、各`<MathFormula ref={mathRefN} tex={...}>`に対応するrefを個別に渡し、useEffect内でも対応するrefのハンドルだけにその式の項idを更新する。また、同一ページ内の別コンポーネント（例: 同じトピックのLevel0とLevel1）がそれぞれ独自の`term()`項idを定義している場合、`qsa`/`r`のような短い一般的な名前は衝突しやすいため、コンポーネント固有の接頭辞（例: ステッパー側は`s`を前置）で名前空間を分離し、DOM idの重複（無効なHTML、将来のquerySelector誤爆のリスク）も避ける。
+- **判断の目安**: 「1コンポーネントに`<MathFormula>`が2つ以上ある」実装をレビューするときは、`ref`の数と`<MathFormula>`の数が一致しているか、useEffect内の`setValue`呼び出しがどのrefのハンドルに対して行われているかを必ず確認する。動作確認は「初期表示に'?'が残っていないか」だけでなく「ステッパーやスライダーを実際に動かして、全ての式が更新されるか」までPlaywrightで確認する。

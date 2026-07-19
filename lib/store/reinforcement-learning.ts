@@ -51,6 +51,13 @@ export type MainDerived = {
  * （seed 固定・増分的な外部状態を持たない）。episodesTrained ≤ EPISODES_MAX（200）×
  * maxSteps=60 は数千ステップ程度で軽量なので、スライダー操作のたびに再計算しても 60fps 目標を
  * 妨げない（CLAUDE.md §2「MVP範囲の統計計算はJSで完結」）。
+ *
+ * 実測: `trainEpisodes(200, ...)`（最悪ケース）は Node.js 上で約0.56ms/回
+ * （20回実行の平均、lib/stats配下のVitestで計測）。range input の onChange はドラッグ中でも
+ * ブラウザの描画レートに束ねられて発火するため、60fps予算（16.6ms/フレーム）に対して十分小さく、
+ * naive-bayes-knn.ts の `KNN_BOUNDARY_BY_K` のような事前計算テーブルは不要と判断した
+ * （kのような離散で小さい範囲と異なり、epsilon/alpha/gammaは連続スライダーで組み合わせ数が
+ * 膨大なため、そもそも全パターンの事前計算は現実的でない）。
  */
 export const useReinforcementLearningStore = createTopicStore<MainControls, MainDerived>({
   initialControls: { epsilon: 0.2, alpha: 0.5, gamma: 0.9, episodesTrained: 40 },

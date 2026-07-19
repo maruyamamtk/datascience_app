@@ -46,9 +46,9 @@ export function LearningCurveChart() {
   const points = lengths.map((len, i) => `${scaleX(i)},${scaleY(len)}`).join(" ");
   const optimalY = scaleY(optimal);
 
-  const firstAvg = lengths.slice(0, Math.max(1, Math.ceil(n * 0.2))).reduce((s, v) => s + v, 0) / Math.max(1, Math.ceil(n * 0.2));
-  const lastChunkSize = Math.max(1, Math.ceil(n * 0.2));
-  const lastAvg = lengths.slice(-lastChunkSize).reduce((s, v) => s + v, 0) / lastChunkSize;
+  const chunkSize = Math.max(1, Math.ceil(n * 0.2));
+  const firstAvg = lengths.slice(0, chunkSize).reduce((s, v) => s + v, 0) / chunkSize;
+  const lastAvg = lengths.slice(-chunkSize).reduce((s, v) => s + v, 0) / chunkSize;
 
   return (
     <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5">

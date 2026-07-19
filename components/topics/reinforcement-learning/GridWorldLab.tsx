@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef } from "react";
 import { MathFormula, type MathFormulaHandle } from "@/components/math/MathFormula";
 import { formatNumber, term } from "@/components/math/tex";
-import { Callout, frameAt, StepPlayer, useFramePlayer, type VizFrame } from "@/components/viz";
+import { Callout, StepPlayer, useFramePlayer } from "@/components/viz";
 import {
   ACTION_ARROW,
   ACTIONS,
@@ -55,12 +55,9 @@ export function GridWorldLab() {
 
   useFramePlayer({ playing, index, count, onAdvance: nextFrame, onStop: () => setPlaying(false), intervalMs: 550 });
 
-  const frames: VizFrame<{ stepIndex: number }>[] = useMemo(
-    () => d.lastEpisodeSteps.map((_, i) => ({ payload: { stepIndex: i } })),
-    [d.lastEpisodeSteps],
-  );
-  const frame = frameAt(frames, index);
-  const currentStep = frame ? d.lastEpisodeSteps[frame.payload!.stepIndex] : undefined;
+  // フレーム «中身» は d.lastEpisodeSteps 自体（highlights/calloutを使わない単純な配列インデックス
+  // 参照）なので、VizFrame でラップし直さず frame.index でそのまま引く（不要な間接参照を避ける）。
+  const currentStep = d.lastEpisodeSteps[index];
 
   const mathRef = useRef<MathFormulaHandle>(null);
   const tex = useMemo(() => bellmanFormula(controls.alpha, controls.gamma), [controls.alpha, controls.gamma]);
@@ -227,27 +224,27 @@ export function GridWorldLab() {
             ×
           </text>
 
-          {currentStep ? (
-            <>
-              <line
-                x1={cellCenterX(cellFromIndex(currentStep.state).col)}
-                y1={cellCenterY(cellFromIndex(currentStep.state).row)}
-                x2={cellCenterX(cellFromIndex(currentStep.nextState).col)}
-                y2={cellCenterY(cellFromIndex(currentStep.nextState).row)}
-                stroke={currentStep.explored ? "#d97706" : "#0f172a"}
-                strokeWidth={2}
-                opacity={0.7}
-              />
-              <circle
-                cx={cellCenterX(cellFromIndex(currentStep.state).col)}
-                cy={cellCenterY(cellFromIndex(currentStep.state).row)}
-                r={7}
-                fill={currentStep.explored ? "#d97706" : "#0f172a"}
-                stroke="#fff"
-                strokeWidth={1.5}
-              />
-            </>
-          ) : null}
+          {currentStep
+            ? (() => {
+                const cur = cellFromIndex(currentStep.state);
+                const nxt = cellFromIndex(currentStep.nextState);
+                const tone = currentStep.explored ? "#d97706" : "#0f172a";
+                return (
+                  <>
+                    <line
+                      x1={cellCenterX(cur.col)}
+                      y1={cellCenterY(cur.row)}
+                      x2={cellCenterX(nxt.col)}
+                      y2={cellCenterY(nxt.row)}
+                      stroke={tone}
+                      strokeWidth={2}
+                      opacity={0.7}
+                    />
+                    <circle cx={cellCenterX(cur.col)} cy={cellCenterY(cur.row)} r={7} fill={tone} stroke="#fff" strokeWidth={1.5} />
+                  </>
+                );
+              })()
+            : null}
         </svg>
       </div>
 
