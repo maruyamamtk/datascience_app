@@ -53,6 +53,7 @@
 - ✅ I-2 正則化・スパースモデリング `regularization-sparse`（#75）
 - ✅ I-3 決定木・アンサンブル `decision-trees-ensembles`（#76）
 - ✅ I-4 単純ベイズ・k近傍法 `naive-bayes-knn`（#77）
+- ✅ I-5 強化学習 `reinforcement-learning`（#78）
 
 ## キュー（優先順）
 
@@ -109,7 +110,7 @@
 | 49 | #75 | I-2 | 正則化・スパースモデリング | regularization-sparse | multiple-regression, learning-framework | ✅ done |
 | 50 | #76 | I-3 | 決定木・アンサンブル（LightGBM） | decision-trees-ensembles | learning-framework | ✅ done |
 | 51 | #77 | I-4 | 単純ベイズ・k近傍法 | naive-bayes-knn | probability-basics, learning-framework | ✅ done |
-| 52 | #78 | I-5 | 強化学習 | reinforcement-learning | markov-chains, learning-framework | pending |
+| 52 | #78 | I-5 | 強化学習 | reinforcement-learning | markov-chains, learning-framework | ✅ done |
 | 53 | #79 | I-6 | 不均衡データ・異常検知 | imbalanced-anomaly | learning-framework | pending |
 | 54 | #80 | J-1 | 評価指標とKPI設計 | metrics-and-kpi | learning-framework | pending |
 | 55 | #81 | J-2 | 回帰の評価指標 | regression-metrics | simple-regression | pending |

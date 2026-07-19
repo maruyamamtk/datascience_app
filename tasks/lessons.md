@@ -175,3 +175,22 @@
 - **原因**: 複数の agent セッションが同じリポジトリに対して並行して起動されており、それぞれ独立した worktree を持つ。ブランチ名は `.git` 全体で共有されるため、片方が名前を予約すると同じ名前を他方の worktree でチェックアウトできない（git の制約）。
 - **対策**: 自分の worktree の外（`cd` して他の worktree のパスを操作すること）は権限で拒否される（Write/Edit ツールも "isolated in the worktree" エラーになる）ため、**衝突したブランチ名を奪い返そうとせず、末尾に連番などを付けた別名（例: `feat/77-naive-bayes-knn-2`）で作業を続行する**。PR 本文に `Closes #77` を含めれば issue のクローズには支障ない。
 - **判断の目安**: `git checkout -b` がブランチ名衝突で失敗したら、まず `git worktree list` で衝突相手が「自分の worktree ではない」ことを確認し、他 worktree のブランチ解放を試みずに別名へフォールバックする（他worktreeへの書き込み・checkout変更は権限的にできない前提で動く）。
+
+## MDX太字は「閉じ`**`の直後が仮名」だけでなく「開き`**`が仮名の直後かつリンク`[`の直前」でも崩れる：CommonMarkの左右フランキング規則を機械的にスキャンする（出典 #78）
+- **症状**: #73で見つけた「閉じ`**`の直後が仮名だと崩れる」パターンとは別に、「を表す**[行動価値関数](value-function)**」のように **開き`**`が地の文の仮名（す）に直接続き、かつ直後が`[`（リンクの開始）** という配置で、太字全体（開き・閉じとも）がリテラル表示になる例を発見した。tsc/lint/test/`next build`は全て通過し、Playwrightで`<strong>`タグの有無とinnerTextの`**`残存を目視確認して初めて気づいた——用語ファイル（`content/terms/*.mdx`）でも同じ崩れ方をする（トピックMDXだけでなく用語ページのMarkdownレンダラでも同じCommonMark規則が働く）。
+- **原因**: CommonMarkのemphasis規則は開き側にも「left-flanking」の条件がある——「直後が非空白」かつ「直後が非句読点、または（直前が空白/句読点）」。`す**[行動価値関数]`は直後が`[`（句読点扱い）で、直前が「す」（非空白・非句読点）のため両条件とも満たさず、開き delimiter として機能しない。結果として対応する閉じ`**`も（開きが無いので）ペアにならずリテラル表示になる。#73の教訓は閉じ側だけを見ていたため、この開き側の破れを見逃していた。
+- **対策**: 太字にする語句の**開始直前・終了直後の両方**を確認し、地の文の仮名・漢字に直接接する場合は半角スペースを1つ挟む（`を表す **[行動価値関数](value-function)** $Q(s,a)$` のように）。目視だけでは見落としやすいため、以下のようなCommonMarkの左右フランキング規則をそのまま実装した使い捨てNode.jsスクリプトで全対象ファイルを機械的にスキャンすると漏れなく検出できる（このセッションでは9+21箇所を発見・修正した）。
+  ```js
+  const isSpace = c => c === undefined || /\s/.test(c);
+  const isPunct = c => c !== undefined && /[!-\/:-@\[-`{-~、。「」『』・（）—―〜«»'']/.test(c);
+  const leftFlanking = (prev, next) => !isSpace(next) && (!isPunct(next) || isSpace(prev) || isPunct(prev));
+  const rightFlanking = (prev, next) => !isSpace(prev) && (!isPunct(prev) || isSpace(next) || isPunct(next));
+  // "**" の出現位置を2つずつ(開き,閉じ)とみなし、開きは leftFlanking、閉じは rightFlanking を満たすか判定
+  ```
+- **判断の目安**: MDX/Markdownの太字を含む新規コンテンツは、Playwrightで`<strong>`要素の有無を確認するだけでなく、上記のようなスキャナで機械的に全ファイルを検査してから「太字崩れ0件」と報告する。目視は疲れると見落とすが、フランキング規則の実装は見落とさない。
+
+## 1コンポーネントに複数の`<MathFormula>`を置くときは、それぞれに専用の`ref`を張る——1つの`ref`を使い回すと2つ目以降の項が更新されない（出典 #78）
+- **症状**: QUpdateStepper.tsx が同一コンポーネント内に2つの独立したKaTeX数式（`<MathFormula tex={FORMULA}>`と`<MathFormula tex={FORMULA2}>`）を描画し、useEffect内で`m.setValue("sqsa2", ...)`のように2つ目の式にしか存在しない項idを更新しようとしていたが、`ref`は最初の`<MathFormula>`にしか張っていなかった。tsc/lint/test/buildは全て通過し、Playwrightでステッパーを実際に1コマ進めて2つ目の数式の表示値（プレースホルダ"?"のまま変わらない）を目視確認して初めて気づいた——コードレビュー（4並列サブエージェント）でも3エージェント全てが独立にこのバグを検出した。
+- **原因**: `MathFormulaHandle`（`TermController`）の`setValue`/`setHighlight`は`this.root.querySelector`でDOM探索範囲を**そのrefが指すコンポーネント自身のコンテナに限定**する（term-controller.ts）。1つ目の`<MathFormula>`の`ref`で2つ目の`<MathFormula>`の項id（DOM上は別のKaTeXサブツリーに存在）を探しても見つからず、`setValue`は`false`を返して静かに失敗する（例外もconsole警告も出ない）——lessons.md「同一ページに同じ`term-*` idを複数配置しても問題ない」（#31の教訓）は「同じ内容のコンポーネントを複数箇所に再掲する」場合の話であり、「1つのコンポーネント内で複数の異なる`<MathFormula>`をそれぞれ動的更新したい」場合はrefの数を式の数だけ用意する必要がある——似て非なるケースなので混同しないこと。
+- **対策**: 1つのコンポーネントが複数の`<MathFormula>`（複数行に分けた数式、TD目標行と更新後Q行など）を動的更新する必要がある場合、`useRef<MathFormulaHandle>(null)`を式の数だけ用意し（`mathRef`, `mathRef2`, ...）、各`<MathFormula ref={mathRefN} tex={...}>`に対応するrefを個別に渡し、useEffect内でも対応するrefのハンドルだけにその式の項idを更新する。また、同一ページ内の別コンポーネント（例: 同じトピックのLevel0とLevel1）がそれぞれ独自の`term()`項idを定義している場合、`qsa`/`r`のような短い一般的な名前は衝突しやすいため、コンポーネント固有の接頭辞（例: ステッパー側は`s`を前置）で名前空間を分離し、DOM idの重複（無効なHTML、将来のquerySelector誤爆のリスク）も避ける。
+- **判断の目安**: 「1コンポーネントに`<MathFormula>`が2つ以上ある」実装をレビューするときは、`ref`の数と`<MathFormula>`の数が一致しているか、useEffect内の`setValue`呼び出しがどのrefのハンドルに対して行われているかを必ず確認する。動作確認は「初期表示に'?'が残っていないか」だけでなく「ステッパーやスライダーを実際に動かして、全ての式が更新されるか」までPlaywrightで確認する。

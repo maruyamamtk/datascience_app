@@ -1,0 +1,18 @@
+---
+title: 方策
+definition: 各状態でどの行動を選ぶかを決めるルール。決定的な方策 π(s)=a（状態sで行動aを選ぶ）と、確率的な方策 π(a|s)（状態sで行動aを選ぶ確率）がある。強化学習の目標は収益を最大化する最適方策を見つけること。
+aliases: [policy, 方策, 方策関数]
+seeAlso: [markov-decision-process, value-function, epsilon-greedy, agent-environment]
+---
+
+# 方策
+
+**[エージェント](agent-environment)** が «各状態でどの行動を選ぶか» を決めるルール $\pi$。
+
+$$
+\pi(a\mid s)=P(\text{行動}=a\mid \text{状態}=s)
+$$
+
+- **決定的方策**: $\pi(s)=a$ のように、状態ごとに1つの行動を一意に返す。
+- **確率的方策**: $\pi(a\mid s)$ のように、行動を確率分布として返す。**[ε-greedy](epsilon-greedy)** は «確率 $1-\varepsilon$ で最良の行動、確率 $\varepsilon$ でランダムな行動» という確率的方策の一種。
+- **最適方策** $\pi^*$: どの状態から出発しても期待収益（割引した将来報酬の合計）を最大化する方策。**[行動価値関数](value-function)** $Q^*(s,a)$ が分かれば、各状態で $Q^*$ が最大の行動を選ぶ $\pi^*(s)=\arg\max_a Q^*(s,a)$ で最適方策が得られる——[Q学習](q-learning)が価値関数だけを学習すればよい理由。
