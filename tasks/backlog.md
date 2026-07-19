@@ -113,7 +113,7 @@
 | 51 | #77 | I-4 | 単純ベイズ・k近傍法 | naive-bayes-knn | probability-basics, learning-framework | ✅ done |
 | 52 | #78 | I-5 | 強化学習 | reinforcement-learning | markov-chains, learning-framework | ✅ done |
 | 53 | #79 | I-6 | 不均衡データ・異常検知 | imbalanced-anomaly | learning-framework | ✅ done |
-| 54 | #80 | J-1 | 評価指標とKPI設計 | metrics-and-kpi | learning-framework | pending |
+| 54 | #80 | J-1 | 評価指標とKPI設計 | metrics-and-kpi | learning-framework | ✅ done |
 | 55 | #81 | J-2 | 回帰の評価指標 | regression-metrics | simple-regression | pending |
 | 56 | #82 | J-3 | 二値分類の評価指標 | binary-classification-metrics | qualitative-regression | pending |
 | 57 | #83 | J-4 | 多クラス分類の評価指標 | multiclass-metrics | binary-classification-metrics | pending |
