@@ -14,7 +14,7 @@ import {
   Y_DRAG_MAX,
   Y_DRAG_MIN,
 } from "@/lib/store/regression-metrics";
-import { people } from "./format";
+import { people, round2 } from "./format";
 
 const FORMULA_MAE = `\\mathrm{MAE}=\\dfrac1n\\sum_{i=1}^n|y_i-\\hat y_i|=${term("maeval", "?")}\\ \\text{人}`;
 const FORMULA_MSE = `\\mathrm{MSE}=\\dfrac1n\\sum(y_i-\\hat y_i)^2=${term("mseval", "?")},\\quad \\mathrm{RMSE}=\\sqrt{\\mathrm{MSE}}=${term(
@@ -23,8 +23,6 @@ const FORMULA_MSE = `\\mathrm{MSE}=\\dfrac1n\\sum(y_i-\\hat y_i)^2=${term("mseva
 )}\\ \\text{人}`;
 const FORMULA_MAPE = `\\mathrm{MAPE}=\\dfrac{100}{n}\\sum\\left|\\dfrac{y_i-\\hat y_i}{y_i}\\right|=${term("mapeval", "?")}\\%`;
 const FORMULA_RMSLE = `\\mathrm{RMSLE}=\\sqrt{\\dfrac1n\\sum\\bigl(\\log(1+\\hat y_i)-\\log(1+y_i)\\bigr)^2}=${term("rmsleval", "?")}`;
-
-const round2 = (v: number) => Math.round(v * 100) / 100;
 
 // チャート座標系(データ座標とは別に、見やすいマージンを取った表示専用ドメイン)。
 const X_MIN = 0;
@@ -146,14 +144,15 @@ export function MetricsLab() {
     }
   }, []);
 
+  // 常に INITIAL_POINTS 基準で外れ値化する(連打しても+55が積み上がらず同じ結果になる、冪等)。
   const makeOutlierClick = () => {
-    setControl("points", makeOutlier(points, OUTLIER_INDEX, OUTLIER_DELTA_Y));
+    setControl("points", makeOutlier(INITIAL_POINTS, OUTLIER_INDEX, OUTLIER_DELTA_Y));
   };
   const resetClick = () => {
     setControl("points", INITIAL_POINTS);
   };
 
-  const metricKeys: (keyof MetricSet)[] = ["mae", "mse", "rmse", "mape", "rmsle"];
+  const metricKeys = Object.keys(METRIC_COLOR) as (keyof MetricSet)[];
   const ratioValues = metricKeys.map((k) => ratios[k] ?? 0);
   const barScaleMax = Math.max(2, ...ratioValues);
   const barW = 40;

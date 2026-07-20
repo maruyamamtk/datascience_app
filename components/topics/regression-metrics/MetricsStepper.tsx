@@ -4,7 +4,8 @@ import { useEffect, useMemo, useRef } from "react";
 import { MathFormula, type MathFormulaHandle } from "@/components/math/MathFormula";
 import { formatNumber, term } from "@/components/math/tex";
 import { Callout, frameAt, isHighlighted, StepPlayer, useFramePlayer } from "@/components/viz";
-import { MODEL, useRegressionMetricsStore } from "@/lib/store/regression-metrics";
+import { MODEL, useRegressionMetricsStore, Y_DRAG_MAX, Y_DRAG_MIN } from "@/lib/store/regression-metrics";
+import { round2 } from "./format";
 import { buildMetricsFrames } from "./frames";
 
 const FORMULA_MAE = `\\mathrm{MAE}=\\dfrac1n\\sum|y_i-\\hat y_i|=${term("maeval", "?")}`;
@@ -12,12 +13,10 @@ const FORMULA_MSE = `\\mathrm{MSE}=\\dfrac1n\\sum(y_i-\\hat y_i)^2=${term("mseva
 const FORMULA_MAPE = `\\mathrm{MAPE}=\\dfrac{100}{n}\\sum\\left|\\dfrac{y_i-\\hat y_i}{y_i}\\right|=${term("mapeval", "?")}\\%`;
 const FORMULA_RMSLE = `\\mathrm{RMSLE}=\\sqrt{\\dfrac1n\\sum(\\log(1+\\hat y_i)-\\log(1+y_i))^2}=${term("rmsleval", "?")}`;
 
-const round2 = (v: number) => Math.round(v * 100) / 100;
-
 const X_MIN = 0;
 const X_MAX = 42;
-const Y_MIN = 0;
-const Y_MAX = 170;
+const Y_MIN = Y_DRAG_MIN;
+const Y_MAX = Y_DRAG_MAX;
 const W = 320;
 const H = 180;
 const PAD = { top: 10, right: 10, bottom: 10, left: 10 };

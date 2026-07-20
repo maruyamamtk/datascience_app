@@ -6,3 +6,8 @@
 export function people(v: number): string {
   return `${Math.round(v * 10) / 10}人`;
 }
+
+/** SVG座標を2桁に丸める(hydration mismatch回避, tasks/lessons.md #67の教訓)。 */
+export function round2(v: number): number {
+  return Math.round(v * 100) / 100;
+}

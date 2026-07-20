@@ -3,6 +3,7 @@ import {
   FIXED_MODEL,
   generateMetricPoints,
   type MetricSet,
+  metricRatios,
   type Model,
   N_POINTS,
   type Point,
@@ -45,15 +46,6 @@ export type MainDerived = {
   ratios: Record<keyof MetricSet, number | null>;
 };
 
-function metricRatiosOf(current: MetricSet): Record<keyof MetricSet, number | null> {
-  const keys = Object.keys(current) as (keyof MetricSet)[];
-  const out = {} as Record<keyof MetricSet, number | null>;
-  for (const k of keys) {
-    out[k] = BASELINE_METRICS[k] > 1e-9 ? current[k] / BASELINE_METRICS[k] : null;
-  }
-  return out;
-}
-
 /**
  * 回帰の評価指標トピックの Zustand ストア(single source of truth)。
  * Control 層(点ドラッグ・「外れ値を作る」ボタン)は setControl を呼び、Render 層(散布図 / 残差 /
@@ -66,6 +58,6 @@ export const useRegressionMetricsStore = createTopicStore<MainControls, MainDeri
   derive: ({ points }) => {
     const errors = pointErrorsOf(points, MODEL);
     const metrics = allMetricsOf(points, MODEL);
-    return { points, errors, metrics, ratios: metricRatiosOf(metrics) };
+    return { points, errors, metrics, ratios: metricRatios(metrics, BASELINE_METRICS) };
   },
 });
