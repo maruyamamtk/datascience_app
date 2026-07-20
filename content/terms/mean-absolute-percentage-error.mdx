@@ -1,0 +1,16 @@
+---
+title: 平均絶対パーセント誤差
+definition: 誤差を実測値に対する相対値(%)で測る指標 MAPE=(100/n)Σ|(y_i−ŷ_i)/y_i|。規模の異なる系列を比較しやすく、ビジネスの目標達成度評価に有用だが、実測値が0に近いと不安定になる。
+aliases: [mean absolute percentage error, MAPE, 平均絶対パーセント誤差, 平均絶対%誤差]
+seeAlso: [mean-absolute-error, residual]
+---
+
+# 平均絶対パーセント誤差（MAPE）
+
+$$
+\mathrm{MAPE}=\frac{100}{n}\sum_{i=1}^n\left|\frac{y_i-\hat y_i}{y_i}\right|\ (\%)
+$$
+
+- [MAE](mean-absolute-error)を実測値 $y_i$ で割ってパーセンテージ表示にした指標。誤差の「大きさ」を**相対的**に評価する。
+- 単位（人数・円など）に依存しない%表示なので、**規模の異なる系列を横並びで比較**しやすく、ビジネスの目標達成度を評価する際に有用。
+- 弱点: $y_i$ が0に近い点があると分母が小さくなり、指標が不安定・過大になりやすい（発注数が0に近い日など）。そのようなデータには[RMSLE](root-mean-squared-log-error)の方が向く。

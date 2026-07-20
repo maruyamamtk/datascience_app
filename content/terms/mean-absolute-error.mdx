@@ -1,0 +1,16 @@
+---
+title: 平均絶対誤差
+definition: 回帰の予測誤差の「大きさ」を測る指標 MAE=(1/n)Σ|y_i−ŷ_i|。残差の絶対値をそのまま平均するため、大きな誤差と小さな誤差を同じ重みで評価する。外れ値の影響は線形にとどまり比較的頑健。
+aliases: [mean absolute error, MAE, 平均絶対誤差]
+seeAlso: [residual, root-mean-squared-error, mean-absolute-percentage-error]
+---
+
+# 平均絶対誤差（MAE）
+
+$$
+\mathrm{MAE}=\frac1n\sum_{i=1}^n|y_i-\hat y_i|
+$$
+
+- 各点の[残差](residual) $e_i=y_i-\hat y_i$ の**絶対値をそのまま平均**した指標。単位は $y$ と同じ（例: 人数、円）で直感的に分かりやすい。
+- 大きな誤差と小さな誤差が**同じ重み**（誤差の大きさに比例した重み）で評価される。二乗する[RMSE](root-mean-squared-error)と違い、1点の外れ値だけで指標が跳ね上がることは少ない——外れ値に比較的**頑健**。
+- 常に $\mathrm{RMSE}\ge\mathrm{MAE}$（べき平均の単調性）。誤差が全点で同じ大きさなら等号が成り立つ。

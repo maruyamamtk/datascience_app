@@ -114,7 +114,7 @@
 | 52 | #78 | I-5 | 強化学習 | reinforcement-learning | markov-chains, learning-framework | ✅ done |
 | 53 | #79 | I-6 | 不均衡データ・異常検知 | imbalanced-anomaly | learning-framework | ✅ done |
 | 54 | #80 | J-1 | 評価指標とKPI設計 | metrics-and-kpi | learning-framework | ✅ done |
-| 55 | #81 | J-2 | 回帰の評価指標 | regression-metrics | simple-regression | pending |
+| 55 | #81 | J-2 | 回帰の評価指標 | regression-metrics | simple-regression | ✅ done |
 | 56 | #82 | J-3 | 二値分類の評価指標 | binary-classification-metrics | qualitative-regression | pending |
 | 57 | #83 | J-4 | 多クラス分類の評価指標 | multiclass-metrics | binary-classification-metrics | pending |
 | 58 | #84 | J-5 | モデル選択基準（AIC・BIC） | model-selection-criteria | estimation-methods, learning-framework | pending |
