@@ -1,0 +1,165 @@
+---
+title: 二値分類の評価指標
+summary: 「陽性らしさスコアを出す、既に学習済みの固定分類器」を題材に、混同行列からaccuracy・precision・recall・F1がどう計算され、しきい値を動かすとそれらがどうトレードオフするか、そしてROC曲線とAUCがしきい値によらない分離性能をどう要約するかを、しきい値スライダーとROC曲線のコマ送り構築の両方で体感するトピック。
+status: published
+---
+
+import { ScoreLab } from "@/components/topics/binary-classification-metrics/ScoreLab";
+import { RocStepper } from "@/components/topics/binary-classification-metrics/RocStepper";
+import { MetricsQuiz } from "@/components/topics/binary-classification-metrics/MetricsQuiz";
+
+<Topic title="二値分類の評価指標" summary="「陽性らしさスコアを出す、既に学習済みの固定分類器」を題材に、混同行列からaccuracy・precision・recall・F1がどう計算され、しきい値を動かすとそれらがどうトレードオフするか、そしてROC曲線とAUCがしきい値によらない分離性能をどう要約するかを体感する。">
+
+<ReaderGuide>
+
+- **初学者** → L0〜L1（混同行列からaccuracy・precision・recall・F1がどう計算されるかを道具として使う → ROC曲線を1点ずつ構築する完全な手順）
+- **一通り使える人** → L2（precision・recallのトレードオフが生じる仕組み、accuracy paradox、コスト考慮への橋渡し）
+- **「完全に理解した」人** → L3以降（F_β値・多クラスへの一般化・PR曲線は到達途上）
+
+前提: [質的回帰](/topics/qualitative-regression)で見た「陽性らしさスコア（確率）を出すモデル」、[評価指標とKPI設計](/topics/metrics-and-kpi)で見た<Term id="confusion-matrix">混同行列</Term>・しきい値・コスト行列の基本、[不均衡データ](/topics/imbalanced-anomaly)で見たコスト考慮型学習の最適しきい値——本トピックはそれらと同じ「しきい値で混同行列が決まる」土台の上に、<Term id="precision">適合率</Term>・<Term id="recall">再現率</Term>・<Term id="f1-score">F1値</Term>・<Term id="roc-curve">ROC曲線</Term>・<Term id="auc">AUC</Term>という「新しい読み方」を積み上げる。多クラス分類のMicro・Macro・Weighted平均は後続トピックで扱う。
+
+</ReaderGuide>
+
+<Level level={0} title="ブラックボックス（4つの指標を道具として使う）">
+  <Concept>
+
+分類器の良し悪しを数字にする方法は正解率（accuracy）だけではない。<Term id="confusion-matrix">混同行列</Term>（TP・FP・FN・TN）を土台に、代表的な4つの指標がある。
+
+- **Accuracy**（正解率）: 全体のうちどれだけ当てたか。
+- **<Term id="precision">Precision</Term>**（適合率）: 陽性と予測したもののうち、実際に陽性だった割合。
+- **<Term id="recall">Recall</Term>**（再現率）: 実際の陽性のうち、正しく拾えた割合。
+- **<Term id="f1-score">F1</Term>**: PrecisionとRecallのバランスを1つの数字にまとめたもの。
+
+どれも同じ混同行列から計算されるが、分類しきい値を動かすとそれぞれ違う動き方をする——«どの指標を重視するか»によって「良いモデル」の判断が変わりうる。
+
+  </Concept>
+  <Interact>
+
+下のラボは「陽性らしさスコアを出す、既に学習済みの固定分類器」。陽性（青）・陰性（赤）それぞれのサンプルが実際にどんなスコアを出しているかのヒストグラムに対して、しきい値スライダーを動かすと混同行列とaccuracy・precision・recall・F1が実時間で再計算され、右のミニROC図で現在地（FPR, TPR）も一緒に動く。
+
+<ScoreLab />
+
+  </Interact>
+  <Exercise>
+
+確認: 「しきい値を上げるほど、precisionもrecallも両方必ず上がる」——○か×か。（答: ×。上のラボでスライダーを右に動かすと、precisionは上がりやすい一方でrecallは下がりやすいことが確認できる。両方が同時に上がるとは限らない）
+
+  </Exercise>
+</Level>
+
+<Level level={1} title="古典的理解（ROC曲線を1点ずつ構築する完全な手順）">
+  <Concept>
+
+<Term id="roc-curve">ROC曲線</Term>は、しきい値を1（何も陽性と予測しない）から少しずつ下げながら (FPR, TPR) をプロットしていくと得られる。
+
+<Math tex="\mathrm{TPR}=\mathrm{Recall}=\frac{TP}{TP+FN},\qquad \mathrm{FPR}=\frac{FP}{FP+TN}" />
+
+これは実務上、スコアの高い順にサンプルを1件ずつ「陽性と予測する側」へ繰り込んでいくのと同じ操作になる——陽性のサンプルを繰り込むと曲線は上（TPR↑）へ、陰性のサンプルを繰り込むと曲線は右（FPR↑）へ、それぞれ1段だけ動く階段状の曲線ができる。曲線の下側の面積が<Term id="auc">AUC</Term>。
+
+  </Concept>
+  <Derivation title="なぜAUCは «ランダムに選んだ陽性・陰性のペアで、陽性の方が高スコアになる確率» と一致するのか">
+
+**(1) 台形則は「幅×高さの長方形」の和になる.** ROC曲線はスコア降順の階段状の折れ線なので、1件処理するたびに横（FPR方向）か縦（TPR方向）のどちらか一方にしか動かない。台形則で面積を積み上げるとき、縦にしか動かない区間（陽性を繰り込んだとき）は幅0なので面積に寄与せず、横に動く区間（陰性を繰り込んだとき）だけが «幅×高さ» の長方形として面積に寄与する（高校数学でいう面積＝底辺×高さの積み上げ）。
+
+**(2) 1つの長方形の高さは「その陰性より高いスコアの陽性の数」に等しい.** 陰性を1件（$N$件中の1件）繰り込むとき、FPRは $\frac1N$ だけ増える（幅）。このときの高さはその時点でのTPR、つまり «その陰性より高いスコアを持つ陽性の数» を $P$（陽性の総数）で割った値になる。よって1つの長方形の面積は
+
+$$
+\frac1N\times\frac{\text{その陰性より高スコアの陽性数}}{P}
+$$
+
+**(3) 全ての陰性について足し合わせる.** 全ての長方形を足し合わせると
+
+$$
+\mathrm{AUC}=\frac1{NP}\sum_{\text{陰性 }j}\bigl(\text{陰性 }j\text{ より高スコアの陽性の数}\bigr)=\frac{\text{陽性が陰性より高スコアになるペアの総数}}{NP}
+$$
+
+分子は「陽性・陰性のペア（$N\times P$ 組すべて）のうち、陽性の方が高いスコアになったペアの数」（高校数学でいう «場合の数» の数え上げ）。これを $NP$ で割れば、ランダムに陽性1件・陰性1件を選んだとき陽性の方が高スコアになる «確率» そのものになる——これがAUCの確率的な解釈(統計学ではMann-WhitneyのU統計量と呼ばれる量と一致する)。
+
+  </Derivation>
+  <Interact>
+
+下のコマ送りは、サンプルをスコアの高い順に1件ずつ確認しながらROC曲線を伸ばし、AUC（台形則の累積面積）を少しずつ積み上げていく。最後のコマで全件処理後の最終的なAUCが出そろう。
+
+<RocStepper />
+
+  </Interact>
+  <Exercise>
+
+確認: 「ROC曲線は必ず (0,0) から (1,1) まで単調に（右または上にだけ）進み、後戻りすることはない」——○か×か。（答: ○。しきい値を下げるほど陽性と予測する件数は増える一方なので、TP・FPのどちらも減ることはなく、FPR・TPRは単調非減少になる）
+
+  </Exercise>
+</Level>
+
+<Level level={2} title="仮定体系（トレードオフが生じる仕組みとコスト考慮）">
+  <Concept>
+
+precision・recallのトレードオフには理由がある。しきい値 $\theta$ を下げると「陽性と予測する集合」は単調に広がる（$\theta_1>\theta_2$ なら $\theta_1$ で陽性と予測される集合は $\theta_2$ で陽性と予測される集合に必ず含まれる）。そのためTPは減ることがなく、$\mathrm{Recall}=TP/(TP+FN)$ の分母 $TP+FN$（実際の陽性の総数）は一定なので、**recallはしきい値を下げるほど単調に上がる**（下がることはない）。
+
+一方precisionは単純には決まらない——新しく繰り込んだサンプルが陽性ならprecisionは上がりやすく、陰性ならprecisionは下がりやすい。全体としては、しきい値を下げるほど«自信の低いサンプル»まで陽性と予測するようになるため、precisionは下がっていく傾向を持つ。
+
+  </Concept>
+  <Derivation title="precisionが「陰性を1件繰り込むごとに必ず下がる」ことの証明（高校数学のレベルの代数）">
+
+$TP=\mathrm{tp}$（一定）のまま、陰性を1件多く陽性側に繰り込んで $FP$ が $\mathrm{fp}$ から $\mathrm{fp}+1$ に増えたとする。このとき
+
+$$
+\frac{\mathrm{tp}}{\mathrm{tp}+\mathrm{fp}}\quad\text{と}\quad\frac{\mathrm{tp}}{\mathrm{tp}+\mathrm{fp}+1}
+$$
+
+を比べる。$\mathrm{tp}>0$ で分母がどちらも正なので、分数の大小比較は分子を揃えた通分（または比の関係）で判定できる——$\mathrm{tp}+\mathrm{fp}<\mathrm{tp}+\mathrm{fp}+1$ なので、同じ分子 $\mathrm{tp}$ を «より小さい分母» で割った左辺の方が大きい。したがって
+
+$$
+\frac{\mathrm{tp}}{\mathrm{tp}+\mathrm{fp}}\ >\ \frac{\mathrm{tp}}{\mathrm{tp}+\mathrm{fp}+1}
+$$
+
+が常に成り立つ（これは中学・高校で習う「分子が同じ分数は、分母が大きいほど小さい」という性質そのもの）。つまり、陽性の数 $TP$ が変わらないまま陰性を1件でも陽性側に取り込むと、precisionは必ず下がる——これがしきい値を下げたときにprecisionが下がりやすい理由の代数的な根拠。
+
+  </Derivation>
+  <Concept>
+
+**accuracy paradox**: 陽性が1%しかない極端な不均衡データでは、全件を「陰性」と予測するだけでaccuracy≈99%になってしまう——正解率だけでは少数派の検出性能が全く見えない（詳しくは<Term id="class-imbalance">クラス不均衡</Term>のトピックを参照）。precision・recall・F1・AUCはこの落とし穴を避けるために使われる。
+
+**コスト考慮**: 偽陽性のコストを $C_{FP}$、偽陰性のコストを $C_{FN}$ とすると、期待コストを最小化するしきい値は
+
+<Math tex="p^*=\frac{C_{FP}}{C_{FP}+C_{FN}}" />
+
+（[評価指標とKPI設計](/topics/metrics-and-kpi)・[不均衡データ](/topics/imbalanced-anomaly)で導出済みの式）。見逃し（$C_{FN}$）のコストが誤検出（$C_{FP}$）よりずっと大きい問題では $p^*$ は0.5より小さくなり、precisionを多少犠牲にしてもrecallを優先するしきい値が合理的になる——F1のようにprecisionとrecallを均等に扱う指標だけでは、この非対称なコスト構造を反映できないことに注意する。
+
+  </Concept>
+  <Interact>
+
+[上のラボ](#binary-classification-metrics-lab)に戻り、しきい値を両端（0付近・1付近）まで動かして、precisionとrecallがどちらに振れるか、混同行列の4つの数がどう変わるかを確かめよう。
+
+  </Interact>
+  <Exercise>
+
+<MetricsQuiz />
+
+  </Exercise>
+</Level>
+
+<Level level={3} title="予測最適化（F_β値とマクロ/ミクロ平均への一般化）" status="planned">
+
+precisionとrecallに重みを付けて一般化した $F_\beta$ 値（$\beta>1$ でrecallを重視、$\beta<1$ でprecisionを重視）や、複数クラスへ拡張する際のMicro・Macro・Weighted平均（多クラス分類の評価指標という後続トピックで扱う予定）との関係は到達途上として扱う。
+
+</Level>
+
+<Level level={4} title="因果（コスト考慮型学習としきい値設計の意思決定）" status="planned">
+
+[評価指標とKPI設計](/topics/metrics-and-kpi)で見た「技術指標とビジネスKPIの乖離」を、precision・recall・F1・AUCという複数指標が並立する二値分類の文脈で捉え直す——«どの指標を最適化すべきか» という意思決定そのものがビジネス上の価値判断であることは到達途上。
+
+</Level>
+
+<Level level={5} title="高次元/最先端（PR曲線・部分AUC）" status="planned">
+
+陽性が極端に少ない不均衡データではROC-AUCよりPR曲線（適合率-再現率曲線）の方が情報量が多いことが知られる。また、低FPR領域だけに着目した部分AUC（pAUC）など、ビジネス上関心のある領域に絞った評価は研究・実務の両面で発展中の領域。
+
+</Level>
+
+<Level level={6} title="フロンティア" status="planned">
+
+閾値そのものを確率較正（キャリブレーション）した上で評価する手法や、コスト非対称性を学習の損失関数に直接組み込むコスト考慮型メタ学習の最新動向は、ここでは到達途上として正直に示す。
+
+</Level>
+
+</Topic>

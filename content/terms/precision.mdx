@@ -1,0 +1,18 @@
+---
+title: 適合率
+definition: 陽性と予測したサンプルのうち、実際に陽性だった割合 TP/(TP+FP)。「陽性と言ったら本当に陽性か」を測る指標。
+aliases: [precision, 適合率, 精度(分類)]
+seeAlso: [confusion-matrix, recall, f1-score, roc-curve]
+---
+
+# 適合率
+
+[混同行列](confusion-matrix)のTP・FPから計算する、二値分類の代表的な評価指標の1つ。
+
+$$
+\text{Precision}=\frac{TP}{TP+FP}
+$$
+
+- 陽性と予測した中に紛れ込んだ偽陽性（FP）が多いほど下がる——«陽性と言ったら信じられるか»を測る指標。
+- [再現率](recall)とはトレードオフの関係になりやすい。しきい値を上げる（陽性判定を厳しくする）と precision は上がりやすいが、recall は下がりやすい。
+- 単独で見ると、極端にしきい値を上げて「自信のある1件だけ陽性と予測」すれば precision=1 にできてしまう——[F1値](f1-score)など recall とのバランスを見る指標と併用する。

@@ -1,0 +1,18 @@
+---
+title: F1値
+definition: 適合率と再現率の調和平均 2PR/(P+R)。どちらか一方だけが高くても大きくならない、precision・recallのバランスを1つの数字にまとめた指標。
+aliases: [F1, F1-score, F値, F尺度, harmonic mean of precision and recall]
+seeAlso: [precision, recall, confusion-matrix]
+---
+
+# F1値
+
+[適合率](precision)と[再現率](recall)、どちらか一方だけを見ると見誤る場面で使う、両者のバランスを測る指標。
+
+$$
+F_1=\frac{2\cdot\text{Precision}\cdot\text{Recall}}{\text{Precision}+\text{Recall}}
+$$
+
+- 算術平均ではなく**調和平均**を使うため、precision・recallのどちらかが極端に低いと、F1も大きく下がる（算術平均より厳しい罰則がかかる）。
+- precision=0 または recall=0 のとき F1=0（算術平均なら0.5になってしまう組み合わせでも、調和平均は小さい方に強く引っ張られる）。
+- どちらを重視するかに応じて precision と recall に重みを付けた一般化（$F_\beta$値）もある——$\beta>1$ で recall を重視、$\beta<1$ で precision を重視。
