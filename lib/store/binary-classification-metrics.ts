@@ -4,8 +4,6 @@ import {
   type ClassificationMetrics,
   DATA_SEED,
   generateSamples,
-  N_NEGATIVE,
-  N_POSITIVE,
   rocPointsOf,
   type RocPoint,
   type Sample,
@@ -51,5 +49,3 @@ export const useBinaryClassificationMetricsStore = createTopicStore<MainControls
   initialFrameCount: SAMPLES.length + 2, // overview(1) + 各サンプル(N) + summary(1)
   derive: ({ threshold }) => classificationMetricsAt(SAMPLES, threshold),
 });
-
-export { N_NEGATIVE, N_POSITIVE };
