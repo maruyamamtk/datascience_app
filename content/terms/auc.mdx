@@ -1,0 +1,20 @@
+---
+title: AUC
+definition: ROC曲線の下側の面積(Area Under the Curve)。0.5(ランダム)〜1(完全分離)の値を取り、しきい値によらない分類器の分離性能を1つの数字にまとめる。
+aliases: [AUC, area under the curve, ROC-AUC, AUCスコア]
+seeAlso: [roc-curve, confusion-matrix, class-imbalance]
+---
+
+# AUC
+
+[ROC曲線](roc-curve)の下側の面積（Area Under the Curve）。
+
+$$
+\text{AUC}=\int_0^1 \text{TPR}(\text{FPR})\,d(\text{FPR})
+$$
+
+- AUC=1: 完全に分離できている（すべての陽性が、すべての陰性よりスコアが高い）。
+- AUC=0.5: 対角線上——ランダムに予測しているのと同程度の性能。
+- AUC=0: 予測が完全に逆（陽性・陰性のラベルを入れ替えれば1になる）。
+- **確率的な解釈**: 陽性・陰性からそれぞれ1件ずつランダムに選んだとき、陽性の方が高いスコアを出す確率に等しい（Mann-WhitneyのU統計量と同じ）。
+- 実務では[クラス不均衡](class-imbalance)なデータで陽性が極端に少ないとき、AUCよりPR曲線（適合率-再現率曲線）の方が情報量が多いことが知られる。

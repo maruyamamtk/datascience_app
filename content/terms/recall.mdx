@@ -1,0 +1,18 @@
+---
+title: 再現率
+definition: 実際に陽性のサンプルのうち、正しく陽性と予測できた割合 TP/(TP+FN)。「見逃しの少なさ」を測る指標。真陽性率(TPR)・感度とも呼ばれる。
+aliases: [recall, 再現率, 感度, sensitivity, true positive rate, TPR]
+seeAlso: [confusion-matrix, precision, f1-score, roc-curve]
+---
+
+# 再現率
+
+[混同行列](confusion-matrix)のTP・FNから計算する。「感度」「真陽性率（TPR）」とも呼ばれ、[ROC曲線](roc-curve)の縦軸そのもの。
+
+$$
+\text{Recall}=\frac{TP}{TP+FN}
+$$
+
+- 実際の陽性を取りこぼした（FN）ほど下がる——«見逃しの少なさ»を測る指標。
+- [適合率](precision)とはトレードオフの関係になりやすい。しきい値を下げる（陽性判定を広げる）と recall は上がりやすいが、precision は下がりやすい。
+- 見逃しのコストが大きい問題（重大な疾患の検出など）では、precisionを多少犠牲にしても recall を優先する[コスト考慮型学習](cost-sensitive-learning)がとられることが多い。
