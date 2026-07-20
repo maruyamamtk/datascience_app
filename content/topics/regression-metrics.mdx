@@ -1,0 +1,154 @@
+---
+title: 回帰の評価指標
+summary: 「予約件数から来店者数を予測する、既に学習済みの固定モデル」を題材に、MAE・MSE・RMSE・MAPE・RMSLEという5つの回帰評価指標がそれぞれどう計算され、何を測っているかを、残差の1点ずつのコマ送りと外れ値ドラッグの両方で体感するトピック。
+status: published
+---
+
+import { MetricsLab } from "@/components/topics/regression-metrics/MetricsLab";
+import { MetricsStepper } from "@/components/topics/regression-metrics/MetricsStepper";
+import { MetricsQuiz } from "@/components/topics/regression-metrics/MetricsQuiz";
+
+<Topic title="回帰の評価指標" summary="「予約件数から来店者数を予測する、既に学習済みの固定モデル」を題材に、MAE・MSE・RMSE・MAPE・RMSLEという5つの回帰評価指標がそれぞれどう計算され、何を測っているかを、残差の1点ずつのコマ送りと外れ値ドラッグの両方で体感する。">
+
+<ReaderGuide>
+
+- **初学者** → L0〜L1（5つの指標がそれぞれ何を測るか道具として使う → 各指標の完全な定義と1点ずつの積み上げ計算）
+- **一通り使える人** → L2（各指標の前提・弱点——外れ値への感度の違い、MAPE/RMSLEの定義域の注意）
+- **「完全に理解した」人** → L3以降（分類の評価指標・ビジネスKPIへの接続は到達途上）
+
+前提: [単回帰](/topics/simple-regression)の<Term id="regression-line">回帰直線</Term>と<Term id="residual">残差</Term>——単回帰トピックが「直線をどう当てはめるか（<Term id="least-squares">最小二乗法</Term>）」を扱ったのに対し、本トピックは「当てはめた後の誤差をどう測るか」を扱う。また[評価指標とKPI設計](/topics/metrics-and-kpi)で見た<Term id="evaluation-metric">評価指標</Term>の一般論を、回帰という具体的な問題設定に適用したものでもある。二値分類の評価指標（<Term id="confusion-matrix">混同行列</Term>・適合率・再現率など）は後続トピックで扱う。
+
+</ReaderGuide>
+
+<Level level={0} title="ブラックボックス（5つの指標を道具として使う）">
+  <Concept>
+
+回帰モデルの「良し悪し」を1つの数字で表したい。代表的な5つの指標がある。
+
+- **<Term id="mean-absolute-error">MAE</Term>**（平均絶対誤差）: 誤差の絶対値の平均。直感的で外れ値に比較的強い。
+- **<Term id="mean-squared-error">MSE</Term>**（平均二乗誤差）と **<Term id="root-mean-squared-error">RMSE</Term>**（その平方根）: 誤差を二乗するため大きな誤差に敏感。
+- **<Term id="mean-absolute-percentage-error">MAPE</Term>**（平均絶対パーセント誤差）: 誤差を実測値に対する相対値（%）で測る。
+- **<Term id="root-mean-squared-log-error">RMSLE</Term>**（対数平均二乗誤差）: 対数を取ってから誤差を測る。過小予測をより重く評価する。
+
+どれも「予測値 $\hat y$ が実測値 $y$ からどれだけズレているか」を集計した数字だが、**ズレの測り方が違う**ため、同じデータでも指標ごとに違う顔を見せる。
+
+  </Concept>
+  <Interact>
+
+下のラボは「予約件数から来店者数を予測する、既に学習済みのモデル」（灰色の直線は固定）。実測点（白丸）を上下にドラッグすると5つの指標が実時間で再計算される。「外れ値を作る」ボタンを押して1点を大きくずらし、baseline比のバーグラフで**MSE・RMSEだけが跳ね上がり、MAEはあまり動かない**様子を確かめよう。
+
+<MetricsLab />
+
+  </Interact>
+  <Exercise>
+
+確認: 「MAE・MSE・RMSE・MAPE・RMSLEは、どれも同じデータに対してほぼ同じ値になる」——○か×か。（答: ×。上のラボで外れ値を作ると分かる通り、指標ごとに「ズレの測り方」が違うため、同じデータでも指標ごとに大きく異なる反応を示す。どの指標を使うかで「良いモデル」の判断が変わりうる）
+
+  </Exercise>
+</Level>
+
+<Level level={1} title="古典的理解（各指標の完全な定義と1点ずつの積み上げ計算）">
+  <Concept>
+
+5つの指標はすべて、各点の<Term id="residual">残差</Term> $e_i=y_i-\hat y_i$ を出発点に、集計方法だけを変えたもの。
+
+<Math tex="\mathrm{MAE}=\frac1n\sum_{i=1}^n|e_i|,\quad \mathrm{MSE}=\frac1n\sum_{i=1}^n e_i^2,\quad \mathrm{RMSE}=\sqrt{\mathrm{MSE}}" />
+
+<Math tex="\mathrm{MAPE}=\frac{100}{n}\sum_{i=1}^n\left|\frac{e_i}{y_i}\right|,\quad \mathrm{RMSLE}=\sqrt{\frac1n\sum_{i=1}^n\bigl(\log(1+\hat y_i)-\log(1+y_i)\bigr)^2}" />
+
+  </Concept>
+  <Derivation title="なぜ常に RMSE ≥ MAE になるのか（べき平均の単調性）">
+
+**(1) 二乗してから平方根を取ると、絶対値だけの平均以上になる.** これは高校数学の**二乗平均の不等式**（べき平均の単調性、特別な場合はコーシー・シュワルツの不等式からも導ける）の帰結。$n$個の非負の数 $|e_1|,\dots,|e_n|$ について
+
+$$
+\sqrt{\frac1n\sum_i e_i^2}\ \ge\ \frac1n\sum_i|e_i|
+$$
+
+が常に成り立つ（等号は全ての $|e_i|$ が等しいときのみ）。左辺がRMSE、右辺がMAEにほかならない。
+
+**(2) 直感的な理由.** 二乗は「値が大きいほど急激に増える」凸関数。誤差にばらつき（大きい誤差と小さい誤差の混在）があると、二乗してから平均・平方根を取る操作は「大きい方に引っ張られる」ため、単純な絶対値平均より必ず大きくなる。誤差が全点でぴったり同じ大きさなら、二乗しても引っ張られようがないので等号が成り立つ。
+
+**(3) この不等式の意味.** RMSEとMAEの差（の比）が大きいほど、「誤差の大きさにばらつきがある」——特に一部の点だけ大きく外れている、というシグナルになる。逆に両者がほぼ等しければ、誤差はどの点でもだいたい同じ大きさだと分かる。
+
+  </Derivation>
+  <Interact>
+
+下のコマ送りは、観測点を1つずつ確認しながら、その点までの平均でMAE・MSE(RMSE)・MAPE・RMSLEを少しずつ更新していく。最後のコマで全点ぶんの最終的な指標が出そろう。
+
+<MetricsStepper />
+
+  </Interact>
+  <Exercise>
+
+確認: 「ある回帰モデルで、全ての点の残差の絶対値がちょうど3で揃っているとき、RMSEとMAEの値は一致する」——○か×か。（答: ○。べき平均の不等式は、全ての $|e_i|$ が等しいときに等号が成り立つ。この場合すべて3なので $\mathrm{MAE}=3$、$\mathrm{RMSE}=\sqrt{9}=3$ で一致する）
+
+  </Exercise>
+</Level>
+
+<Level level={2} title="仮定体系（各指標の前提と弱点、外れ値への感度）">
+  <Concept>
+
+指標を選ぶときは、それぞれが暗黙に置いている前提・弱点を知っておく必要がある。
+
+- **MAE**: 誤差の大きさに比例した重みで評価する。外れ値の影響は線形にとどまり、比較的頑健。
+- **MSE・RMSE**: 誤差が正規分布に従うという仮定と相性が良い（最小二乗法・最尤推定との整合性）。二乗するぶん外れ値に敏感——1点の大きなズレが指標全体を支配しうる。
+- **MAPE**: 実測値 $y_i$ で割るため、$y_i$ が0に近い点があると不安定になる（分母が小さいと%が爆発する）。
+- **RMSLE**: 対数を取るため $y,\hat y$ は非負である必要があり、比率のズレを測る形になる——**過小予測をより重く評価する非対称性**を持つ。
+
+どの指標にも一長一短があり、「万能な指標」は存在しない——扱うデータの性質（外れ値の有無・0に近い値の有無）とビジネス上の重視点に応じて選ぶ必要がある。
+
+  </Concept>
+  <Derivation title="RMSLEはなぜ過小予測と過大予測を非対称に評価するのか">
+
+$\log(1+\hat y)-\log(1+y)$ を、$y,\hat y$ が十分大きいときの近似 $\log(1+z)\approx\log z$ で考えると
+
+$$
+\log(1+\hat y)-\log(1+y)\approx\log\hat y-\log y=\log\frac{\hat y}{y}
+$$
+
+となり、これは**予測値と実測値の比率**を対数で測っていることが分かる。
+
+- 実測の**半分**しか予測しない過小予測（$\hat y/y=0.5$）: $\log 0.5\approx-0.693$
+- 実測の**2倍**を予測する過大予測（$\hat y/y=2$）: $\log 2\approx0.693$
+
+絶対値だけを見れば対称に思えるが、実務上は「発注数を半分しか用意しない（欠品リスク）」ことと「発注数を2倍用意する（過剰在庫）」ことのコストは同じではないことが多い。RMSLEは対数を取ることで、**比率としてのズレ**を対称に扱いつつ、$y$ の絶対的な大きさに関わらず一定のスケールで誤差を測れる（大きい $y$ の絶対誤差が指標を支配しない）という利点を持つ——高校数学でいえば「差」ではなく「比（何倍か）」に注目した評価方法。
+
+  </Derivation>
+  <Interact>
+
+[上のラボ](#regression-metrics-lab)に戻り、「外れ値を作る」→「初期データに戻す」を繰り返して、MAE・MSE・RMSE・MAPE・RMSLEそれぞれの倍率バーの伸び方を見比べよう。二乗を使うMSE・RMSEが最も敏感に反応し、絶対値のMAEが最も動きにくいことを確かめる。
+
+  </Interact>
+  <Exercise>
+
+<MetricsQuiz />
+
+  </Exercise>
+</Level>
+
+<Level level={3} title="予測最適化（損失関数としての各指標とロバスト回帰）" status="planned">
+
+MSEは二乗誤差損失を最小化する<Term id="least-squares">最小二乗法</Term>そのものと直結する一方、MAEは絶対値損失（L1損失）の最小化に対応する——外れ値に強いロバスト回帰（Huber損失など）はこの2つを補間する設計思想を持つ。これらの損失関数と勾配降下法による最適化の関係は到達途上として扱う。
+
+</Level>
+
+<Level level={4} title="因果（評価指標の選択とビジネス上の意思決定バイアス）" status="planned">
+
+[評価指標とKPI設計](/topics/metrics-and-kpi)で見た「技術指標とビジネスKPIの乖離」を回帰の文脈で捉え直す——どの誤差指標を最小化するかの選択が、モデルの予測傾向（過大/過小予測のどちらに寄りやすいか）を通じてビジネス上の意思決定に与える影響は到達途上。
+
+</Level>
+
+<Level level={5} title="高次元/最先端（分位点回帰・非対称損失）" status="planned">
+
+平均だけでなく分位点（中央値など）を予測する分位点回帰や、ビジネス上のコスト非対称性を直接組み込んだカスタム損失関数の設計は、研究・実務の両面で発展中の領域。
+
+</Level>
+
+<Level level={6} title="フロンティア" status="planned">
+
+大規模な時系列・需要予測タスクにおける評価指標設計（コンペティションでの指標選択の変遷など）は、ここでは到達途上として正直に示す。
+
+</Level>
+
+</Topic>

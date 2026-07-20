@@ -1,0 +1,17 @@
+---
+title: 二乗平均平方根誤差
+definition: 予測誤差の二乗の平均の平方根 RMSE=√((1/n)Σ(y_i−ŷ_i)²)。大きな誤差ほど二乗で強く罰するため外れ値に敏感。誤差が正規分布に近いときに適した指標で、常にRMSE≥MAE。
+aliases: [root mean squared error, RMSE, 二乗平均平方根誤差]
+seeAlso: [mean-absolute-error, mean-squared-error, residual]
+---
+
+# 二乗平均平方根誤差（RMSE）
+
+$$
+\mathrm{RMSE}=\sqrt{\mathrm{MSE}}=\sqrt{\frac1n\sum_{i=1}^n(y_i-\hat y_i)^2}
+$$
+
+- [平均二乗誤差](mean-squared-error) MSE の平方根を取り、単位を $y$ と揃えたもの（MSE は単位が $y^2$ で解釈しづらい）。
+- [残差](residual)を**二乗**するため、大きな誤差ほど寄与が二次で効く——1点が大きく外れると RMSE は跳ね上がる（**外れ値に敏感**）。[MAE](mean-absolute-error)との対比で、この感度の違いがモデル評価の実務上重要。
+- 誤差が正規分布に従うと仮定できる場合に適した指標（最尤推定・最小二乗法との整合性が良い）。
+- べき平均の単調性から常に $\mathrm{RMSE}\ge\mathrm{MAE}$。誤差の大きさがすべて等しいときのみ等号。
