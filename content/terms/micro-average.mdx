@@ -1,0 +1,18 @@
+---
+title: Micro平均
+definition: 多クラス分類で、全クラスのTP・FP・FNをそれぞれ合算してから、まとめて1回だけprecision・recall・F1を計算する方法。単一ラベル分類では正解率と一致する。
+aliases: [micro average, micro-average, ミクロ平均, Micro-F1]
+seeAlso: [one-vs-rest, precision, recall, f1-score, macro-average, weighted-average, misclassification-rate]
+---
+
+# Micro平均
+
+[One-vs-Rest](one-vs-rest)分解で得た各クラスのTP・FP・FNを**先にすべて合算してから**、まとめて1回だけ[適合率](precision)・[再現率](recall)・F1を計算する方法。
+
+$$
+\text{Micro-Precision}=\frac{\sum_{k=1}^{K}TP_k}{\sum_{k=1}^{K}TP_k+\sum_{k=1}^{K}FP_k}
+$$
+
+- クラスごとの値を先に計算してから平均する[Macro平均](macro-average)・[Weighted平均](weighted-average)とは順序が逆——«合算してから割る»。
+- 各サンプルが必ずちょうど1つのクラスに予測される（単一ラベル）多クラス分類では、全クラスのFPの合計と全クラスのFNの合計は常に等しい（どちらも「誤分類された件数」に一致する）。そのためMicro-Precision=Micro-Recall=Micro-F1=**正解率(Accuracy)**という恒等式が常に成り立つ。
+- サンプル数の多いクラスの性能に結果が近づきやすく、少数派クラスの不振は目立ちにくい。

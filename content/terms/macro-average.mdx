@@ -1,0 +1,20 @@
+---
+title: Macro平均
+definition: 多クラス分類で、クラスごとに計算したprecision・recall・F1をサンプル数に関係なく単純平均する方法。各クラスを均等に扱う。
+aliases: [macro average, macro-average, マクロ平均, Macro-F1]
+seeAlso: [one-vs-rest, precision, recall, f1-score, micro-average, weighted-average]
+---
+
+# Macro平均
+
+[One-vs-Rest](one-vs-rest)分解でクラスごとに求めた[適合率](precision)・[再現率](recall)・F1値を、**クラスの大きさ(サンプル数)を無視して単純平均**する方法。
+
+$$
+\text{Macro-Precision}=\frac{1}{K}\sum_{k=1}^{K}\text{Precision}_k
+$$
+
+（再現率・F1も同じ形で各クラスの値を単純平均する。$K$はクラス数）
+
+- サンプル数が少ないクラスも多いクラスも**同じ重み1つ分**として扱われる。
+- クラス不均衡があるデータでは、少数派クラスの性能が悪いとMacro平均は大きく下がる——「全クラスを同じくらい重要視したい」（希少疾患の検出漏れを多数派クラスと同じ重みで問題視したいなど）場面に向く。
+- [Micro平均](micro-average)・[Weighted平均](weighted-average)はサンプル数の多いクラスに引っ張られやすいのに対し、Macro平均だけがクラスの大きさから独立している点が最大の違い。

@@ -116,7 +116,7 @@
 | 54 | #80 | J-1 | 評価指標とKPI設計 | metrics-and-kpi | learning-framework | ✅ done |
 | 55 | #81 | J-2 | 回帰の評価指標 | regression-metrics | simple-regression | ✅ done |
 | 56 | #82 | J-3 | 二値分類の評価指標 | binary-classification-metrics | qualitative-regression | ✅ done |
-| 57 | #83 | J-4 | 多クラス分類の評価指標 | multiclass-metrics | binary-classification-metrics | pending |
+| 57 | #83 | J-4 | 多クラス分類の評価指標 | multiclass-metrics | binary-classification-metrics | ✅ done |
 | 58 | #84 | J-5 | モデル選択基準（AIC・BIC） | model-selection-criteria | estimation-methods, learning-framework | pending |
 | 59 | #85 | K-1 | ベイズ統計の基礎 | bayesian-basics | probability-basics, distribution-characteristics | pending |
 | 60 | #86 | K-2 | ベイズ計算法（MCMC） | mcmc-methods | bayesian-basics, monte-carlo-methods | pending |

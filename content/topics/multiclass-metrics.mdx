@@ -1,0 +1,159 @@
+---
+title: 多クラス分類の評価指標
+summary: 「ニュース記事の自動分類」(スポーツ・政治・エンタメの3クラス、クラスごとの件数が偏った固定混同行列)を題材に、各クラスをOne-vs-Restの2値問題として切り出しながら、Macro・Micro・Weightedという3通りの平均化がクラス不均衡のもとでどれだけ乖離するかを、混同行列ヒートマップとコマ送りで体感するトピック。
+status: published
+---
+
+import { ConfusionMatrixLab } from "@/components/topics/multiclass-metrics/ConfusionMatrixLab";
+import { OvrStepper } from "@/components/topics/multiclass-metrics/OvrStepper";
+import { AveragingLab } from "@/components/topics/multiclass-metrics/AveragingLab";
+import { MetricsQuiz } from "@/components/topics/multiclass-metrics/MetricsQuiz";
+
+<Topic title="多クラス分類の評価指標" summary="「ニュース記事の自動分類」(3クラス)を題材に、各クラスをOne-vs-Restの2値問題として切り出しながら、Macro・Micro・Weighted平均がクラス不均衡のもとでどれだけ乖離するかを体感する。">
+
+<ReaderGuide>
+
+- **初学者** → L0〜L1（N×N混同行列からOne-vs-Restで2値問題を切り出す道具として使う → クラスを1つずつコマ送りで処理しながらMacro/Micro/Weightedを組み立てる完全な手順）
+- **一通り使える人** → L2（クラス不均衡があるとMacroとMicro/Weightedがなぜ・どれだけ乖離するか、恒等式による正確な理解）
+- **「完全に理解した」人** → L3以降（多クラスROC-AUC・PR曲線への拡張は到達途上）
+
+前提: [二値分類の評価指標](/topics/binary-classification-metrics)で見た<Term id="confusion-matrix">混同行列</Term>・<Term id="precision">適合率</Term>・<Term id="recall">再現率</Term>・<Term id="f1-score">F1値</Term>——本トピックはそれらを3クラス以上へ一般化する。各クラスを<Term id="one-vs-rest">One-vs-Rest</Term>で2値問題に切り出せば、TP・FP・FN・TNの定義もprecision・recall・F1の計算式も二値分類とまったく同じまま使える。新しく増えるのは「クラスごとに出た複数の値を、どう1つの数字にまとめるか」という<Term id="macro-average">Macro平均</Term>・<Term id="micro-average">Micro平均</Term>・<Term id="weighted-average">Weighted平均</Term>の3通りの選び方。
+
+</ReaderGuide>
+
+<Level level={0} title="ブラックボックス（One-vs-Restを道具として使う）">
+  <Concept>
+
+3つ以上のクラスに分類する問題（手書き数字認識・ニュース記事の自動分類・顧客セグメント判別など）でも、評価の出発点は二値分類と同じ<Term id="confusion-matrix">混同行列</Term>——ただし今度はN×N（クラス数×クラス数）に広がる。
+
+この混同行列からクラスごとの<Term id="precision">Precision</Term>・<Term id="recall">Recall</Term>・F1を出す標準的な方法が<Term id="one-vs-rest">One-vs-Rest</Term>（OvR）——「注目したい1クラス」を陽性、残りの全クラスをまとめて陰性とみなせば、TP・FP・FN・TNが二値分類とまったく同じ形で定義できる。
+
+  </Concept>
+  <Interact>
+
+下のラボは「ニュース記事の自動分類」（スポーツ・政治・エンタメの3クラス、全100件）の固定混同行列。行は実際のクラス、列は予測したクラス。クラスを選ぶと、そのクラスをOne-vs-Restで切り出したTP・FP・FN・TNとprecision・recall・F1が実時間で更新される。
+
+<ConfusionMatrixLab />
+
+  </Interact>
+  <Exercise>
+
+確認: 「クラスkのFP（偽陽性）は、実際にクラスkであるサンプルのうち他のクラスと予測されたものの数である」——○か×か。（答: ×。それはFN（偽陰性）の定義。FPは«クラスkと予測したが実際は違うクラスだった»サンプル数——混同行列ではクラスkの列合計からTP（対角成分）を引いた値になる）
+
+  </Exercise>
+</Level>
+
+<Level level={1} title="古典的理解（クラスごとに組み立てる完全な手順とMicro平均の恒等式）">
+  <Concept>
+
+クラスごとにOne-vs-Restで求めたprecision・recall・F1を1つの数字にまとめる方法は3通りある。
+
+<Math tex="\text{Macro}=\frac{1}{K}\sum_{k}\text{metric}_k,\qquad \text{Weighted}=\sum_{k}\frac{n_k}{N}\text{metric}_k,\qquad \text{Micro}=\text{（}TP_k・FP_k・FN_k\text{ を合算してから1回だけ計算）}" />
+
+<Term id="macro-average">Macro平均</Term>は各クラスの値を単純平均（クラスの大きさを無視）、<Term id="weighted-average">Weighted平均</Term>はサンプル数$n_k$で重み付けた平均、<Term id="micro-average">Micro平均</Term>は先に全クラスのTP・FP・FNを合算してからまとめて1回だけprecision・recall・F1を計算する——この「合算してから割る」順序がMacro/Weightedとの決定的な違い。
+
+  </Concept>
+  <Derivation title="なぜMicro precision=Micro recall=Micro F1=正解率が常に成り立つのか（高校数学レベルの代数）">
+
+**(1) 各サンプルは必ずちょうど1つのクラスに予測される（単一ラベル分類）.** このとき、クラスkの列合計（クラスkと予測された件数）を全クラスについて足し合わせると、全サンプルの予測先を数え上げているだけなので、その総和は必ず全サンプル数$N$に一致する。行合計（実際にクラスkである件数）についても同様に、総和は$N$になる。
+
+$$
+\sum_{k=1}^{K}(\text{クラス}k\text{の列合計})=\sum_{k=1}^{K}(\text{クラス}k\text{の行合計})=N
+$$
+
+**(2) FPの合計とFNの合計は、どちらも「誤分類された件数」に等しい.** クラス$k$のFPは「列合計$-TP_k$」、FNは「行合計$-TP_k$」なので、
+
+$$
+\sum_k FP_k=\sum_k(\text{列合計})-\sum_k TP_k=N-\sum_k TP_k,\qquad
+\sum_k FN_k=\sum_k(\text{行合計})-\sum_k TP_k=N-\sum_k TP_k
+$$
+
+(1)より両方とも同じ$N-\sum_k TP_k$になる——つまり **$\sum_k FP_k=\sum_k FN_k$ は常に成り立つ**（中学レベルの代数、単なる足し算の入れ替えで示せる）。
+
+**(3) Micro precision・Micro recallはどちらも正解率に一致する.**
+
+$$
+\text{Micro-Precision}=\frac{\sum_k TP_k}{\sum_k TP_k+\sum_k FP_k}=\frac{\sum_k TP_k}{\sum_k TP_k+(N-\sum_k TP_k)}=\frac{\sum_k TP_k}{N}=\text{Accuracy}
+$$
+
+Micro-Recallの分母も$\sum_k TP_k+\sum_k FN_k$で、(2)より$\sum_k FN_k=\sum_k FP_k$なのでMicro-Precisionと同じ式になり、両方とも正解率に一致する。precisionとrecallが等しければF1も同じ値になるので、**Micro precision=Micro recall=Micro F1=正解率**が単一ラベル多クラス分類では常に成り立つ。
+
+  </Derivation>
+  <Interact>
+
+下のコマ送りは、クラスを1つずつOne-vs-Restに切り出しながらprecision・recall・F1の表を組み立て、最後にMacro・Micro・Weightedの3通りの平均を数式付きで一気に見せる。
+
+<OvrStepper />
+
+  </Interact>
+  <Exercise>
+
+確認: 「Micro precisionとMicro recallは、単一ラベル多クラス分類では必ず同じ値になる」——○か×か。（答: ○。上の導出のとおり、どちらも$\sum_k TP_k/N$＝正解率に一致するため、必ず同じ値になる）
+
+  </Exercise>
+</Level>
+
+<Level level={2} title="仮定体系（クラス不均衡でMacroとMicro/Weightedがなぜ乖離するか）">
+  <Concept>
+
+Macro平均は「各クラスを均等に重視したい」（希少疾患の検出漏れを多数派と同じ重みで問題視したいなど）場面に向く一方、クラスの大きさをまったく考慮しないため、**少数派クラスの性能が悪いと全体の値を大きく押し下げる**。Weighted・Micro平均はサンプル数の多いクラスの性能に近づきやすく、正解率に近い体感の値になりやすい。
+
+  </Concept>
+  <Derivation title="Weighted RecallがMicro Recall・正解率と常に一致することの確認（Precisionでは成り立たない理由）">
+
+Weighted Recallは
+
+$$
+\text{Weighted-Recall}=\sum_k \frac{n_k}{N}\text{Recall}_k=\sum_k \frac{n_k}{N}\cdot\frac{TP_k}{n_k}=\frac{\sum_k TP_k}{N}=\text{Accuracy}
+$$
+
+重み$n_k$（行合計）がRecallの分母$n_k$と**そのまま約分できる**ため、常に正解率に一致する。
+
+一方Weighted Precisionは
+
+$$
+\text{Weighted-Precision}=\sum_k \frac{n_k}{N}\cdot\frac{TP_k}{\text{列合計}_k}
+$$
+
+となり、重み$n_k$（行合計）とPrecisionの分母（列合計）が一般には異なる値なので約分できない——**行合計と列合計がクラスごとにたまたま一致しない限り、Weighted PrecisionはMicro Precision（＝正解率）と厳密には一致しない**。Recallだけに特別な恒等式が成り立つのは、Recallの分母（行合計）がWeighted平均の重み（行合計）と同じものだから、という代数的な理由による。
+
+  </Derivation>
+  <Interact>
+
+[上のラボ](#multiclass-metrics-lab)や下のラボで平均化方式を切り替え、少数派クラス「エンタメ」の低い性能がMacro・Micro・Weightedにそれぞれどれだけ効いてくるかを比較しよう。
+
+<AveragingLab />
+
+  </Interact>
+  <Exercise>
+
+<MetricsQuiz />
+
+  </Exercise>
+</Level>
+
+<Level level={3} title="予測最適化（多クラスの $F_\beta$ 値としきい値設計への拡張）" status="planned">
+
+二値分類の$F_\beta$値（[F1値](/terms/f1-score)の一般化）を各クラスに適用し、クラスごとに異なる重みでOne-vs-Restのしきい値を最適化する話は到達途上として扱う。
+
+</Level>
+
+<Level level={4} title="因果（クラスごとの誤分類コストとビジネスインパクト）" status="planned">
+
+[評価指標とKPI設計](/topics/metrics-and-kpi)で見た「技術指標とビジネスKPIの乖離」を、クラスごとに異なる誤分類コスト（詳細_第4章 §4.9「ビジネスインパクトの期待値計算」）を持つ多クラス問題の文脈で捉え直す議論は到達途上。
+
+</Level>
+
+<Level level={5} title="高次元/最先端（多クラスROC-AUC・PR曲線への拡張）" status="planned">
+
+各クラスをOne-vs-Restの二値問題とみなしてROC曲線・AUCをMicro/Macroで拡張する方法（詳細_第4章 §4.8）や、クラス不均衡下でのPR曲線ベースの評価は研究・実務の両面で発展中の領域として、ここでは到達途上として正直に示す。
+
+</Level>
+
+<Level level={6} title="フロンティア" status="planned">
+
+階層的な多クラス分類（クラス間に木構造の関係がある場合の評価）や、クラス数が非常に多い（数百〜数千）極端な多クラス問題での評価指標設計の最新動向は、到達途上として扱う。
+
+</Level>
+
+</Topic>

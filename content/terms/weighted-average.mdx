@@ -1,0 +1,20 @@
+---
+title: Weighted平均
+definition: 多クラス分類で、クラスごとに計算したprecision・recall・F1を、そのクラスの実際のサンプル数(support)で重み付けして平均する方法。Weighted Recallは常に正解率と一致する。
+aliases: [weighted average, weighted-average, 重み付き平均, Weighted-F1, support-weighted average]
+seeAlso: [one-vs-rest, precision, recall, f1-score, macro-average, micro-average]
+---
+
+# Weighted平均
+
+[One-vs-Rest](one-vs-rest)分解でクラスごとに求めた指標を、**そのクラスの実際のサンプル数(support、$n_k$)で重み付けして平均**する方法。
+
+$$
+\text{Weighted-Precision}=\sum_{k=1}^{K}\frac{n_k}{N}\,\text{Precision}_k
+$$
+
+（$N$は全サンプル数。再現率・F1も同じ形で重み付け平均する）
+
+- [Macro平均](macro-average)と違い、サンプル数の多いクラスほど平均への寄与が大きい——多数派クラスの性能に近い値になりやすい。
+- **Weighted Recallは、恒等式 $\sum_k \frac{n_k}{N}\cdot\frac{TP_k}{n_k}=\frac{\sum_k TP_k}{N}$ により、常に正解率(Accuracy)・[Micro平均](micro-average)のRecallと完全に一致する**——これは代数的に必ず成り立つ関係で、データの中身によらない。
+- 一方Weighted PrecisionはMicro Precisionと一般には一致しない（クラスの重み$n_k$が行合計であるのに対し、precisionの分母は列合計であるため）——«似ているが一致するとは限らない»点に注意する。
