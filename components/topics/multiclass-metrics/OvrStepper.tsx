@@ -49,21 +49,20 @@ export function OvrStepper() {
     const macro = mathRefMacro.current;
     const micro = mathRefMicro.current;
     const weighted = mathRefWeighted.current;
-    const isSummary = p?.step === "summary";
+    // summaryフレームのときだけp.macro/micro/weightedが入る(frames.tsのbuildOvrFrames参照)。
+    const summary = p?.step === "summary" ? p : undefined;
+    const fmt = (v: number | null | undefined) => (v === null || v === undefined ? "?" : formatNumber(v, 3));
     if (macro) {
-      macro.setValue("ovr_macro_val", isSummary && p?.macro?.f1 !== null ? formatNumber(p!.macro!.f1!, 3) : "?");
-      macro.setHighlight("ovr_macro_val", isSummary, "#7c3aed");
+      macro.setValue("ovr_macro_val", fmt(summary?.macro?.f1));
+      macro.setHighlight("ovr_macro_val", !!summary, "#7c3aed");
     }
     if (micro) {
-      micro.setValue("ovr_micro_val", isSummary && p?.micro?.f1 !== null ? formatNumber(p!.micro!.f1!, 3) : "?");
-      micro.setHighlight("ovr_micro_val", isSummary, "#059669");
+      micro.setValue("ovr_micro_val", fmt(summary?.micro?.f1));
+      micro.setHighlight("ovr_micro_val", !!summary, "#059669");
     }
     if (weighted) {
-      weighted.setValue(
-        "ovr_weighted_val",
-        isSummary && p?.weighted?.f1 !== null ? formatNumber(p!.weighted!.f1!, 3) : "?",
-      );
-      weighted.setHighlight("ovr_weighted_val", isSummary, "#ea580c");
+      weighted.setValue("ovr_weighted_val", fmt(summary?.weighted?.f1));
+      weighted.setHighlight("ovr_weighted_val", !!summary, "#ea580c");
     }
   }, [p]);
 

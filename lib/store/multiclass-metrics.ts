@@ -38,7 +38,6 @@ export type MainDerived = {
   macro: AverageMetrics;
   micro: AverageMetrics;
   weighted: AverageMetrics;
-  current: AverageMetrics;
   accuracy: number;
 };
 
@@ -52,13 +51,12 @@ export type MainDerived = {
 export const useMulticlassMetricsStore = createTopicStore<MainControls, MainDerived>({
   initialControls: { selectedClass: INITIAL_CLASS_INDEX, method: INITIAL_METHOD },
   initialFrameCount: CLASS_LABELS.length + 2, // overview(1) + 各クラス(N) + summary(1)
-  derive: ({ selectedClass, method }) => ({
+  derive: ({ selectedClass }) => ({
     perClass: PER_CLASS,
     selected: PER_CLASS[selectedClass],
     macro: averageOf(PER_CLASS, "macro"),
     micro: averageOf(PER_CLASS, "micro"),
     weighted: averageOf(PER_CLASS, "weighted"),
-    current: averageOf(PER_CLASS, method),
     accuracy: ACCURACY_VALUE,
   }),
 });

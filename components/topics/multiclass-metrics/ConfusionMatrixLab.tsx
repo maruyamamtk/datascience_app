@@ -141,7 +141,7 @@ export function ConfusionMatrixLab() {
                   return (
                     <td
                       key={j}
-                      onClick={() => setControl("selectedClass", isDiag ? i : selectedClass)}
+                      onClick={isDiag ? () => setControl("selectedClass", i) : undefined}
                       data-testid={`matrix-cell-${i}-${j}`}
                       className={`rounded-lg p-2 font-mono font-semibold ${
                         isSelected ? "ring-2 ring-slate-900 ring-offset-1" : ""
