@@ -1,0 +1,20 @@
+---
+title: One-vs-Rest
+definition: 多クラス分類の評価で、あるクラスを「陽性」・残りの全クラスをまとめて「陰性」とみなし、二値分類と同じTP/FP/FN/TNを定義する分解方法。略してOvR。
+aliases: [OvR, one-vs-rest, One-vs-All, 一対他]
+seeAlso: [confusion-matrix, precision, recall, macro-average, micro-average, weighted-average]
+---
+
+# One-vs-Rest
+
+3つ以上のクラスがある[混同行列](confusion-matrix)から、二値分類でおなじみのTP・FP・FN・TNを取り出すための標準的な分解方法。
+
+クラス $k$ を「陽性」、それ以外の全クラスをまとめて「陰性」とみなすと、
+
+- **TP** = クラス $k$ と予測して実際もクラス $k$（混同行列の対角成分）
+- **FP** = クラス $k$ と予測したが実際は違うクラス（クラス $k$ の列合計 − TP）
+- **FN** = 実際はクラス $k$ だが違うクラスと予測した（クラス $k$ の行合計 − TP）
+- **TN** = 残り全部
+
+- クラスの数だけこの分解を繰り返すと、クラスごとの[適合率](precision)・[再現率](recall)・F1が計算できる。
+- クラスごとに計算した指標をどう1つの数字にまとめるかが[Macro平均](macro-average)・[Micro平均](micro-average)・[Weighted平均](weighted-average)の役割分担になる。
