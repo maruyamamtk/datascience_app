@@ -1,0 +1,18 @@
+---
+title: AIC（赤池情報量規準）
+definition: −2×対数尤度＋2×パラメータ数。当てはまりの良さにパラメータ1個あたり2の罰則を課す情報量規準。予測誤差の推定値としての意味を持つ。
+aliases: [AIC, Akaike Information Criterion, 赤池情報量規準, 赤池情報量基準]
+seeAlso: [information-criterion, bic, likelihood-function, mallows-cp]
+---
+
+# AIC（赤池情報量規準）
+
+$$
+\mathrm{AIC}=-2\log L(\hat\theta)+2k
+$$
+
+- $\log L(\hat\theta)$ は当てはめたモデルの[対数尤度](likelihood-function)（最大化した値）、$k$ はそのモデルのパラメータ数。
+- パラメータを1個増やすごとに罰則が**2ずつ**増える——[BIC](bic)の罰則 $k\log n$ より緩やかなことが多く（標本サイズ $n$ が8以上ならほぼ常に $\log n>2$）、AICは相対的にパラメータ数が多め（複雑め）のモデルを選びやすい。
+- 元々は「未知データへの予測誤差（汎化誤差）を近似的に推定する」という理論的な裏付けを持つ規準——[交差検証](cross-validation)による予測誤差の見積もりと、漸近的に近い考え方に行き着く。
+- 正規誤差の回帰モデルでは、[残差平方和](residual-sum-of-squares) RSS を使って $\log L=-\frac{n}{2}\big(\log 2\pi+\log(\mathrm{RSS}/n)+1\big)$ と書き直せる——RSSが小さいほどAICも小さくなる（当てはまりの良さの効果）が、パラメータ数 $k$ が増えるほど罰則で押し戻される。
+- 使い方: 候補モデルのAICを比べ、**最小のもの**を選ぶ。
