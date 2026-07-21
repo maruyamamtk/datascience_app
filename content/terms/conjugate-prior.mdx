@@ -1,0 +1,20 @@
+---
+title: 共役事前分布
+definition: 尤度関数と組み合わせても事後分布が同じ分布族にとどまる事前分布。例: 二項尤度に対するベータ分布。パラメータ更新が閉形式の足し算だけで済み、複雑な積分計算を避けられる。
+aliases: [conjugate prior, 共役事前分布, 共役性]
+seeAlso: [prior-distribution, posterior-distribution, beta-distribution, bayes-theorem]
+---
+
+# 共役事前分布
+
+[事前分布](prior-distribution)の分布族が、尤度と掛け合わせて[事後分布](posterior-distribution)を
+計算したあとも**同じ族のまま**保たれるとき、その事前分布は尤度に対して«共役»であるという。
+
+- 代表例: 二項尤度（成功 $k$ 回・失敗 $m$ 回）に対して[ベータ分布](beta-distribution)
+  $\mathrm{Beta}(\alpha,\beta)$ を事前分布に選ぶと、事後分布は
+  $\mathrm{Beta}(\alpha+k,\beta+m)$——同じベータ分布族のまま、パラメータが単純な足し算で更新される。
+- 共役性がないと、事後分布 $\pi(\theta\mid D)\propto L(D\mid\theta)\pi(\theta)$ の正規化定数
+  （分母の積分）を解析的に求められないことが多く、数値積分やMCMCなどの近似計算が必要になる
+  （ベイズ計算法の発展的な領域）。
+- 共役事前分布は計算の便利さのために選ぶものであり、常に«正しい»事前知識を表すとは限らない
+  ——観測データが十分に増えれば、事前分布の選び方によらず事後分布は似た形へ収束していく。

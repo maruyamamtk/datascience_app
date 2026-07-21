@@ -2,7 +2,7 @@
 title: 尤度比検定
 definition: 制約あり（H0）と制約なしの最大尤度の比 Λ で検定する方法。統計量 −2logΛ は漸近的にカイ二乗分布。ネイマン・ピアソンの複合仮説への一般化。
 aliases: [likelihood ratio test, LRT, 尤度比検定]
-seeAlso: [neyman-pearson-lemma, wald-test, score-test]
+seeAlso: [neyman-pearson-lemma, wald-test, score-test, bayes-factor]
 ---
 
 # 尤度比検定（LRT）
@@ -14,3 +14,4 @@ $$
 - H0 のもとでの最大尤度と «全体» の最大尤度の比。対数尤度の «高さの差» で測る。
 - $-2\log\Lambda$ は漸近的に自由度 $k$（制約の数）のカイ二乗。[ネイマン・ピアソン](neyman-pearson-lemma)の複合仮説版。
 - [ワルド型検定](wald-test)・[スコア検定](score-test)と漸近的に等価。
+- ベイズ推論での類似概念は[ベイズファクター](bayes-factor)——最大尤度の«比»ではなく、事前分布で重み付けた周辺尤度の«比»を使う点が異なる。

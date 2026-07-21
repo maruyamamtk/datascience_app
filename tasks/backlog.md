@@ -118,7 +118,7 @@
 | 56 | #82 | J-3 | 二値分類の評価指標 | binary-classification-metrics | qualitative-regression | ✅ done |
 | 57 | #83 | J-4 | 多クラス分類の評価指標 | multiclass-metrics | binary-classification-metrics | ✅ done |
 | 58 | #84 | J-5 | モデル選択基準（AIC・BIC） | model-selection-criteria | estimation-methods, learning-framework | ✅ done |
-| 59 | #85 | K-1 | ベイズ統計の基礎 | bayesian-basics | probability-basics, distribution-characteristics | pending |
+| 59 | #85 | K-1 | ベイズ統計の基礎 | bayesian-basics | probability-basics, distribution-characteristics | ✅ done |
 | 60 | #86 | K-2 | ベイズ計算法（MCMC） | mcmc-methods | bayesian-basics, monte-carlo-methods | pending |
 | 61 | #87 | K-3 | 階層ベイズモデル | hierarchical-bayes | mcmc-methods | pending |
 | 62 | #88 | K-4 | ベイズ応用（A/Bテスト・IRT） | bayesian-applications | bayesian-basics | pending |

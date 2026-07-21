@@ -1,0 +1,23 @@
+---
+title: 事後分布
+definition: 事前分布と尤度をベイズの定理で組み合わせて得る、観測後のパラメータθの確率分布 π(θ|D)∝L(D|θ)π(θ)。点推定・信用区間・予測分布のもとになる。
+aliases: [posterior distribution, 事後分布]
+seeAlso: [prior-distribution, conjugate-prior, bayes-theorem, likelihood-function]
+---
+
+# 事後分布
+
+観測データ $D$ を踏まえて更新した、パラメータ $\theta$ の確率分布。
+
+$$
+\pi(\theta\mid D)=\frac{L(D\mid\theta)\,\pi(\theta)}{\int L(D\mid\theta')\,\pi(\theta')\,d\theta'}\ \propto\ L(D\mid\theta)\,\pi(\theta)
+$$
+
+- [ベイズの定理](bayes-theorem)を、離散的な事象の確率 $P(D\mid E)$ から連続パラメータ $\theta$ の
+  密度へ拡張したもの。「事後 ∝ [尤度](likelihood-function) × [事前分布](prior-distribution)」という
+  読み方はそのまま成り立つ。
+- コイン投げの例では、事前分布 $\mathrm{Beta}(\alpha_0,\beta_0)$ に表 $k$ 回・裏 $m$ 回を観測すると、
+  事後分布は $\mathrm{Beta}(\alpha_0+k,\beta_0+m)$（[共役事前分布](conjugate-prior)の性質）。
+- 事後分布から平均・最頻値・信用区間（不確実性の幅）を読み取れる——点推定だけでなく
+  不確実性そのものを分布として持ち続けるのがベイズ推論の特徴。
+- 観測を1つずつ追加するたびに、前回の事後分布が次の事前分布になる（逐次更新）。

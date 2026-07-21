@@ -1,0 +1,23 @@
+---
+title: ベイズファクター
+definition: 2つの仮説の周辺尤度(エビデンス)の比 BF10=m(D|H1)/m(D|H0)。値が大きいほどH1をデータが強く支持する。頻度論のp値とは異なり、仮説間の証拠の強さを直接比較する。
+aliases: [Bayes factor, ベイズ因子, ベイズ乗数, BF]
+seeAlso: [bayesian-hypothesis-testing, posterior-distribution, likelihood-ratio-test, p-value]
+---
+
+# ベイズファクター
+
+2つの仮説 $H_0,H_1$ について、データ $D$ のもとでの**周辺尤度（エビデンス）の比**。
+
+$$
+\mathrm{BF}_{10}=\frac{m(D\mid H_1)}{m(D\mid H_0)},\qquad m(D\mid H)=\int L(D\mid\theta)\,\pi(\theta\mid H)\,d\theta
+$$
+
+- 各仮説のもとでパラメータ $\theta$ を積分消去した「データの起こりやすさ」を比べる。
+  $\mathrm{BF}_{10}>1$ なら $H_1$、$<1$ なら $H_0$ をデータが支持する。
+- [尤度比検定](likelihood-ratio-test)の $\Lambda$（最大尤度の比）と似た発想だが、ベイズファクターは
+  «最大値»ではなく事前分布で重み付けた«平均»（積分）を使う点が異なる。
+- 目安（Jeffreys/Lee & Wagenmakers のスケール）: 比が1〜3は«ほぼ決定打なし»、3〜10は«中程度»、
+  10〜30は«強い»、30〜100は«非常に強い»、100超は«極めて強い»証拠とみなす。
+- [p値](p-value)のような単一の閾値（0.05）で「有意/非有意」を二分するのではなく、
+  証拠の強さを連続的な目安で示すのが[ベイズ的仮説検定](bayesian-hypothesis-testing)の考え方。
