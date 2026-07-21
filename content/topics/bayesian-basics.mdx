@@ -1,0 +1,196 @@
+---
+title: ベイズ統計の基礎（事前分布・事後分布・共役事前分布）
+summary: コインを1枚ずつ投げて観測するたびに「表が出る確率θ」の事前分布→事後分布が更新される様子をコマ送りで見せ、共役事前分布(ベータ-二項)の仕組み、ベイズファクターによる仮説検定(頻度論のp値との対比)、事後確率に基づくベイズ判別までを扱う、ベイズ統計の入り口となるトピック。
+status: published
+---
+
+import { PosteriorUpdateLab } from "@/components/topics/bayesian-basics/PosteriorUpdateLab";
+import { PriorSensitivityLab } from "@/components/topics/bayesian-basics/PriorSensitivityLab";
+import { BayesFactorLab } from "@/components/topics/bayesian-basics/BayesFactorLab";
+import { BayesianDiscriminantLab } from "@/components/topics/bayesian-basics/BayesianDiscriminantLab";
+import { BayesianBasicsQuiz } from "@/components/topics/bayesian-basics/BayesianBasicsQuiz";
+
+<Topic title="ベイズ統計の基礎（事前分布・事後分布・共役事前分布）" summary="コインを1枚ずつ投げて観測するたびに事前分布→事後分布が更新される様子をコマ送りで見せ、共役事前分布・ベイズファクター・ベイズ判別までを扱う。">
+
+<ReaderGuide>
+
+- **初学者** → L0〜L1（事前分布→事後分布の更新を道具として使う → ベイズの定理とベータ-二項共役の導出）
+- **一通り使える人** → L2（ベイズファクターによる仮説検定・頻度論のp値との対比、事後確率に基づくベイズ判別）
+- **「完全に理解した」人** → L3以降（ベイズ線形回帰・MCMC・階層ベイズは到達途上）
+
+前提: [事象と確率](/topics/probability-basics)の<Term id="conditional-probability">条件付き確率</Term>・<Term id="bayes-theorem">ベイズの定理</Term>（本トピックはこれを「1つの事象」から「連続パラメータθ全体の分布」へ拡張する）、[確率分布の特徴](/topics/distribution-characteristics)の平均・分散（<Term id="beta-distribution">ベータ分布</Term>の平均・分散にそのまま使う）。出典: 『Pythonでスラスラわかるベイズ推論「超」入門』第3章「ベイズ推論とは」。
+
+</ReaderGuide>
+
+<Level level={0} title="ブラックボックス（事前分布→事後分布の更新を道具として使う）">
+  <Concept>
+
+ベイズ推論の目的は、**解析的に解くのが困難なパラメータの確率分布をデータから推定すること**。
+従来の点推定と違い、パラメータの**不確実性そのもの**を確率分布として持ち続けられるのが特徴。
+
+核心は次の1行に尽きる。
+
+<Math tex="\text{事後分布}\ \propto\ \text{尤度}\times\text{事前分布}" />
+
+<Term id="prior-distribution">事前分布</Term>はデータを見る**前**の信念、<Term id="posterior-distribution">事後分布</Term>はデータを見た**後**の信念。コインを1枚ずつ投げて「表が出る確率θ」を推定する例で、この更新を体感しよう。
+
+  </Concept>
+  <Interact>
+
+下のラボは、コイン投げ10回を1回ずつ観測するたびに、事前分布(灰色)から事後分布(青)がどう更新されるかをコマ送りで見せる。事前分布 α₀・β₀ のスライダーを動かして、異なる「観測前の信念」から始めるとどう変わるかも確かめよう。
+
+<PosteriorUpdateLab />
+
+  </Interact>
+  <Exercise>
+
+確認: 「観測数(投げた回数)が増えるほど、事前分布が事後分布に与える影響は相対的に強くなる」——○か×か。
+（答: ×。逆。観測が増えるほど尤度(データからの情報)の影響が相対的に強くなり、事前分布の影響は薄れていく。上のラボで事前分布のα₀・β₀を極端に変えても、コマ送りを最後まで進めると事後分布の形が似てくることを確認しよう）
+
+  </Exercise>
+</Level>
+
+<Level level={1} title="古典的理解（ベイズの定理の導出とベータ-二項共役の更新式）">
+  <Concept>
+
+[事象と確率](/topics/probability-basics)で学んだベイズの定理は、離散的な事象 $D$ の確率 $P(D)$ を扱うものだった。これを**連続パラメータθの確率密度**に拡張すると、
+
+<Math tex="\pi(\theta\mid D)=\dfrac{L(D\mid\theta)\,\pi(\theta)}{\displaystyle\int L(D\mid\theta')\,\pi(\theta')\,d\theta'}" />
+
+分母は $\theta$ に依存しない定数（正規化定数）なので、「$\theta$ の関数として見れば」比例関係 $\pi(\theta\mid D)\propto L(D\mid\theta)\pi(\theta)$ がそのまま成り立つ。
+
+  </Concept>
+  <Derivation title="ベイズの定理を«事象»から«パラメータの分布»へ拡張する(復習+一般化)">
+
+[事象と確率](/topics/probability-basics)の乗法定理 $P(D\cap E)=P(E\mid D)P(D)=P(D\mid E)P(E)$ を解くと
+
+$$
+P(D\mid E)=\frac{P(E\mid D)P(D)}{P(E)}
+$$
+
+だった。ここで「事象 $D$」を「パラメータ $\theta$ がある値を取るという事象」に、「確率 $P(\cdot)$」を「確率密度 $\pi(\cdot)$・尤度 $L(\cdot)$」に置き換えるだけで、同じ式の構造がそのまま連続パラメータに拡張できる（和 $\sum$ が積分 $\int$ に変わる以外、論理は同じ）。
+
+$$
+\pi(\theta\mid D)=\frac{L(D\mid\theta)\,\pi(\theta)}{\displaystyle\int L(D\mid\theta')\,\pi(\theta')\,d\theta'}
+$$
+
+  </Derivation>
+  <Derivation title="ベータ-二項共役の更新式を導く(高校数学の指数法則だけで足りる)">
+
+コイン投げで表が出る確率 $\theta$ に<Term id="conjugate-prior">共役事前分布</Term> $\mathrm{Beta}(\alpha_0,\beta_0)$ を置く。
+
+$$
+\pi(\theta)=\frac{\theta^{\alpha_0-1}(1-\theta)^{\beta_0-1}}{B(\alpha_0,\beta_0)}
+$$
+
+$n$ 回中 $k$ 回表・$m=n-k$ 回裏を観測したときの尤度は二項分布から
+
+$$
+L(\theta)=\binom{n}{k}\theta^{k}(1-\theta)^{m}
+$$
+
+事後分布は $\pi(\theta\mid D)\propto L(\theta)\,\pi(\theta)$ なので、$\theta$ に依存しない係数（$\binom{n}{k}$ や $B(\alpha_0,\beta_0)$）を無視すると
+
+$$
+\pi(\theta\mid D)\ \propto\ \theta^{k}(1-\theta)^{m}\cdot\theta^{\alpha_0-1}(1-\theta)^{\beta_0-1}=\theta^{(\alpha_0+k)-1}(1-\theta)^{(\beta_0+m)-1}
+$$
+
+（指数法則 $\theta^{a}\cdot\theta^{b}=\theta^{a+b}$ を $\theta$ の部分と $(1-\theta)$ の部分にそれぞれ使っただけ——高校数学の範囲）。この形は $\mathrm{Beta}(\alpha_0+k,\ \beta_0+m)$ の核(カーネル)とちょうど一致する。確率密度は積分して1になるよう正規化されるので、比例関係が一致すれば分布そのものが一致する。したがって
+
+$$
+\theta\mid D\ \sim\ \mathrm{Beta}(\alpha_0+k,\ \beta_0+m)
+$$
+
+——これが<Term id="conjugate-prior">共役事前分布</Term>の中身。観測のたびに $\alpha$ に成功数、$\beta$ に失敗数を**足すだけ**で事後分布が求まる（上のラボのステッパーで、1コマ進めるたびにα・βのどちらかが+1されているのがこれ）。
+
+  </Derivation>
+  <Interact>
+
+事前分布の強さ(重み)を変えると、同じ観測データに対する事後平均の«動きやすさ»がどう変わるかを比較する。弱い事前分布 Beta(1,1)・強い事前分布 Beta(20,20)・あなたが選んだ Beta(w,w) の3本を重ねて描く。
+
+<PriorSensitivityLab />
+
+  </Interact>
+  <Exercise>
+
+確認: 事前分布 Beta(20,20)(強い「五分五分」の確信)で最初の3投がすべて表だったとき、事後平均は0.5からほとんど動かなかった。事前分布 Beta(1,1)(無情報)では同じ3投で事後平均が大きく0.5より上に動いた。この違いを最もよく説明するのは？
+（答: Beta(20,20)は $\alpha_0+\beta_0=40$ という «40回分の観測に相当する強さ» を事前に持ち込んでいるため、たった3回の新しい観測では平均をほとんど動かせない。Beta(1,1)は $\alpha_0+\beta_0=2$ しかないため、3回の観測が相対的に大きな影響を持つ——事前分布の«重み»は $\alpha_0+\beta_0$ の大きさで決まる）
+
+  </Exercise>
+</Level>
+
+<Level level={2} title="仮定体系（ベイズファクター・ベイズ的仮説検定・ベイズ判別）">
+  <Concept>
+
+「θ=0.5のコインだ」といった**点仮説**と「θは分からない」という**複合仮説**を、データはどちらをどれだけ支持するか比較したい。これに答えるのが<Term id="bayes-factor">ベイズファクター</Term>。
+
+<Math tex="\mathrm{BF}_{10}=\dfrac{m(D\mid H_1)}{m(D\mid H_0)},\qquad m(D\mid H)=\int L(D\mid\theta)\,\pi(\theta\mid H)\,d\theta" />
+
+$m(D\mid H)$は各仮説のもとで $\theta$ を積分消去した「データの起こりやすさ」(**周辺尤度・エビデンス**)。<Term id="bayesian-hypothesis-testing">ベイズ的仮説検定</Term>は、頻度論の<Term id="p-value">p値</Term>のような単一の閾値(0.05)による«有意/非有意»の二分ではなく、この比の大きさで証拠の強さを連続的に示す。
+
+もう1つの応用が<Term id="bayesian-discriminant">ベイズ判別</Term>——事後確率 $P(\text{class}\mid x)$ が最大のクラスを選ぶ分類。「事前確率×尤度」の大小比較だけで済み、[単純ベイズ・近傍](/topics/naive-bayes-knn)の<Term id="naive-bayes">ナイーブベイズ</Term>もこの骨格を複数特徴量に拡張したもの。
+
+  </Concept>
+  <Derivation title="ベータ-二項の周辺尤度(エビデンス)を導く">
+
+複合仮説 $H_1$: $\theta\sim\mathrm{Beta}(\alpha,\beta)$ のもとでの周辺尤度は、$\theta$ について積分消去する。
+
+$$
+m(D\mid H_1)=\int_0^1 \binom{n}{k}\theta^{k}(1-\theta)^{n-k}\cdot\frac{\theta^{\alpha-1}(1-\theta)^{\beta-1}}{B(\alpha,\beta)}\,d\theta=\binom{n}{k}\frac{1}{B(\alpha,\beta)}\int_0^1\theta^{\alpha+k-1}(1-\theta)^{\beta+n-k-1}\,d\theta
+$$
+
+積分の中身は、Level1の導出と同じ指数法則で $\theta^{(\alpha+k)-1}(1-\theta)^{(\beta+n-k)-1}$——これはまさに $B(\alpha+k,\beta+n-k)$ の定義そのもの（ベータ関数 $B(a,b)=\int_0^1\theta^{a-1}(1-\theta)^{b-1}d\theta$）。したがって
+
+$$
+m(D\mid H_1)=\binom{n}{k}\frac{B(\alpha+k,\ \beta+n-k)}{B(\alpha,\beta)}
+$$
+
+点仮説 $H_0$: $\theta=\theta_0$ のもとでの周辺尤度は積分の必要がなく、通常の二項尤度そのもの $m(D\mid H_0)=\binom{n}{k}\theta_0^{k}(1-\theta_0)^{n-k}$。この2つの比がベイズファクター。
+
+  </Derivation>
+  <Interact>
+
+下のラボで試行数n・成功数k・点仮説θ₀を動かし、ベイズファクターの結論と頻度論の両側p値の結論を並べて比較する。
+
+<BayesFactorLab />
+
+  </Interact>
+  <Interact>
+
+続いて、1特徴量を持つ2クラスについて「事前確率×尤度」を比べて分類する<Term id="bayesian-discriminant">ベイズ判別</Term>を操作する。クラス1の事前確率を動かすと、決定境界(2曲線の交点)がどう動くか観察しよう。
+
+<BayesianDiscriminantLab />
+
+  </Interact>
+  <Exercise>
+
+<BayesianBasicsQuiz />
+
+  </Exercise>
+</Level>
+
+<Level level={3} title="予測最適化（ベイズ線形回帰・事後予測分布）" status="planned">
+
+パラメータの点推定ではなく事後分布そのものを使って予測する«事後予測分布»、係数に正規事前分布を置くベイズ線形回帰(MAP推定がRidge回帰の罰則付き最小二乗と一致する、ラプラス事前分布のMAPがLasso回帰と一致するという[正則化・スパースモデリング](/topics/regularization-sparse)との橋渡し)は、K-3「階層ベイズモデル・ベイズ線形回帰」で扱う到達途上の領域とする。
+
+</Level>
+
+<Level level={4} title="因果（ベイズ的な処置効果推定）" status="planned">
+
+ベイズの枠組みで処置効果の事後分布を直接推定するアプローチ(状態空間モデル+ベイズによる[CausalImpact](/topics/causal-inference-models))は、この論点と関わる到達途上の領域として扱う。
+
+</Level>
+
+<Level level={5} title="高次元/最先端（MCMC・変分ベイズ）" status="planned">
+
+共役事前分布が使えない一般のモデルでは、事後分布の正規化定数(周辺尤度)を解析的に求められないことが多い。ギブスサンプリング・Metropolis-Hastings法などのMCMC(マルコフ連鎖モンテカルロ)や変分ベイズによる近似計算は、K-2「ベイズ計算法」で扱う到達途上の領域とする。
+
+</Level>
+
+<Level level={6} title="フロンティア" status="planned">
+
+階層ベイズモデル・潜在変数モデル(K-3)、ベイズ的な意思決定・情報の価値(P-3)、ベイズ深層学習など、事前分布・尤度・事後分布という3つの概念を土台にさらに発展する領域は、研究が続く到達途上のまま示す。
+
+</Level>
+
+</Topic>

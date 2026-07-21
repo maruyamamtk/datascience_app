@@ -2,7 +2,7 @@
 title: ベータ分布
 definition: 台 [0,1] の連続分布 $f(x)\propto x^{\alpha-1}(1-x)^{\beta-1}$。割合・確率のモデル。平均 α/(α+β)。二項分布の共役事前分布。
 aliases: [beta distribution, Beta(α, β)]
-seeAlso: [gamma-distribution, binomial-distribution]
+seeAlso: [gamma-distribution, binomial-distribution, conjugate-prior]
 ---
 
 # ベータ分布
@@ -13,4 +13,4 @@ $$
 
 - 台が $[0,1]$ なので «割合・確率» 自体のモデルに最適。平均 $\alpha/(\alpha+\beta)$。
 - 正規化定数 $B(\alpha,\beta)=\Gamma(\alpha)\Gamma(\beta)/\Gamma(\alpha+\beta)$（[ガンマ関数](gamma-distribution)で表す）。
-- [二項分布](binomial-distribution)の共役事前分布。成功 $\alpha-1$・失敗 $\beta-1$ を «観測した» 形で、ベイズ更新が容易。
+- [二項分布](binomial-distribution)の[共役事前分布](conjugate-prior)。成功 $\alpha-1$・失敗 $\beta-1$ を «観測した» 形で、ベイズ更新が容易。

@@ -1,8 +1,8 @@
 ---
 title: 事後確率
 definition: 観測 $E$ を踏まえて更新した確率 $P(D\mid E)$。ベイズの定理で 事前×尤度 を周辺確率で割って得る。
-aliases: [posterior probability, posterior, 事後分布]
-seeAlso: [bayes-theorem, prior-probability, conditional-probability]
+aliases: [posterior probability, posterior]
+seeAlso: [bayes-theorem, prior-probability, conditional-probability, posterior-distribution]
 ---
 
 # 事後確率
@@ -17,3 +17,4 @@ $$
 
 - 検査陽性後の「本当に病気である確率」$P(D\mid +)$＝陽性的中率がこれ。
 - [事前確率](prior-probability)（有病率）が高いほど、同じ検査でも事後確率は高くなる。
+- 対象が連続パラメータθの分布全体になったものが[事後分布](posterior-distribution)——考え方は同じ「事後 ∝ 尤度 × 事前」のまま、扱う対象が1事象からパラメータ空間全体へ一般化される。

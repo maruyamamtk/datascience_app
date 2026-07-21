@@ -1,0 +1,20 @@
+---
+title: 事前分布
+definition: パラメータθにデータ観測前に置く確率分布 π(θ)。事前知識・不確実性をθ全体に対する分布として表現する。共役事前分布を選べばベイズ更新が閉形式で行える。
+aliases: [prior distribution, 事前分布, prior]
+seeAlso: [posterior-distribution, conjugate-prior, beta-distribution, prior-probability]
+---
+
+# 事前分布
+
+観測データを見る前に、パラメータ $\theta$ に対して置く確率分布 $\pi(\theta)$。
+
+- [事前確率](prior-probability)が「1つの事象・仮説」の確率 $P(D)$ を扱うのに対し、事前分布は
+  パラメータ $\theta$（連続値でありうる）が取りうる**値全体**に対する確率密度——扱う対象を
+  「1つの事象」から「パラメータ空間全体」へ一般化したもの。
+- 強い確信を反映する«情報的»事前分布、なるべく中立にする«無情報»事前分布、計算を簡単にする
+  [共役事前分布](conjugate-prior)などの選び方がある。
+- コイン投げで表が出る確率 $\theta$ に[ベータ分布](beta-distribution) $\mathrm{Beta}(\alpha_0,\beta_0)$ を
+  事前分布として置くのが典型例——$\alpha_0=\beta_0=1$ なら $[0,1]$ 上の一様分布(無情報)になる。
+- 観測が増えるほど尤度の影響が事前分布の影響を相対的に上回り、[事後分布](posterior-distribution)は
+  事前分布の選び方によらず似た形に収束していく。
