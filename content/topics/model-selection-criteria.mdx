@@ -1,0 +1,172 @@
+---
+title: モデル選択基準（AIC・BIC・Cp）
+summary: 「説明変数をいくつ使うべきか」という問いに、当てはまりの良さだけでなく複雑さへの罰則も加えて答える情報量規準(AIC・BIC)とMallowsのCp、そして全く別ルートで予測誤差を直接測る交差検証を、真に効く変数が2個だけの固定回帰データで比較しながら体感するトピック。
+status: published
+---
+
+import { CriteriaLab } from "@/components/topics/model-selection-criteria/CriteriaLab";
+import { CriteriaStepper } from "@/components/topics/model-selection-criteria/CriteriaStepper";
+import { PenaltyLab } from "@/components/topics/model-selection-criteria/PenaltyLab";
+import { CvLab } from "@/components/topics/model-selection-criteria/CvLab";
+import { ModelSelectionQuiz } from "@/components/topics/model-selection-criteria/ModelSelectionQuiz";
+
+<Topic title="モデル選択基準（AIC・BIC・Cp）" summary="真に効く変数が2個だけ(残り3個は無関係なダミー変数)という固定回帰データで、AIC・BIC・Mallowsの Cp・交差検証がそれぞれどのモデルサイズを«最良»と判断するかを比較する。">
+
+<ReaderGuide>
+
+- **初学者** → L0〜L1（情報量規準を道具として使う → 対数尤度からAIC/BICの式が出てくる筋道と、BICがAICより小さいモデルを選びやすい理由）
+- **一通り使える人** → L2（Mallowsの Cp・交差検証という別ルートとの比較）
+- **「完全に理解した」人** → L3以降（実務でのハイブリッドな変数選択・高次元でのモデル選択は到達途上）
+
+前提: [推定法](/topics/estimation-methods)の<Term id="maximum-likelihood">最尤法</Term>・<Term id="likelihood-function">対数尤度</Term>(「正規誤差の最尤=最小二乗」という関係をそのまま使う)、[機械学習の枠組み](/topics/learning-framework)の<Term id="overfitting">過学習</Term>・<Term id="cross-validation">交差検証</Term>。本トピックは「当てはまりの良さだけでモデルを選ぶと、パラメータを増やすほど<Term id="likelihood-function">尤度</Term>は必ず上がり続けて過学習したモデルを選んでしまう」という問題に、<Term id="information-criterion">情報量規準</Term>という道具で答える。
+
+</ReaderGuide>
+
+<Level level={0} title="ブラックボックス（情報量規準を道具として使う）">
+  <Concept>
+
+説明変数の数が異なる複数の回帰モデルを比べたいとき、<Term id="residual-sum-of-squares">残差平方和</Term>(RSS)や<Term id="coefficient-of-determination">決定係数</Term>だけで選ぶと、説明変数を増やすほどRSSは必ず減り続ける(決定係数は必ず上がり続ける)——<Term id="overfitting">過学習</Term>したモデルを「一番良い」と誤って選んでしまう。
+
+<Term id="information-criterion">情報量規準</Term>は「当てはまりの良さ」に「複雑さへの罰則」を足し引きすることでこれを避ける。代表的な3つが<Term id="aic">AIC</Term>・<Term id="bic">BIC</Term>・<Term id="mallows-cp">Mallows の Cp</Term>——いずれも**値が小さいほど良いモデル**とみなす。
+
+  </Concept>
+  <Interact>
+
+下のラボは「真に効くのはx1・x2だけ(x3・x4・x5は無関係なダミー変数)」という固定データ(n=24件)に対して、説明変数を1個ずつ増やした6個のモデルを比較する。モデルサイズを選ぶと、RSS・対数尤度・AIC・BIC・Cpが実時間で更新される。
+
+<CriteriaLab />
+
+  </Interact>
+  <Exercise>
+
+確認: 「RSS(残差平方和)が最も小さいモデルを選べば、それがAIC・BICも最小にする最良のモデルになる」——○か×か。
+（答: ×。RSSは説明変数を増やすほど単調に減り続けるため、RSS最小のモデルは常に全変数を含むモデルになってしまう。AIC・BICはRSSに「パラメータ数への罰則」を足すことで、真には無関係な変数まで含めることに歯止めをかける）
+
+  </Exercise>
+</Level>
+
+<Level level={1} title="古典的理解（対数尤度からAIC・BICの式を導く、罰則log n vs 2）">
+  <Concept>
+
+<Term id="aic">AIC</Term>と<Term id="bic">BIC</Term>はどちらも「$-2\times$対数尤度」を出発点にする。
+
+<Math tex="\mathrm{AIC}=-2\log L(\hat\theta)+2k,\qquad \mathrm{BIC}=-2\log L(\hat\theta)+k\log n" />
+
+$k$はパラメータ数(回帰なら切片＋説明変数の数)、$n$は標本サイズ。2つの式の違いは罰則の係数(AICは定数2、BICは$\log n$)だけ——だがこの一見小さな違いが、選ばれるモデルの複雑さに大きな差を生む。
+
+  </Concept>
+  <Derivation title="正規誤差OLSの対数尤度を導く（推定法L2「最小二乗=正規誤差の最尤」の続き）">
+
+[推定法](/topics/estimation-methods)のLevel2では、誤差が正規分布 $\varepsilon_i\sim N(0,\sigma^2)$ のとき対数尤度が
+
+$$
+\log L=-\frac{n}{2}\log(2\pi\sigma^2)-\frac{1}{2\sigma^2}\sum_i(y_i-\hat y_i)^2=-\frac{n}{2}\log(2\pi\sigma^2)-\frac{\mathrm{RSS}}{2\sigma^2}
+$$
+
+になることを見た（$\mu_i$についての最大化が最小二乗＝RSSの最小化に帰着する）。AIC・BICを計算するにはもう一歩進めて、**$\sigma^2$も最尤推定する**必要がある。$\log L$を$\sigma^2$で微分して0と置くと
+
+$$
+\frac{\partial \log L}{\partial \sigma^2}=-\frac{n}{2\sigma^2}+\frac{\mathrm{RSS}}{2\sigma^4}=0 \ \Longrightarrow\ \hat\sigma^2=\frac{\mathrm{RSS}}{n}
+$$
+
+（両辺に$2\sigma^4/n$を掛けて整理するだけの、高校数学レベルの式変形）。これを$\log L$へ代入すると
+
+$$
+\log L(\hat\sigma^2)=-\frac{n}{2}\log\!\left(2\pi\cdot\frac{\mathrm{RSS}}{n}\right)-\frac{\mathrm{RSS}}{2\cdot\mathrm{RSS}/n}=-\frac{n}{2}\Big(\log 2\pi+\log\frac{\mathrm{RSS}}{n}+1\Big)
+$$
+
+（最後の項は$\mathrm{RSS}/(2\cdot\mathrm{RSS}/n)=n/2$という約分だけ）。これが下のラボ・ステッパーで使っている「濃縮対数尤度」の式——RSSが小さいほど大きくなる、当てはまりの良さをそのまま反映する値になっている。
+
+  </Derivation>
+  <Derivation title="なぜBICの方がAICよりモデルを小さく評価しがちか（罰則 log n vs 2 の比較）">
+
+AICとBICの罰則の差は、1パラメータあたり$\log n-2$。これが正になるのは
+
+$$
+\log n>2 \iff n>e^2\approx7.39
+$$
+
+（両辺を$e$の指数に戻すだけ——$\log n=2$なら$n=e^2$、高校数学の対数の定義そのもの）。つまり**標本サイズが8以上ある「ふつうの」データでは、BICは常にAICより1パラメータあたりの罰則が大きい**。この差はパラメータ数が多いモデルほど開いていくため、BICはAICより小さい(単純な)モデルを選びやすい傾向がある。
+
+  </Derivation>
+  <Interact>
+
+下のコマ送りは、説明変数を1個ずつ増やしながらRSS→対数尤度→AIC・BIC・Cpの表を組み立てる。最後のまとめで、3つの指標が選ぶモデルサイズが一致するとは限らないことを確認しよう。続くラボでは、標本サイズnを動かして罰則 log n と 2 の関係を直接確かめられる。
+
+<CriteriaStepper />
+
+<PenaltyLab />
+
+  </Interact>
+  <Exercise>
+
+確認: 「標本サイズn=100のデータでは、BICのパラメータ1個あたりの罰則(log 100≈4.6)はAICの罰則(2)より大きい」——○か×か。
+（答: ○。n=100はe²≈7.39よりずっと大きいので、log n=log 100≈4.6>2。BICの方がAICより厳しく複雑さを罰する）
+
+  </Exercise>
+</Level>
+
+<Level level={2} title="仮定体系（Mallows の Cp・交差検証という別ルート）">
+  <Concept>
+
+<Term id="mallows-cp">Mallows の Cp</Term>は回帰の変数選択のために考案された規準で、
+
+$$
+C_p=\frac{\mathrm{RSS}_p}{\hat\sigma^2}-n+2p
+$$
+
+と定義される。$\hat\sigma^2$は基準になる(通常もっとも変数の多い)モデルから推定した誤差分散。正規誤差を仮定すると、Cpの最小化はAICの最小化と数学的に同値な関係になる——実際、下のラボでもCpとAICは同じモデルサイズを最良と判断することが多い。
+
+情報量規準はいずれも「**同じデータ**で当てはめた対数尤度に、パラメータ数に応じた罰則を足し引きする」計算で完結する。これに対し<Term id="cross-validation">交差検証</Term>は全く別のアプローチで、実際にデータを訓練用・検証用に分け、「学習に使っていないデータ」への予測誤差を直接測る。
+
+  </Concept>
+  <Derivation title="Cp≈pが«ちょうど良い複雑さ»の目安になる理由">
+
+基準モデル(パラメータ数$p_{\text{full}}$)自身について$C_p$を計算すると、$\hat\sigma^2=\mathrm{RSS}_{\text{full}}/(n-p_{\text{full}})$の定義から$\mathrm{RSS}_{\text{full}}/\hat\sigma^2=n-p_{\text{full}}$なので
+
+$$
+C_{p_{\text{full}}}=(n-p_{\text{full}})-n+2p_{\text{full}}=p_{\text{full}}
+$$
+
+——基準モデル自身は常に$C_p=p$になる。真のモデルに近い候補（不要な変数を含まず、必要な変数も落としていない）でも同様に$C_p\approx p$に近づくことが知られている。逆に説明変数が足りないモデルでは$\mathrm{RSS}_p$が(誤差だけでは説明できないほど)大きくなり、$C_p\gg p$になる。
+
+  </Derivation>
+  <Interact>
+
+[上のラボ](#model-selection-criteria-lab)ではAIC・BIC・Cpを比較した。下のラボでは、それらとは全く別ルートの交差検証(k分割)でモデルサイズを評価し、分割数を変えても結論が安定しているかを確認する。
+
+<CvLab />
+
+  </Interact>
+  <Exercise>
+
+<ModelSelectionQuiz />
+
+  </Exercise>
+</Level>
+
+<Level level={3} title="予測最適化（実務での変数選択の組み合わせ）" status="planned">
+
+実務では単一の規準だけでなく、Lasso回帰による粗い変数選択・ステップワイズ選択・情報量規準による精選択・交差検証による最終確認、という複数手法を組み合わせるのが現実的とされる。[正則化・スパースモデリング](/topics/regularization-sparse)のLasso正則化パスと、本トピックの情報量規準を組み合わせた実務的な変数選択の流れは到達途上として扱う。
+
+</Level>
+
+<Level level={4} title="因果（変数選択後の推論バイアス）" status="planned">
+
+データを見てから変数を選び、選んだあとのモデルでそのまま検定・信頼区間を計算すると、選択のプロセス自体が結果を歪める(post-selection inference の問題)。この論点は[因果推論の枠組み](/topics/causal-inference-models)とも関わる到達途上の領域として扱う。
+
+</Level>
+
+<Level level={5} title="高次元/最先端（p≫nでのモデル選択）" status="planned">
+
+説明変数の数が標本サイズを大きく上回る高次元設定では、古典的なAIC・BICはそのままでは機能しにくく、拡張BIC(EBIC)など高次元向けに修正した規準が使われる。交差検証は次元に関わらず比較的頑健だが計算コストが増える——この領域の詳細は到達途上として扱う。
+
+</Level>
+
+<Level level={6} title="フロンティア" status="planned">
+
+深層学習のような超高パラメータ数のモデルに対する「複雑さの罰則」の設計(有効パラメータ数の推定・二重降下現象との関係)は、研究が続く領域として到達途上のまま示す。
+
+</Level>
+
+</Topic>
