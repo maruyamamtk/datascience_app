@@ -6,7 +6,7 @@ import { formatNumber, term } from "@/components/math/tex";
 import { Callout } from "@/components/viz";
 import { marginalLogLikelihoodBetaBinomial, pointNullLogLikelihood } from "@/lib/stats/bayesian-basics";
 import { useBayesianBasicsStore } from "@/lib/store/bayesian-basics";
-import { BF_STRENGTH_LABEL, num, pct, round2 } from "./format";
+import { BF_STRENGTH_LABEL, formatEvidenceTex, num, pct, round2 } from "./format";
 
 const FORMULA = `\\mathrm{BF}_{10}=\\dfrac{m(D\\mid H_1)}{m(D\\mid H_0)}=\\dfrac{${term(
   "m1",
@@ -57,8 +57,10 @@ export function BayesFactorLab() {
     if (!m) return;
     const logM1 = marginalLogLikelihoodBetaBinomial({ alpha: 1, beta: 1 }, bfN, bfK);
     const logM0 = pointNullLogLikelihood(bfTheta0, bfN, bfK);
-    m.setValue("m1", formatNumber(Math.exp(logM1), 4));
-    m.setValue("m0", formatNumber(Math.exp(logM0), 4));
+    // n(試行数)が大きいと周辺尤度は極端に小さくなり固定小数表示では0.0000に潰れて誤読させるため、
+    // 閾値未満は指数表記に切り替える(BF10自体は対数空間で計算しており表示の丸めとは無関係に正確)。
+    m.setValue("m1", formatEvidenceTex(Math.exp(logM1)));
+    m.setValue("m0", formatEvidenceTex(Math.exp(logM0)));
     m.setValue("bf", formatNumber(bf10, 2));
     m.setHighlight("bf", true, bf10 >= 1 ? "#ef4444" : "#2563eb");
   }, [bfN, bfK, bfTheta0, bf10]);

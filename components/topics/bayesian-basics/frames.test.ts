@@ -22,9 +22,9 @@ describe("buildPosteriorFrames", () => {
     });
   });
 
-  it("2フレーム目以降はhighlightsにalpha/beta/n/kを含む", () => {
+  it("2フレーム目以降はhighlightsにPosteriorUpdateLabの実際の項id(k/m/alphaPost/betaPost)を含む", () => {
     for (let i = 1; i < frames.length; i++) {
-      expect(frames[i].highlights).toEqual(["alpha", "beta", "n", "k"]);
+      expect(frames[i].highlights).toEqual(["k", "m", "alphaPost", "betaPost"]);
     }
   });
 

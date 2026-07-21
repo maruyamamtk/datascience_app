@@ -39,7 +39,9 @@ export function buildPosteriorFrames(
   priorBeta: number,
 ): VizFrame<UpdateStep>[] {
   return steps.map((step) => ({
-    highlights: step.index === 0 ? ["alpha0", "beta0"] : ["alpha", "beta", "n", "k"],
+    // PosteriorUpdateLabのMathFormulaが実際に持つ項id(alpha0/beta0/k/m/alphaPost/betaPost)に合わせる。
+    highlights:
+      step.index === 0 ? ["alpha0", "beta0"] : ["k", "m", "alphaPost", "betaPost"],
     callout: calloutFor(step, priorAlpha, priorBeta),
     payload: step,
   }));
