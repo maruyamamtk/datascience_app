@@ -39,7 +39,7 @@ export function buildAbObservationFrames(
   steps: readonly AbSequentialStep[],
 ): VizFrame<AbSequentialStep>[] {
   return steps.map((step) => ({
-    highlights: ["aA", "bA", "aB", "bB", "pHat"],
+    highlights: ["stepAA", "stepBA", "stepAB", "stepBB", "stepPHat"],
     callout: calloutFor(step),
     payload: step,
   }));

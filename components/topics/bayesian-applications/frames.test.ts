@@ -12,7 +12,7 @@ describe("buildAbObservationFrames", () => {
 
   it("すべてのフレームが数式のハイライト対象を持つ", () => {
     frames.forEach((f) => {
-      expect(f.highlights).toContain("pHat");
+      expect(f.highlights).toContain("stepPHat");
     });
   });
 

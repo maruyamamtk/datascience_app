@@ -9,10 +9,12 @@ import { AB_SEQUENTIAL_STEPS, useBayesianApplicationsStore } from "@/lib/store/b
 import { buildAbObservationFrames } from "./frames";
 import { pct, round2 } from "./format";
 
-const FORMULA = `\\theta_A\\sim\\mathrm{Beta}(${term("aA", "?")},${term("bA", "?")}),\\quad\\theta_B\\sim\\mathrm{Beta}(${term(
-  "aB",
+// AbBayesLab(同一ページ)と同じ項名(aA/bA/aB/bB/pHat)を使うとDOM idが重複するため、
+// このステッパー専用の接頭辞"step"で名前空間を分離する(tasks/lessons.md #78の教訓)。
+const FORMULA = `\\theta_A\\sim\\mathrm{Beta}(${term("stepAA", "?")},${term("stepBA", "?")}),\\quad\\theta_B\\sim\\mathrm{Beta}(${term(
+  "stepAB",
   "?",
-)},${term("bB", "?")})\\quad\\Rightarrow\\quad \\hat P(\\theta_B>\\theta_A)=${term("pHat", "?")}`;
+)},${term("stepBB", "?")})\\quad\\Rightarrow\\quad \\hat P(\\theta_B>\\theta_A)=${term("stepPHat", "?")}`;
 
 const COLOR_A = "#64748b";
 const COLOR_B = "#2563eb";
@@ -69,17 +71,17 @@ export function AbObservationStepper() {
   useEffect(() => {
     const m = mathRef.current;
     if (!m) return;
-    m.setValue("aA", formatNumber(step.posteriorA.alpha, 0));
-    m.setValue("bA", formatNumber(step.posteriorA.beta, 0));
-    m.setValue("aB", formatNumber(step.posteriorB.alpha, 0));
-    m.setValue("bB", formatNumber(step.posteriorB.beta, 0));
-    m.setValue("pHat", pct(step.comparison.probBBeatsA, 1));
+    m.setValue("stepAA", formatNumber(step.posteriorA.alpha, 0));
+    m.setValue("stepBA", formatNumber(step.posteriorA.beta, 0));
+    m.setValue("stepAB", formatNumber(step.posteriorB.alpha, 0));
+    m.setValue("stepBB", formatNumber(step.posteriorB.beta, 0));
+    m.setValue("stepPHat", pct(step.comparison.probBBeatsA, 1));
     const hasData = step.index > 0;
-    m.setHighlight("aA", hasData && step.observation?.variant === "A", COLOR_A);
-    m.setHighlight("bA", hasData && step.observation?.variant === "A", COLOR_A);
-    m.setHighlight("aB", hasData && step.observation?.variant === "B", COLOR_B);
-    m.setHighlight("bB", hasData && step.observation?.variant === "B", COLOR_B);
-    m.setHighlight("pHat", true, step.comparison.probBBeatsA >= 0.5 ? COLOR_B : COLOR_A);
+    m.setHighlight("stepAA", hasData && step.observation?.variant === "A", COLOR_A);
+    m.setHighlight("stepBA", hasData && step.observation?.variant === "A", COLOR_A);
+    m.setHighlight("stepAB", hasData && step.observation?.variant === "B", COLOR_B);
+    m.setHighlight("stepBB", hasData && step.observation?.variant === "B", COLOR_B);
+    m.setHighlight("stepPHat", true, step.comparison.probBBeatsA >= 0.5 ? COLOR_B : COLOR_A);
   }, [step]);
 
   return (
