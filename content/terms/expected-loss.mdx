@@ -1,0 +1,23 @@
+---
+title: 期待損失
+definition: 誤った選択をしたときに失う量の期待値。ベイズA/Bテストでは E[max(θ_A−θ_B,0)]（B案を選んだのに実際はA案が優れていた場合の損失の期待値）のように、事後分布に対する期待値として計算する。
+aliases: [expected loss, 期待損失]
+seeAlso: [bayesian-ab-testing, posterior-distribution, expected-value]
+---
+
+# 期待損失
+
+ある選択をしたときに、**もし判断が間違っていたら失う量**の[期待値](expected-value)。
+[ベイズA/Bテスト](bayesian-ab-testing)では、B案を選んだのに実際はA案の方がコンバージョン率が高かった場合の
+損失を、[事後分布](posterior-distribution)に対する期待値として次のように定義する。
+
+$$
+\text{期待損失}(\text{Bを選ぶ})=E\bigl[\max(\theta_A-\theta_B,\ 0)\bigr]
+$$
+
+- $\theta_A>\theta_B$ のとき（判断ミス）だけ正の損失 $\theta_A-\theta_B$ が発生し、
+  $\theta_A\le\theta_B$（判断が正しい）なら損失は0——$\max(\cdot,0)$ がこの「片側だけ効く」構造を表す。
+- 実務上は「$P(\theta_B>\theta_A)$ が60%程度でも、期待損失がごく小さければ**どちらを選んでも実害が小さい**」と
+  判断でき、早期に意思決定できる（$P(\theta_B>\theta_A)$ だけでは「僅差か大差か」が分からない）。
+- 事後分布からの[モンテカルロ法](monte-carlo-method)サンプリングで、両方向（Aを選ぶ場合・Bを選ぶ場合）の
+  期待損失を同時に近似できる。

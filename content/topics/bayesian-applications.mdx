@@ -1,0 +1,225 @@
+---
+title: ベイズ応用（A/Bテスト・IRT）
+summary: A/B各案のコンバージョン率をベータ事後分布として推定し、モンテカルロでP(B>A)・期待損失を求めるベイズA/Bテストと、受験者の能力θ・項目の困難度b・識別力aから正答確率を求める項目反応理論(IRT)を扱う、ベイズ統計の業務活用トピック。
+status: published
+---
+
+import { AbBayesLab } from "@/components/topics/bayesian-applications/AbBayesLab";
+import { AbObservationStepper } from "@/components/topics/bayesian-applications/AbObservationStepper";
+import { IccLab } from "@/components/topics/bayesian-applications/IccLab";
+import { IrtLikelihoodLab } from "@/components/topics/bayesian-applications/IrtLikelihoodLab";
+import { BayesianApplicationsQuiz } from "@/components/topics/bayesian-applications/BayesianApplicationsQuiz";
+
+<Topic title="ベイズ応用（A/Bテスト・IRT）" summary="A/B各案のコンバージョン率をベータ事後分布として推定するベイズA/Bテストと、能力θ・困難度b・識別力aから正答確率を求める項目反応理論(IRT)。">
+
+<ReaderGuide>
+
+- **初学者** → L0（ベイズA/Bテストを道具として使う——頻度論との対比）
+- **一通り使える人** → L1（モンテカルロでP(B&gt;A)を求める仕組みの導出、観測を1件ずつ反映するステッパー）
+- **「完全に理解した」人** → L2（IRTの2パラメータロジスティックモデル・項目特性曲線・尤度による能力推定）、
+  L3以降（3PLモデル・適応型テスト・多腕バンディットは到達途上）
+
+前提: [ベイズ統計の基礎](/topics/bayesian-basics)（K-1）の<Term id="conjugate-prior">共役事前分布</Term>
+（ベータ-二項）——本トピックはこれを「2群の比較」に応用する。頻度論の[A/Bテスト実務](/topics/ab-testing)
+（2標本比率の検定・検出力分析）とは同じデータを違う枠組みで見るため、対比しながら読むと理解が深まる。
+IRTは[質的回帰](/topics/qualitative-regression)のシグモイド関数（ロジスティック回帰と同じ骨格）を使う。
+出典: 『Pythonでスラスラわかるベイズ推論「超」入門』第6章「ベイズ推論の業務活用事例」。
+
+</ReaderGuide>
+
+<Level level={0} title="ブラックボックス（ベイズA/Bテストを道具として使う）">
+  <Concept>
+
+[A/Bテスト実務](/topics/ab-testing)では、2標本比率の検定で「有意水準を下回るか」を判定した。
+これは結果を**有意/非有意の二分**で答える方法だが、実務ではもっと直接的な問いに答えたいことが多い——
+「B案がA案より優れている確率はどれくらいか」。
+
+**ベイズA/Bテスト**は、A・各案のコンバージョン率 $\theta_A,\theta_B$ をそれぞれ
+<Term id="posterior-distribution">事後分布</Term>（ベータ分布）として推定し、この問いに直接答える。
+
+<Math tex="P(\theta_B>\theta_A)=85\%" />
+
+のような**確率そのもの**を出せるのが最大の利点。あわせて、判断を誤ったときにどれだけ損をするかを表す
+<Term id="expected-loss">期待損失</Term>も計算し、「確率は五分五分に近くても、損失が小さいから早期に決めてよい」
+といった柔軟な判断ができる。
+
+  </Concept>
+  <Interact>
+
+A案・B案それぞれの訪問者数・コンバージョン数を動かすと、事後分布（ベータ曲線）が重なって描かれ、
+モンテカルロで推定した $P(\theta_B>\theta_A)$・期待損失、そして同じデータに対する頻度論の結論（p値）が
+リアルタイムに更新される。
+
+<AbBayesLab />
+
+  </Interact>
+  <Exercise>
+
+確認: 「$P(\theta_B>\theta_A)=60\%$ だったので、必ずB案を採用すべきだ」——○か×か。
+（答: ×。$P(\theta_B>\theta_A)$ が0.5をわずかに上回るだけでは「僅差で優劣がついた」だけかもしれない。
+期待損失もあわせて確認し、B案を選んだ場合の期待損失が実務上無視できる大きさかを見るべき——
+確率だけでなく損失の大きさもベイズA/Bテストの重要な判断材料）
+
+  </Exercise>
+</Level>
+
+<Level level={1} title="古典的理解（モンテカルロでP(B>A)を求める仕組み）">
+  <Concept>
+
+2つのベータ分布 $\mathrm{Beta}(\alpha_A,\beta_A)$・$\mathrm{Beta}(\alpha_B,\beta_B)$ について
+$P(\theta_B>\theta_A)$ を求める閉形式の式は存在するが、パラメータが変わるたびに複雑な級数を計算する必要があり
+実務向きではない。そこで<Term id="monte-carlo-method">モンテカルロ法</Term>を使う——
+「たくさん試して、割合を数える」という素朴な発想が驚くほど正確に効く。
+
+  </Concept>
+  <Derivation title="なぜモンテカルロで割合を数えるだけでP(B>A)が求まるのか(大数の法則)">
+
+$\theta_A,\theta_B$ をそれぞれの事後分布から独立に $N$ 組サンプリングし、
+$\theta_B^{(i)}>\theta_A^{(i)}$ となった回数を $K$ とする。**相対度数** $K/N$ は、確率の頻度論的な定義
+（「同じ条件で何度も試したときに、その事象が起きる割合」）そのものであり、[大数の法則](law-of-large-numbers)
+により
+
+$$
+\frac{K}{N}\ \xrightarrow{N\to\infty}\ P(\theta_B>\theta_A)
+$$
+
+に確率収束する。誤差（標準誤差）は試行数 $N$ に対して $1/\sqrt N$ で縮むため、$N$ を100倍にすると誤差は
+1/10になる——高校数学の「割合＝該当する場合の数／全体の場合の数」を、確率変数のサンプリングに拡張しただけ。
+
+  </Derivation>
+  <Derivation title="一様乱数の順序統計量でベータ分布を厳密にサンプリングする(発展)">
+
+$\theta_A,\theta_B$ を実際にどうサンプリングするか。$\mathrm{Beta}(a,b)$（$a,b$ は正整数）は、
+実は $n=a+b-1$ 個の独立な一様乱数 $U_1,\dots,U_n$ を小さい順に並べた<Term id="order-statistic">順序統計量</Term>
+の $a$ 番目 $U_{(a)}$ とちょうど一致する——これが本トピックのサンプリング方法の正体。
+
+導出: $U_{(a)}\le x$ となるのは「$n$ 個中、$x$ 以下の値が $a$ 個以上」のとき。各 $U_i\le x$ となる確率は $x$
+（一様分布の定義）なので、この事象の確率は[二項分布](/topics/probability-basics)の裾の和で書ける。
+
+$$
+P\bigl(U_{(a)}\le x\bigr)=\sum_{k=a}^{n}\binom{n}{k}x^{k}(1-x)^{n-k}
+$$
+
+この右辺を $x$ で微分すると（二項係数の隣接する項が打ち消し合う計算により）、ちょうど
+$\mathrm{Beta}(a,b)$ の密度関数 $\dfrac{x^{a-1}(1-x)^{b-1}}{B(a,b)}$（$b=n-a+1$）に一致することが知られている
+——二項分布とベータ分布を結ぶ古典的な恒等式。
+
+この方法は `Math.log`・`Math.exp` のような近似誤差を持つ関数を一切使わず、一様乱数の生成と**比較・並べ替えだけ**
+で完結する。本トピックのラボはこの方法で決定的にサンプリングしており、同じ操作は必ず同じ結果になる。
+
+  </Derivation>
+  <Interact>
+
+実際のオンライン実験のように、A/B案への訪問が1件ずつ非同期に届く様子をコマ送りで確認する。
+観測を反映するたびに事後分布と $P(\theta_B>\theta_A)$ がどう更新されるか追ってみよう。
+
+<AbObservationStepper />
+
+  </Interact>
+  <Exercise>
+
+確認: モンテカルロのサンプル数 $N$ を2000から20000に増やすと、$P(\theta_B>\theta_A)$ の推定精度はどう変わるか。
+（答: 標準誤差は $1/\sqrt N$ で縮むため、$N$ を10倍にすると誤差はおよそ $1/\sqrt{10}\approx0.32$ 倍——
+約3倍精密になる。$N$ を100倍にしないと誤差は1/10にならない、という「収束の遅さ」もモンテカルロ法の特徴）
+
+  </Exercise>
+</Level>
+
+<Level level={2} title="仮定体系（IRT: 2パラメータロジスティックモデル）">
+  <Concept>
+
+もう1つの応用が<Term id="item-response-theory">項目反応理論（IRT）</Term>。テストの素点（正答数）だけでは
+「同じ点数でも問題の難しさが違えば能力は違う」ことを区別できない。IRTは受験者の**能力** $\theta$ と、
+項目ごとの**困難度** $b$・**識別力** $a$ を同時にモデル化してこれを解決する。
+
+**2パラメータロジスティックモデル**(2PLモデル)では正答確率を
+
+<Math tex="P(\theta)=\sigma\bigl(a(\theta-b)\bigr)=\dfrac{1}{1+e^{-a(\theta-b)}}" />
+
+で表す——[質的回帰](/topics/qualitative-regression)のシグモイド関数と全く同じ形（対数オッズが $\theta$
+について線形）。この曲線を<Term id="item-characteristic-curve">項目特性曲線（ICC）</Term>と呼ぶ。
+
+モデルは「各項目への正誤は、能力 $\theta$ を所与とすれば互いに独立に決まる」という**局所独立性**を仮定する。
+この仮定のもとで、複数項目への回答パターンの尤度は各項目のベルヌーイ尤度の**積**になる。
+
+  </Concept>
+  <Derivation title="対数尤度と項目情報量を導く">
+
+回答パターン $u_1,\dots,u_m$（正解1・不正解0）の尤度は、局所独立性の仮定から
+
+$$
+L(\theta)=\prod_{i=1}^{m}P_i(\theta)^{u_i}\bigl(1-P_i(\theta)\bigr)^{1-u_i}
+$$
+
+積は計算量的に扱いにくいので対数を取り、和に変換する（対数は単調増加なので $\theta$ を最大化する場所は
+変わらない——[最尤法](maximum-likelihood)の定石）。
+
+$$
+\ln L(\theta)=\sum_{i=1}^{m}\Bigl[u_i\ln P_i(\theta)+(1-u_i)\ln\bigl(1-P_i(\theta)\bigr)\Bigr]
+$$
+
+この $\ln L(\theta)$ を最大にする $\theta$ が最尤推定値 $\hat\theta_{\mathrm{MLE}}$。
+
+項目1問あたりの情報量（Fisher情報量）も、シグモイドの導関数 $\sigma'(z)=\sigma(z)(1-\sigma(z))$
+（高校数学の合成関数の微分＋$\dfrac{d}{dz}\dfrac{1}{1+e^{-z}}$ の計算で得られる）から求まる。
+$P(\theta)=\sigma(a(\theta-b))$ を $\theta$ で微分すると連鎖律により $P'(\theta)=a\,P(\theta)(1-P(\theta))$。
+1回のベルヌーイ観測のFisher情報量の一般式 $I(\theta)=\dfrac{P'(\theta)^2}{P(\theta)(1-P(\theta))}$ に代入すると
+
+$$
+I(\theta)=\frac{\bigl[a\,P(\theta)(1-P(\theta))\bigr]^2}{P(\theta)(1-P(\theta))}=a^2\,P(\theta)\bigl(1-P(\theta)\bigr)
+$$
+
+——識別力 $a$ が大きく、$\theta$ が困難度 $b$ に近いほど情報量が大きい。「その能力帯を精密に測れる項目」
+という直感が数式でも裏付けられる。
+
+  </Derivation>
+  <Interact>
+
+能力θを動かすと、識別力が異なる3項目の項目特性曲線上での正答確率が同時にハイライトされる。
+
+<IccLab />
+
+続いて、5問への回答パターン（正解/不正解）を切り替えると尤度曲線がどう更新されるか確認しよう。
+
+<IrtLikelihoodLab />
+
+  </Interact>
+  <Exercise>
+
+<BayesianApplicationsQuiz />
+
+  </Exercise>
+</Level>
+
+<Level level={3} title="予測最適化（3PLモデル・適応型テスト）" status="planned">
+
+当て推量パラメータ $c$（選択式問題で偶然正解する下限確率）を加えた3PLモデル、受験者ごとに情報量
+（本トピックで導出した $I(\theta)=a^2P(\theta)(1-P(\theta))$）が最大の項目を逐次選んで出題する
+コンピュータ適応型テスト（CAT）は到達途上として示す。
+
+</Level>
+
+<Level level={4} title="因果（多腕バンディットによる動的割り当て）" status="planned">
+
+[A/Bテスト実務](/topics/ab-testing)のLevel4で予告されている多腕バンディット（探索と活用のトレードオフ、
+Thompsonサンプリング）は、本トピックのベイズA/Bテストの自然な拡張——固定した2群比較ではなく、
+各バリアントの事後分布に応じてトラフィック配分を動的に変える手法として到達途上のまま示す。
+
+</Level>
+
+<Level level={5} title="高次元/最先端（階層ベイズIRT・多次元IRT）" status="planned">
+
+[階層ベイズモデル](/topics/hierarchical-bayes)（K-3）の考え方をIRTに応用し、受験者・項目パラメータそのものに
+分布を仮定して推定する階層ベイズIRT（多面的Raschモデル等）、単一の能力次元ではなく複数の能力次元を同時に
+推定する多次元IRTは、研究・実務双方で発展が続く到達途上の領域として示す。
+
+</Level>
+
+<Level level={6} title="フロンティア" status="planned">
+
+深層学習を使った適応型テスト、ベイズ最適化との融合によるA/Bテストの効率化など、
+本トピックで扱った「事後分布に基づく意思決定」というK-1以来の骨格がさらに発展する領域は研究が続く。
+
+</Level>
+
+</Topic>
