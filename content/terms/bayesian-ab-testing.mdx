@@ -1,0 +1,25 @@
+---
+title: ベイズA/Bテスト
+definition: A/B各案のコンバージョン率θをベータ分布の事後分布として推定し、「B案が優れている確率P(θ_B>θ_A)」や期待損失で意思決定するA/Bテストの手法。頻度論の有意/非有意の二分と違い、確率と損失の大きさで判断する。
+aliases: [Bayesian A/B testing, ベイズABテスト, ベイズ的A/Bテスト]
+seeAlso: [conjugate-prior, posterior-distribution, expected-loss, monte-carlo-method]
+---
+
+# ベイズA/Bテスト
+
+Webの2案（A/B）のコンバージョン率 $\theta_A,\theta_B$ を、観測ごとに
+[共役事前分布](conjugate-prior)（ベータ分布）で更新される[事後分布](posterior-distribution)として推定し、
+「B案がA案より優れている確率 $P(\theta_B>\theta_A)$」を直接計算して意思決定する手法。
+
+$$
+\theta_A\mid D_A\sim\mathrm{Beta}(\alpha_0+x_A,\ \beta_0+n_A-x_A),\qquad
+\theta_B\mid D_B\sim\mathrm{Beta}(\alpha_0+x_B,\ \beta_0+n_B-x_B)
+$$
+
+- 頻度論の[2標本比率の検定](significance-level)は「有意水準を下回るか」で結果を**二分**するが、
+  ベイズA/Bテストは「B案が優れている確率は85%」のような**確率そのもの**を答える。
+- $P(\theta_B>\theta_A)$ の解析解は一般に閉形式で求めにくいため、[モンテカルロ法](monte-carlo-method)で
+  2つの事後分布から大量にサンプリングし、「Bが上回った割合」を数えて近似する。
+- 「どちらが優れているか」の確率だけでなく、判断を誤ったときにどれだけ損をするかを表す
+  [期待損失](expected-loss)も併せて見ることで、$P(\theta_B>\theta_A)$ が五分五分に近くても
+  実務上の差が小さければ早期に意思決定してよい、といった柔軟な判断ができる。
