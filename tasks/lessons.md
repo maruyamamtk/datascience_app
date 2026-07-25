@@ -255,3 +255,10 @@
 - **原因**: KaTeXは`\htmlId{term-x}{value}`を、視覚表示用の`.katex-html`（aria-hiddenでない）・アクセシビリティ用の`.katex-mathml`（`<math>`要素、`<mn>`等）・その中の`<annotation encoding="application/x-tex">`（生のTeXソースをそのまま保持）の**3箇所**にレンダリングする。`.textContent`は非表示要素（`.katex-mathml`はCSSで視覚的に隠すだけでDOMからは除去されない）も含めて全ての子孫テキストノードを連結するため、同じ値が3回連結されて返る。画面上は`.katex-html`だけが見えるので実際の表示は正しく1つ。
 - **対策**: Playwright等でKaTeX項の実際の表示値を検証するときは `element.querySelector('.katex-html').textContent` のように**`.katex-html`へスコープしてから**読む。`document.querySelectorAll('#term-x')`（idセレクタ、要素単位）で要素の**個数**を数える分には問題ない（3重になるのは同一要素内のテキストノード連結の話であり、要素自体が3つに増えるわけではない）——「idが重複して要素が複数ある」（#78のDOM id衝突）のか「1要素内でtextContentが3重連結される」（本教訓）のかを区別すること。
 - **判断の目安**: 新規トピックのPlaywright実機確認でKaTeX項の値を読むテストコードを書くときは、最初から`.katex-html`スコープで読む習慣にする。異常な値（本来より長い/繰り返しに見える文字列）が返ったら、まず要素数（`querySelectorAll(...).length`）を数えて「複数要素」か「1要素の3重テキスト」かを切り分ける。
+
+## `.katex-html`スコープでもtermの値が3重に見えることがある——コンテナ側でなく«その項自身»の`.katex-html`まで絞る（出典 #89）
+
+- **症状**: 決定分析トピックのPlaywright実機確認で、`document.querySelector('#payoff-matrix-lab .katex-html').textContent`（ラボのコンテナを起点に最初の`.katex-html`を取得）を読んだところ、期待値"300"が"300300300"のように3重に見えた。#88の教訓（`.katex-html`にスコープすれば3重連結は解消する）を踏まえた読み方のはずが再発した。
+- **原因**: `TermController.setValue(key, tex)`は対象の項要素（`\htmlId{term-x}{...}`のspan）に対して**その場で`katex.render`を呼び直す**（term-controller.ts）。この項要素はもともと親の`<MathFormula>`が描画した外側の`.katex-html`の**内部**にあるため、`setValue`を呼ぶと項要素の内側に**入れ子の`.katex-html`/`.katex-mathml`/`annotation`のトリオ**が新規に生成される。コンテナ起点で`querySelector('.katex-html')`すると文書順で最初に見つかる**外側**の`.katex-html`が返り、その`textContent`には内側の入れ子トリオがそのまま子孫として含まれるため、`setValue`で更新した項の値だけが3重に連結される（数式の他の部分は1重のまま）。
+- **対策**: `setValue`で更新する項の値を検証するときは、コンテナではなく**その項自身のid**を起点にする——`document.querySelector('#payoff-matrix-lab #term-score .katex-html').textContent`のように`#term-<key>`まで絞ってから`.katex-html`を取る。外側のコンテナ起点で読みたいのは「その項を含まない静的な部分」だけのときに限る。
+- **判断の目安**: `MathFormula`に`term()`で埋め込んだ項を`setValue`で動的更新するコンポーネントをPlaywrightで検証するときは、読み取りクエリを常に`#term-<key> .katex-html`まで絞る習慣にする（コンテナ起点の`.katex-html`だけでは#88の対策をしたつもりでも入れ子で再発する）。異常値が出たら、まず該当項が`setValue`で書き換えられる項かどうかを疑う。

@@ -1,0 +1,18 @@
+---
+title: Maximax基準
+definition: 各行動の最大利得(最良の場合)のうち、最大のものを選ぶ最も楽観的な決定基準。$\max_a \max_\theta c(a,\theta)$。
+aliases: [maximax criterion, マキシマックス基準, 楽観主義基準]
+seeAlso: [payoff-matrix, maximin-criterion, hurwicz-criterion, laplace-criterion]
+---
+
+# Maximax基準
+
+[利得行列](payoff-matrix)から行動を選ぶ5つの決定基準(状態の確率が分からないとき)のうち、最も**楽観的**な基準。
+
+$$
+\mathrm{Maximax}(a)=\max_{\theta} c(a,\theta),\qquad \text{選ぶ行動}=\arg\max_a \mathrm{Maximax}(a)
+$$
+
+各行動の「うまくいったときの上振れ」だけに注目し、下振れ(最悪の場合)は一切考慮しない。ハイリスク・ハイリターンな行動ほど選ばれやすい。
+
+対極にあるのが最も悲観的な[Maximin基準](maximin-criterion)——2つの基準を楽観係数でつなぐのが[Hurwicz基準](hurwicz-criterion)($\alpha=1$ のときMaximaxと一致)。

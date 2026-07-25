@@ -1,0 +1,26 @@
+---
+title: Minimax regret基準
+definition: 状態ごとの「最大利得との差(リグレット・機会損失)」を求め、各行動の最大リグレットのうち最小のものを選ぶ決定基準。$\min_a \max_\theta [\max_{a'} c(a',\theta) - c(a,\theta)]$。
+aliases: [minimax regret, ミニマックスリグレット基準, サベージの基準, 後悔最小化基準]
+seeAlso: [payoff-matrix, maximin-criterion, hurwicz-criterion, laplace-criterion]
+---
+
+# Minimax regret基準
+
+**リグレット(後悔・機会損失)**——「その状態が実際に起きたと後から分かったとき、最善の行動を選んでいれば得られたはずの利得との差」——が最も小さくなるように行動を選ぶ決定基準。
+
+まず状態 $\theta$ ごとに、リグレット行列を作る。
+
+$$
+\mathrm{regret}(a,\theta)=\max_{a'} c(a',\theta)-c(a,\theta)
+$$
+
+$\max_{a'} c(a',\theta)$ はその状態における最善の行動の利得(基準点)。これから実際の行動の利得を引いた差がリグレット——選んだ行動がその状態でも最善なら0、そうでなければ正の値になる。
+
+次に各行動の**最大リグレット**(最悪の後悔)を比べ、それが最小の行動を選ぶ。
+
+$$
+\text{選ぶ行動}=\arg\min_a \max_{\theta} \mathrm{regret}(a,\theta)
+$$
+
+「どの状態が起きても、後悔が一定以上大きくならない」行動を選ぶという考え方——[Maximin基準](maximin-criterion)が利得そのものの最悪値に注目するのに対し、Minimax regretは「後から振り返ったときの後悔」の最悪値に注目する点が異なる。

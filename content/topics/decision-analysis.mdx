@@ -1,0 +1,209 @@
+---
+title: 決定分析（利得行列・決定基準・期待値・決定木）
+summary: 利得行列から出発し、確率が分からないときの5つの決定基準（Maximax/Maximin/Hurwicz/Minimax regret/Laplace）、確率が既知のときの期待値による意思決定、複数段階の意思決定を解く決定木（後ろ向き帰納法）までを、工場の稼働台数を決める具体例で一気通貫に扱う、意思決定分析の入り口となるトピック。
+status: published
+---
+
+import { PayoffMatrixLab } from "@/components/topics/decision-analysis/PayoffMatrixLab";
+import { RegretMatrixStepper } from "@/components/topics/decision-analysis/RegretMatrixStepper";
+import { ExpectedValueLab } from "@/components/topics/decision-analysis/ExpectedValueLab";
+import { DecisionTreeStepper } from "@/components/topics/decision-analysis/DecisionTreeStepper";
+import { DecisionAnalysisQuiz } from "@/components/topics/decision-analysis/DecisionAnalysisQuiz";
+
+<Topic title="決定分析（利得行列・決定基準・期待値・決定木）" summary="利得行列から出発し、確率なしの5つの決定基準、期待値による意思決定、決定木（後ろ向き帰納法）までを工場稼働の具体例で扱う。">
+
+<ReaderGuide>
+
+- **初学者** → L0〜L1（利得行列を道具として使う → 5つの決定基準の導出と使い分け）
+- **一通り使える人** → L2（確率が既知のときの期待値による意思決定、決定木による展開型分析）
+- **「完全に理解した」人** → L3以降（情報理論・情報の価値・効用理論・確率予測・逐次決定は到達途上）
+
+前提: [事象と確率](/topics/probability-basics)の確率の基本規則、<Term id="expected-value">期待値</Term>の考え方（本トピックはこれを「利得×確率の重み付き平均」として意思決定に応用する）。出典: 『意思決定分析と予測の活用』第2部「決定分析の基本」第1・3・4章。
+
+</ReaderGuide>
+
+<Level level={0} title="ブラックボックス（利得行列と決定基準を道具として使う）">
+  <Concept>
+
+意思決定問題は、次の3要素に分解できる。
+
+<Math tex="D=\{A,\ \Theta,\ c\}" />
+
+- $A$: **行動空間**——選べる選択肢の集合。
+- $\Theta$: **状態空間**——コントロールできない「自然の状態」の集合（景気・天候など）。
+- $c(a,\theta)$: 行動 $a$ を選び状態 $\theta$ が起きたときの**利得**。
+
+これを表にまとめたものが<Term id="payoff-matrix">利得行列</Term>。状態の確率が分からないとき、どの行動を選ぶかを決める道具が**決定基準**——<Term id="maximax-criterion">Maximax</Term>・<Term id="maximin-criterion">Maximin</Term>・<Term id="hurwicz-criterion">Hurwicz</Term>・<Term id="minimax-regret">Minimax regret</Term>・<Term id="laplace-criterion">Laplace</Term>の5つがある。
+
+  </Concept>
+  <Interact>
+
+下のラボは、工場の稼働台数（0台/1台/2台、行動）と景気（好況/不況、自然の状態）の利得行列（出典第2章、単位:万円）。セルの数値を編集したり、5つの決定基準を切り替えたりすると、選ばれる行動がハイライトされ、数式中の値も連動して更新される。
+
+<PayoffMatrixLab />
+
+  </Interact>
+  <Exercise>
+
+確認: 「0台稼働」は好況・不況のどちらでも「1台稼働」より利得が低い（-100 vs 300、両方の状態で劣っている）。このとき「0台稼働」を何と呼ぶか？
+（答: **優越される行動**。すべての状態で他の行動（この場合1台稼働）に劣っているため、決定基準を計算するまでもなく最初に候補から排除できる。上のラボでも「0台稼働」の行に「優越される」というバッジが付いているのを確認しよう）
+
+  </Exercise>
+</Level>
+
+<Level level={1} title="古典的理解（5つの決定基準の導出と使い分け）">
+  <Concept>
+
+5つの決定基準は、利得行列のどの数値に注目するかで決まる。高校数学で習う「最大値・最小値」「加重平均」「引き算」「相加平均」だけで、すべて組み立てられる。
+
+  </Concept>
+  <Derivation title="Maximax・Maximin基準（各行動の最大値・最小値を比べるだけ）">
+
+各行動 $a$ について、とりうる状態すべての利得 $c(a,\theta)$ の中から最大値・最小値を取る——高校数学でおなじみの $\max$・$\min$ そのもの。
+
+$$
+\mathrm{Maximax}(a)=\max_{\theta} c(a,\theta),\qquad \mathrm{Maximin}(a)=\min_{\theta} c(a,\theta)
+$$
+
+<Term id="maximax-criterion">Maximax</Term>基準はこの $\mathrm{Maximax}(a)$ が最大の行動を選ぶ（「うまくいったときの上振れ」だけを見る、最も楽観的な基準）。<Term id="maximin-criterion">Maximin</Term>基準は $\mathrm{Maximin}(a)$ が最大の行動を選ぶ（「最悪の場合にどれだけマシか」だけを見る、最も悲観的な基準）。同じ利得行列でも見ている数値が正反対なので、選ぶ行動が食い違うことがある。
+
+  </Derivation>
+  <Derivation title="Hurwicz基準（2つの極端な基準を加重平均でつなぐ）">
+
+Maximax（楽観）とMaximin（悲観）はどちらも極端。その中間の態度を表すのが<Term id="hurwicz-criterion">Hurwicz基準</Term>——楽観係数 $\alpha\in[0,1]$ で最大利得と最小利得を**加重平均**する（重み付き平均は $\alpha\cdot x_1+(1-\alpha)\cdot x_2$ の形。中学・高校で習う「内分点」や「加重平均」と同じ計算）。
+
+$$
+\mathrm{Hurwicz}(a)=\alpha\cdot\max_{\theta} c(a,\theta)+(1-\alpha)\cdot\min_{\theta} c(a,\theta)
+$$
+
+$\alpha=1$ を代入すると $\mathrm{Hurwicz}(a)=\max_\theta c(a,\theta)=\mathrm{Maximax}(a)$、$\alpha=0$ を代入すると $\mathrm{Hurwicz}(a)=\min_\theta c(a,\theta)=\mathrm{Maximin}(a)$——代入するだけでMaximax・Maximinの両方を特別な場合として含んでいることが確かめられる。$\alpha$ の「正しい」値はなく、意思決定者の主観的な楽観度合いで選ぶ。
+
+  </Derivation>
+  <Derivation title="Minimax regret基準（後悔=引き算の最大値を最小化する）">
+
+各状態 $\theta$ について、「もし最善の行動を選んでいたら得られたはずの利得」との差を**リグレット**（後悔）と呼ぶ——ただの引き算。
+
+$$
+\mathrm{regret}(a,\theta)=\underbrace{\max_{a'} c(a',\theta)}_{\text{その状態での最善の利得}}-\,c(a,\theta)
+$$
+
+行動 $a$ がその状態で最善なら $\mathrm{regret}(a,\theta)=0$、そうでなければ正の値になる（利得の差なので必ず0以上）。すべての状態・行動についてこれを並べたものが**リグレット行列**。次に各行動の最大リグレット（最悪の後悔）を比べ、それが最小の行動を選ぶ。
+
+$$
+\text{選ぶ行動}=\arg\min_a \max_{\theta} \mathrm{regret}(a,\theta)
+$$
+
+「どの状態が起きても、後悔が一定以上大きくならない」行動を選ぶ、という考え方——Maximinが利得そのものの最悪値に注目するのに対し、<Term id="minimax-regret">Minimax regret</Term>は「後から振り返ったときの後悔」の最悪値に注目する点が異なる。
+
+  </Derivation>
+  <Derivation title="Laplace基準（状態を等確率とみなした相加平均）">
+
+状態がどれだけ起こりやすいか分からないなら、「すべて等確率」とみなすのが妥当だろう、という**理由不十分の原則**に基づく基準。状態が $|\Theta|$ 個あるとき、各行動の利得の**相加平均**（高校数学の平均そのもの）を計算する。
+
+$$
+\mathrm{Laplace}(a)=\frac{1}{|\Theta|}\sum_{\theta} c(a,\theta)
+$$
+
+<Term id="laplace-criterion">Laplace基準</Term>はこれが最大の行動を選ぶ。これは実質的に「各状態の確率を $1/|\Theta|$ とみなした<Term id="expected-value">期待値</Term>」を計算しているのと同じで、Level2で扱う期待値による意思決定の特別な場合（等確率のケース）とみなせる。
+
+  </Derivation>
+  <Interact>
+
+リグレット行列がどう組み立てられるかを1コマずつ確認しよう。状態（列）ごとに「①その状態での最大利得を探す→②各行動のリグレットを引き算で求める」を繰り返し、最後にMinimax regretが選ぶ行動を示す。
+
+<RegretMatrixStepper />
+
+  </Interact>
+  <Exercise>
+
+確認: Hurwicz基準で $\alpha$ を0から1まで連続的に動かしたとき、$\mathrm{Hurwicz}(a)$ は $\alpha$ の関数としてどんな形になるか？
+（答: **1次関数（直線）**。$\mathrm{Hurwicz}(a)=\alpha\cdot\max_\theta c(a,\theta)+(1-\alpha)\cdot\min_\theta c(a,\theta)$ を $\alpha$ について整理すると $\bigl(\max_\theta c(a,\theta)-\min_\theta c(a,\theta)\bigr)\alpha+\min_\theta c(a,\theta)$ の形になり、傾き・切片を持つ $\alpha$ の1次式。上のラボで2台稼働のスコアが $\alpha$ に対して直線的に増える様子と、1台稼働の水平な直線との交点（$\alpha=0.6$ 付近）で選ばれる行動が切り替わることを確認しよう）
+
+  </Exercise>
+</Level>
+
+<Level level={2} title="仮定体系（期待値による意思決定・決定木）">
+  <Concept>
+
+Level1の5基準はいずれも「状態の確率が分からない」前提だった。もし確率が分かっている（**リスク下の意思決定**）なら、<Term id="expected-value">期待値</Term>の考え方をそのまま使える——各行動の期待利得(**ESV**: Expected State Value)が最大のものを選ぶ。
+
+<Math tex="\mathrm{ESV}(a)=\sum_{\theta} P(\theta)\cdot c(a,\theta)" />
+
+複数段階の意思決定（ある行動の結果を見てから次の行動を選ぶ、など）を扱うときは、これを<Term id="decision-tree-analysis">決定木</Term>という木構造で表現し、**後ろ向き帰納法**（バックワードインダクション）で解く。
+
+  </Concept>
+  <Derivation title="ESVの導出（期待値の定義をそのまま利得に適用する）">
+
+[事象と確率](/topics/probability-basics)で確率変数 $X$ の<Term id="expected-value">期待値</Term>は $E[X]=\sum_x x\,P(X=x)$ だった。ここで「確率変数 $X$」を「行動 $a$ を選んだときの利得 $c(a,\theta)$」に置き換えるだけで、そのままESVの定義になる。
+
+$$
+\mathrm{ESV}(a)=E[c(a,\Theta)]=\sum_{\theta} P(\theta)\cdot c(a,\theta)
+$$
+
+状態が2つ（好況・不況）で確率 $p$・$1-p$ のときは、単に2項の重み付き和。
+
+$$
+\mathrm{ESV}(a)=p\cdot c(a,\text{好況})+(1-p)\cdot c(a,\text{不況})
+$$
+
+$p$ を大きくするほど、好況での利得が大きい（ハイリスク・ハイリターンな）行動のESVが相対的に伸びていく——下のラボで直接確かめられる。ただしESV最大化はリスク態度（大きく損する可能性をどれだけ避けたいか）を反映できないという限界があり、この問題は効用理論（P-4）で扱う。
+
+  </Derivation>
+  <Interact>
+
+好況になる確率 $p$ を動かすと、各行動のESVがどう変わり、選ばれる行動がどう切り替わるかを確かめよう。
+
+<ExpectedValueLab />
+
+  </Interact>
+  <Derivation title="決定木と後ろ向き帰納法（葉から根へ、確率ノードは期待値・決定ノードは最大値）">
+
+決定木は**決定ノード**（□、意思決定者が選ぶ）と**確率ノード**（○、自然の状態が確率的に決まる）からなる木構造。末端(葉)にはすでに利得が分かっている——そこから根に向かって、次の2つのルールだけで値を計算していく。
+
+$$
+\text{確率ノードの値}=\sum_{\theta} P(\theta)\cdot(\text{子ノードの値}),\qquad
+\text{決定ノードの値}=\max_{a}(\text{子ノードの値})
+$$
+
+確率ノードは意思決定者にはコントロールできないので期待値（さきほどのESVの計算そのもの）、決定ノードは意思決定者が自分で選べるので子の中の最大値——この使い分けだけが**後ろ向き帰納法**（バックワードインダクション）の全て。葉に近いノードから先に確定させ、最後に根の決定ノードで最善の行動が決まる。この根の値は、同じ利得行列・同じ確率で計算したESVの最大値と必ず一致する（表で計算するか木で計算するかの違いでしかない）。
+
+  </Derivation>
+  <Interact>
+
+末端の利得だけが分かっている状態から、確率ノード→決定ノードの順に値が1つずつ確定していく様子を1コマずつ見てみよう。
+
+<DecisionTreeStepper />
+
+  </Interact>
+  <Exercise>
+
+<DecisionAnalysisQuiz />
+
+  </Exercise>
+</Level>
+
+<Level level={3} title="予測最適化（情報理論・情報の価値）" status="planned">
+
+自然の状態 $\Theta$ の不確実性を数量化するシャノン情報量・エントロピー・相互情報量・KLダイバージェンス（P-2 情報理論）、追加の情報（予測・調査）を得ることで意思決定がどれだけ改善するかを測る事前分析・事後分析・EVPI（完全情報の価値、P-3 情報の価値）は、決定分析の自然な拡張として到達途上の領域とする。
+
+</Level>
+
+<Level level={4} title="因果（効用理論とリスク態度）" status="planned">
+
+Level2で触れた「ESV最大化はリスク態度を反映できない」という限界に答えるのが、フォン・ノイマン=モルゲンシュテルンの期待効用定理・確実同値額・リスクプレミアムを扱う効用理論（P-4）——利得そのものではなく「利得の効用」の期待値を最大化することで、リスク回避的な意思決定者の選好も表現できる。到達途上の領域とする。
+
+</Level>
+
+<Level level={5} title="高次元/最先端（確率予測の評価・逐次決定）" status="planned">
+
+天気予報のような確率予測の精度を評価するブライアスコア・信頼度・コスト/ロスモデル・ROC/AUC（P-5 確率予測の評価）、複数時点にわたる意思決定を動的計画法・後ろ向き帰納法・マルコフ決定過程で解く逐次決定（P-6 逐次決定、<Term id="markov-decision-process">マルコフ決定過程</Term>は[マルコフ連鎖](/topics/markov-chains)の拡張）は、到達途上の領域とする。
+
+</Level>
+
+<Level level={6} title="フロンティア" status="planned">
+
+決定分析・情報理論・効用理論を組み合わせた意思決定支援システム、強化学習（[強化学習](/topics/reinforcement-learning)）との接続（逐次決定・マルコフ決定過程を「学習しながら解く」枠組み）など、研究が続く到達途上の領域として示す。
+
+</Level>
+
+</Topic>
