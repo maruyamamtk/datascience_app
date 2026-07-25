@@ -1,0 +1,196 @@
+---
+title: ベイズ計算法（MCMC・ギブスサンプリング・Metropolis-Hastings法）
+summary: 共役事前分布が使えず事後分布が解析的に求まらないとき、マルコフ連鎖モンテカルロ(MCMC)でサンプリングして近似する。Metropolis-Hastings法の受理確率・詳細釣り合い、ギブスサンプリング、R-hat・有効サンプルサイズによる収束診断を、K-1と同じBeta(6,6)事後分布を題材にコマ送りで体感する。
+status: published
+---
+
+import { MHStepper } from "@/components/topics/mcmc-methods/MHStepper";
+import { GibbsStepper } from "@/components/topics/mcmc-methods/GibbsStepper";
+import { ConvergenceLab } from "@/components/topics/mcmc-methods/ConvergenceLab";
+import { McmcMethodsQuiz } from "@/components/topics/mcmc-methods/McmcMethodsQuiz";
+
+<Topic title="ベイズ計算法（MCMC・ギブスサンプリング・Metropolis-Hastings法）" summary="共役事前分布が使えず事後分布が解析的に求まらないとき、マルコフ連鎖モンテカルロ(MCMC)でサンプリングして近似する。Metropolis-Hastings法・ギブスサンプリング・収束診断を体感する。">
+
+<ReaderGuide>
+
+- **初学者** → L0〜L1（Metropolis-Hastingsのランダムウォークを道具として使う → 受理確率の導出とギブスサンプリング）
+- **一通り使える人** → L2（R-hat・有効サンプルサイズによる収束診断、PyMC/ArviZの実務パラメータ）
+- **「完全に理解した」人** → L3以降（ハミルトニアンMCMC・変分ベイズ・階層ベイズは到達途上）
+
+前提: [ベイズ統計の基礎](/topics/bayesian-basics)の事前分布→事後分布の考え方（本トピックはK-1のBeta(6,6)事後分布をそのまま題材に使う）、[計算多用手法](/topics/monte-carlo-methods)の「乱数を大量に発生させて試す」という発想と[マルコフ連鎖](/topics/markov-chains)の定常分布（MCMCは«目標分布を定常分布に持つマルコフ連鎖»を設計する）。出典: 『Pythonでスラスラわかるベイズ推論「超」入門』第4-5章「はじめてのベイズ推論実習」。
+
+</ReaderGuide>
+
+<Level level={0} title="ブラックボックス（ランダムウォークで目標分布を探索する）">
+  <Concept>
+
+K-1（[ベイズ統計の基礎](/topics/bayesian-basics)）では、コイン投げの事後分布が<Term id="conjugate-prior">共役事前分布</Term>のおかげで**解析的に**Beta(6,6)と求まった。しかし一般のモデルでは、事後分布の正規化定数（分母の積分）を解析的に求められないことが多い。
+
+<Math tex="\pi(\theta\mid D)=\dfrac{L(D\mid\theta)\,\pi(\theta)}{\displaystyle\int L(D\mid\theta')\,\pi(\theta')\,d\theta'}" />
+
+<Term id="mcmc">MCMC（マルコフ連鎖モンテカルロ）</Term>は、この**分母を一切計算せずに**目標分布からサンプルを得る手法。「現在地→提案→受理/棄却→次の現在地」というランダムウォークを繰り返すだけで、訪れた点の集まりが目標分布に従うようになる。
+
+  </Concept>
+  <Interact>
+
+下のステッパーは、K-1と**同じBeta(6,6)事後分布**（正規化定数を知らないふりをする）を目標に、<Term id="metropolis-hastings">Metropolis-Hastings法</Term>が1ステップずつ探索する様子を見せる。現在地(青)→提案(破線矢印)→受理(緑)/棄却(赤)というランダムウォークと、これまで訪れた状態のヒストグラム(水色)が目標分布(灰色曲線)へ近づいていく様子を確かめよう。
+
+<MHStepper />
+
+  </Interact>
+  <Exercise>
+
+確認: 「Metropolis-Hastings法で受理確率を計算するには、目標分布の正規化定数（積分して1になるように割る定数）を求める必要がある」——○か×か。
+（答: ×。受理確率 r=min(1, π(θ')/π(θ)) は目標分布の«比»だけで決まり、正規化定数は分子・分母で約分されて消える。これがMCMCの核心で、K-1のような共役事前分布が使えない一般のモデルでも使える理由）
+
+  </Exercise>
+</Level>
+
+<Level level={1} title="古典的理解（受理確率の導出とギブスサンプリング）">
+  <Concept>
+
+なぜ「$r=\min(1, \pi(\theta')/\pi(\theta))$ という確率で受理する」だけで、ランダムウォークの訪問頻度が本当に目標分布 $\pi$ に一致するのだろうか。鍵になるのは<Term id="markov-chain">マルコフ連鎖</Term>の<Term id="stationary-distribution">定常分布</Term>の考え方——「$\pi$ を定常分布に持つ連鎖を作れば、長く走らせた訪問頻度は $\pi$ に収束する」（[マルコフ連鎖](/topics/markov-chains)で学んだエルゴード性）。$\pi$ を定常分布にする十分条件が**詳細釣り合い**。
+
+  </Concept>
+  <Derivation title="受理確率 r=min(1, π(θ')/π(θ)) が詳細釣り合いを満たすことを示す(場合分けだけで示せる)">
+
+提案分布 $q(\theta\to\theta')$ が対称（$q(\theta\to\theta')=q(\theta'\to\theta)$、ランダムウォークならこれは自然に成り立つ）なとき、$\theta\to\theta'$ への遷移確率は $P(\theta\to\theta')=q(\theta\to\theta')\,A(\theta\to\theta')$（$A$ は受理確率）。**詳細釣り合い**とは
+
+$$
+\pi(\theta)\,P(\theta\to\theta')=\pi(\theta')\,P(\theta'\to\theta)
+$$
+
+が全ての $\theta,\theta'$ で成り立つこと。$q$ が対称なので、これは $\pi(\theta)A(\theta\to\theta')=\pi(\theta')A(\theta'\to\theta)$ と同じ。$A(\theta\to\theta')=\min(1,\pi(\theta')/\pi(\theta))$ がこれを満たすことを、$\pi(\theta')\ge\pi(\theta)$ の場合で確かめる（逆の場合は $\theta,\theta'$ を入れ替えるだけで同じ議論になる）。
+
+- このとき $\pi(\theta')/\pi(\theta)\ge 1$ なので $A(\theta\to\theta')=\min(1,\pi(\theta')/\pi(\theta))=1$。
+- 逆向きは $\pi(\theta)/\pi(\theta')\le 1$ なので $A(\theta'\to\theta)=\min(1,\pi(\theta)/\pi(\theta'))=\pi(\theta)/\pi(\theta')$。
+
+これを詳細釣り合いの式に代入すると（微分・積分は一切使わない、ただの掛け算）
+
+$$
+\pi(\theta)\cdot A(\theta\to\theta')=\pi(\theta)\cdot 1=\pi(\theta),\qquad
+\pi(\theta')\cdot A(\theta'\to\theta)=\pi(\theta')\cdot\frac{\pi(\theta)}{\pi(\theta')}=\pi(\theta)
+$$
+
+両辺とも $\pi(\theta)$ で一致する——詳細釣り合いが成り立つ。
+
+  </Derivation>
+  <Derivation title="詳細釣り合い ⟹ πは定常分布(総和の入れ替えだけで示せる)">
+
+詳細釣り合い $\pi(\theta)P(\theta\to\theta')=\pi(\theta')P(\theta'\to\theta)$ が全ての $\theta,\theta'$ で成り立つとき、両辺を $\theta$ について総和すると
+
+$$
+\sum_{\theta}\pi(\theta)P(\theta\to\theta')=\sum_{\theta}\pi(\theta')P(\theta'\to\theta)=\pi(\theta')\sum_{\theta}P(\theta'\to\theta)=\pi(\theta')\cdot 1=\pi(\theta')
+$$
+
+（最後の等号は「$\theta'$ から次にどこかへ必ず1回遷移する」ので確率の総和が1になることを使っただけ）。左辺 $\sum_\theta \pi(\theta)P(\theta\to\theta')$ はまさに「$\pi$ を1回遷移させた後の $\theta'$ にいる確率」——つまり $(\pi P)(\theta')=\pi(\theta')$。これは $\pi$ が[定常分布](/topics/markov-chains)そのものであることを意味する（$\pi P=\pi$）。だから、詳細釣り合いを満たす受理確率でランダムウォークを続けるだけで、長期的な訪問頻度が目標分布 $\pi$ に収束する。
+
+  </Derivation>
+  <Concept>
+
+多変量（2変量以上）の目標分布では、<Term id="gibbs-sampling">ギブスサンプリング</Term>という別のアプローチもある。「もう一方の変数を固定した**条件付き分布**」が解析的に求まる場合、そこから直接サンプリングする——Metropolis-Hastingsと違い提案・受理という手順自体が不要で、**常に受理される**。2変量正規分布（相関 $\rho$）はこの条件付き分布が正規分布として求まる教科書的な例。
+
+<Math tex="X\mid Y=y\sim\mathcal N(\rho y,\ 1-\rho^2),\qquad Y\mid X=x\sim\mathcal N(\rho x,\ 1-\rho^2)" />
+
+  </Concept>
+  <Interact>
+
+下のステッパーは、相関 $\rho$ を持つ2変量正規分布を目標に、yを固定してxを更新(横移動, 紫)→xを固定してyを更新(縦移動, 緑)を交互に繰り返す様子を見せる。棄却が存在しないこと、$\rho$ を動かすと点の雲の形（楕円の傾き）がどう変わるかを確かめよう。
+
+<GibbsStepper />
+
+  </Interact>
+  <Exercise>
+
+確認: 「ギブスサンプリングはMetropolis-Hastings法と同様、受理確率を計算して確率的に棄却することがある」——○か×か。
+（答: ×。ギブスサンプリングは条件付き分布から**直接**サンプリングするため、生成された点は常に目標分布に従っており、棄却という概念自体が存在しない。Metropolis-Hastingsが«間接的»な方法であるのに対し、ギブスは条件付き分布が解析的に求まる場合に使える«直接的»な方法）
+
+  </Exercise>
+</Level>
+
+<Level level={2} title="仮定体系（収束診断: R-hat・有効サンプルサイズ・実務のPyMC/ArviZ）">
+  <Concept>
+
+MCMCは理論上「長く走らせれば」目標分布に収束するが、**どれくらい長く走らせれば十分か**は実行前には分からない。実務では、生成したチェーンを事後にチェックする**収束診断**が欠かせない。代表的な2つの指標が<Term id="r-hat">R-hat（分割R-hat）</Term>と<Term id="effective-sample-size">有効サンプルサイズ(ESS)</Term>。
+
+考え方は[分散分析](/topics/analysis-of-variance)の「群間分散 vs 群内分散」とよく似ている——チェーンを前半・後半の2群とみなし、群間のばらつき(収束していなければ大きい)と群内のばらつきを比較する。
+
+  </Concept>
+  <Derivation title="分割R-hatを«群間分散 vs 群内分散»として導く">
+
+チェーン（長さ $2n$）を前半・後半の2本（各長さ $n$）に分け、それぞれの平均を $\bar\theta_1,\bar\theta_2$、全体平均を $\bar\theta$ とする。[分散分析](/topics/analysis-of-variance)と同じ発想で、**チェーン間分散**（群間のばらつき）と**チェーン内分散**（群内のばらつきの平均）を作る。
+
+$$
+B=\frac{n}{2-1}\sum_{j=1}^{2}(\bar\theta_j-\bar\theta)^2,\qquad W=\frac{1}{2}\sum_{j=1}^{2}s_j^2\quad(s_j^2\text{は各半分の標本分散})
+$$
+
+前半・後半が«同じ分布»から来ているなら $\bar\theta_1\approx\bar\theta_2\approx\bar\theta$ なので $B$ は小さい。まだ収束していない（前半と後半で分布の中心がずれている）なら $B$ は大きくなる。この2つを、真の分散の«やや保守的な»推定量に組み合わせる。
+
+$$
+\widehat{\mathrm{Var}}=\frac{n-1}{n}W+\frac{B}{n},\qquad \hat R=\sqrt{\frac{\widehat{\mathrm{Var}}}{W}}
+$$
+
+収束していれば $B\approx 0$ なので $\widehat{\mathrm{Var}}\approx\frac{n-1}{n}W\approx W$、よって $\hat R\approx 1$。収束していなければ $B$ が $\widehat{\mathrm{Var}}$ を押し上げ、$\hat R$ は1より大きくなる。実務の目安は $\hat R\le 1.01$。
+
+  </Derivation>
+  <Derivation title="有効サンプルサイズをΣの展開から導く（自己相関があると«実質n未満»になる理由）">
+
+$n$ 個の相関した標本 $\theta_1,\dots,\theta_n$ の平均 $\bar\theta$ の分散を、和の分散の公式 $\mathrm{Var}(\sum X_i)=\sum\mathrm{Var}(X_i)+2\sum_{i<j}\mathrm{Cov}(X_i,X_j)$（高校数学の「分散の性質」の多変数版）で展開する。定常な系列で自己相関 $\rho(k)=\mathrm{Cov}(\theta_t,\theta_{t+k})/\sigma^2$ を使うと
+
+$$
+\mathrm{Var}(\bar\theta)=\frac{\sigma^2}{n}\left(1+2\sum_{k=1}^{n-1}\Big(1-\frac{k}{n}\Big)\rho(k)\right)\ \approx\ \frac{\sigma^2}{n}\left(1+2\sum_{k=1}^{\infty}\rho(k)\right)\quad(n\text{が大きいとき}\ 1-\tfrac kn\approx 1)
+$$
+
+これを「$n_{\mathrm{eff}}$ 個の**独立な**標本の平均」の分散 $\sigma^2/n_{\mathrm{eff}}$ と見比べると
+
+$$
+\mathrm{ESS}=n_{\mathrm{eff}}\approx\frac{n}{1+2\displaystyle\sum_{k=1}^{\infty}\rho(k)}
+$$
+
+自己相関 $\rho(k)$ がすべて0（i.i.d.）なら $\mathrm{ESS}=n$。自己相関が強い（提案分布の幅が狭すぎるなど）ほど分母が大きくなり、$\mathrm{ESS}\ll n$——«たくさんサンプルを引いたのに実質的な情報量は少ない»状態になる。実務の目安は $\mathrm{ESS}\ge 400$。
+
+  </Derivation>
+  <Concept>
+
+実務では、これらの計算を自分で書く代わりに**PyMC**（サンプリング）と**ArviZ**（診断・可視化）を使う。`pm.sample(draws, tune=...)` の `tune`（ウォーミングアップ、目安1000〜2000）・`draws`（実際に使うサンプル数、目安1000以上、精度を要求するなら4000以上）を設定して実行し、`az.summary()` で `r_hat`（1.01以下が目安）・`ess_bulk`（400以上が目安）・`mcse_mean`（0.01以下が目安）を確認する。`az.plot_trace()` のトレースプロットが「滑らかな線」ではなく「多数の縦棒（divergence, 発散）」を示す場合は、事前分布の設定やモデル構造を見直すシグナルになる。
+
+  </Concept>
+  <Interact>
+
+下のラボは、提案分布の標準偏差 $\sigma$（Level0のステッパーと同じ操作量）を、400ステップ(バーンイン50除去)の長いチェーンに適用する。$\sigma$ が小さすぎる/大きすぎるとトレースプロット・ヒストグラム・R-hat・ESS・受理率がどう変わるか確かめよう。
+
+<ConvergenceLab />
+
+  </Interact>
+  <Exercise>
+
+<McmcMethodsQuiz />
+
+  </Exercise>
+</Level>
+
+<Level level={3} title="予測最適化（ハミルトニアンMCMC・NUTS）" status="planned">
+
+勾配情報を使って提案の方向を賢く選ぶ**ハミルトニアンモンテカルロ(HMC)**・その自動チューニング版**NUTS(No-U-Turn Sampler)** は、PyMCの既定サンプラーであり、単純なランダムウォークMetropolisより高次元で効率的に探索できる。導出には物理のハミルトン力学の類推が必要で、到達途上の領域とする。
+
+</Level>
+
+<Level level={4} title="因果（ベイズ的な処置効果推定とMCMC）" status="planned">
+
+状態空間モデル+ベイズによる処置効果推定（[CausalImpact](/topics/causal-inference-models)）は、内部でMCMC（またはカルマンフィルタ）を使って事後分布を計算する。この橋渡しは到達途上の領域とする。
+
+</Level>
+
+<Level level={5} title="高次元/最先端（変分ベイズ・逐次モンテカルロ）" status="planned">
+
+MCMCの代替として、事後分布を扱いやすい分布族で近似し最適化で求める**変分ベイズ**、粒子の集団で逐次的に分布を追跡する**逐次モンテカルロ(粒子フィルタ)** は、MCMCより高速だが近似誤差の性質が異なる。研究が活発な到達途上の領域とする。
+
+</Level>
+
+<Level level={6} title="フロンティア" status="planned">
+
+**階層ベイズモデル**（K-3、[事前分布](/topics/bayesian-basics)自体にさらに事前分布を置く階層構造とMCMCの組み合わせ）、リバーシブルジャンプMCMC（モデル次元自体が変わる場合）、ベイズ深層学習の大規模事後サンプリングなど、MCMCを土台にさらに発展する領域は研究が続く到達途上のまま示す。
+
+</Level>
+
+</Topic>
