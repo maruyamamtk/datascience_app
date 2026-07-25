@@ -1,0 +1,23 @@
+---
+title: 相互情報量
+definition: 2つの確率変数X・Yが«どれだけ関連しているか»を測る量。$I(X;Y)=\sum_{x,y}p(x,y)\log_2\frac{p(x,y)}{p(x)p(y)}$。X,Yが独立なら0、対称（$I(X;Y)=I(Y;X)$）で常に0以上。
+aliases: [mutual information, 相互情報量]
+seeAlso: [entropy, kullback-leibler-divergence, shannon-information]
+---
+
+# 相互情報量
+
+$$
+I(X;Y)=\sum_{x,y}p(x,y)\log_2\frac{p(x,y)}{p(x)p(y)}
+$$
+
+- 「Yを知ることで、Xの不確実性がどれだけ減るか」（あるいはその逆）を表す——$H(X)-H(X\mid Y)$ とも書ける。
+- $X,Y$ が**独立**なら $p(x,y)=p(x)p(y)$ が全ての組で成り立ち、対数の中身が常に1（$\log_2 1=0$）になるので
+  $I(X;Y)=0$。逆に相互情報量が0でなければ、独立ではない証拠になる。
+- 実は[KLダイバージェンス](kullback-leibler-divergence)の特別な場合——同時分布 $P(X,Y)$ と、
+  «もし独立だったら»得られたはずの直積分布 $P(X)P(Y)$ とのKLダイバージェンスがそのまま相互情報量になる。
+  $$
+  I(X;Y)=D_{KL}\bigl(P(X,Y)\,\Vert\,P(X)P(Y)\bigr)
+  $$
+- KLダイバージェンスと違い**対称**（$I(X;Y)=I(Y;X)$）で、常に0以上。決定木の[情報利得](information-gain)は
+  「分割変数と目的変数の相互情報量」とみなせる関係にある。
