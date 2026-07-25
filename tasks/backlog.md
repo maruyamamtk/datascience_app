@@ -121,7 +121,7 @@
 | 59 | #85 | K-1 | ベイズ統計の基礎 | bayesian-basics | probability-basics, distribution-characteristics | ✅ done |
 | 60 | #86 | K-2 | ベイズ計算法（MCMC） | mcmc-methods | bayesian-basics, monte-carlo-methods | ✅ done |
 | 61 | #87 | K-3 | 階層ベイズモデル | hierarchical-bayes | mcmc-methods | ✅ done |
-| 62 | #88 | K-4 | ベイズ応用（A/Bテスト・IRT） | bayesian-applications | bayesian-basics | pending |
+| 62 | #88 | K-4 | ベイズ応用（A/Bテスト・IRT） | bayesian-applications | bayesian-basics | ✅ done |
 | 63 | #89 | P-1 | 決定分析 | decision-analysis | probability-basics | pending |
 | 64 | #90 | P-2 | 情報理論 | information-theory | probability-basics | pending |
 | 65 | #91 | P-3 | 情報の価値 | value-of-information | decision-analysis, bayesian-basics | pending |
