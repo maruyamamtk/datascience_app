@@ -1,0 +1,19 @@
+---
+title: Sharpness(鋭さ)
+definition: 予測確率の分散で表される「自信の度合い」。予測確率が0.5に近いほど曖昧(Sharpnessが低い)、0や1に近いほど自信満々(Sharpnessが高い)。
+aliases: [Sharpness, 鋭さ, シャープネス]
+seeAlso: [calibration, brier-score]
+---
+
+# Sharpness(鋭さ)
+
+予測確率がどれだけ「白黒はっきり」しているかを表す指標。予測確率の分散で定義される。
+
+$$
+\mathrm{Sharpness}=\mathrm{Var}(\hat p)=\frac1n\sum_{i=1}^n(\hat p_i-\bar{\hat p})^2
+$$
+
+- 予測確率が常に0.5前後に固まっていれば分散が小さく、Sharpnessは低い(「五分五分」としか言わない曖昧な予測)。
+- 予測確率が0や1付近に散らばっていれば分散が大きく、Sharpnessは高い(自信を持って白黒つけている予測)。
+- **[一貫性(Calibration)](calibration)とは独立の性質**: 常に基準発生率(climatology)だけを予測すると較正は完璧だがSharpnessは0(何も語っていない)。逆に、自信満々でも当たっていなければ較正が崩れる。良い確率予測は「較正が取れていて、かつSharpnessが高い」ことの両方を必要とする。
+- [ブライアスコア](brier-score)の分解のうち、Refinement(解像度)——実際の発生率をビンごとにどれだけ分けられているか——と関連が深いが、Refinementは「実際の発生率のばらつき」、Sharpnessは「予測確率そのもののばらつき」であり、厳密には別の量である点に注意。

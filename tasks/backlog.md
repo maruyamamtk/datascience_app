@@ -126,7 +126,7 @@
 | 64 | #90 | P-2 | 情報理論 | information-theory | probability-basics | ✅ done |
 | 65 | #91 | P-3 | 情報の価値 | value-of-information | decision-analysis, bayesian-basics | ✅ done |
 | 66 | #92 | P-4 | 効用理論 | utility-theory | decision-analysis | ✅ done |
-| 67 | #93 | P-5 | 確率予測の評価 | probabilistic-forecasting | binary-classification-metrics | pending |
+| 67 | #93 | P-5 | 確率予測の評価 | probabilistic-forecasting | binary-classification-metrics | ✅ done |
 | 68 | #94 | P-6 | 逐次決定 | sequential-decision | markov-chains, decision-analysis | pending |
 | 69 | #95 | Q-1 | ニューラルネットワークの仕組み | neural-network-basics | optimization, learning-framework | pending |
 | 70 | #96 | Q-2 | NNモデル（CNN・RNN） | neural-network-models | neural-network-basics | pending |

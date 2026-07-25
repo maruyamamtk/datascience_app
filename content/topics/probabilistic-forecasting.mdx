@@ -1,0 +1,184 @@
+---
+title: 確率予測の評価
+summary: 「明日は雨」ではなく「明日雨が降る確率は70%」と言う確率予測そのものの良し悪しを、ブライアスコアとその分解(信頼度エラー・Refinement・不確実性)、信頼度曲線(Calibration)、Sharpness、コスト/ロスモデルによる意思決定の価値という4つの角度から評価する、確率予測とその活用の中核トピック。
+status: published
+---
+
+import { BrierScoreStepper } from "@/components/topics/probabilistic-forecasting/BrierScoreStepper";
+import { CalibrationLab } from "@/components/topics/probabilistic-forecasting/CalibrationLab";
+import { CostLossLab } from "@/components/topics/probabilistic-forecasting/CostLossLab";
+import { ProbabilisticForecastingQuiz } from "@/components/topics/probabilistic-forecasting/ProbabilisticForecastingQuiz";
+
+<Topic title="確率予測の評価" summary="確率予測そのものの良し悪しを、ブライアスコアとその分解・信頼度(Calibration)・Sharpness・コスト/ロスモデルによる意思決定の価値という4つの角度から評価する。">
+
+<ReaderGuide>
+
+- **初学者** → L0〜L1（ブライアスコアを道具として使う → 1件ずつ二乗誤差が積み上がる様子・信頼度曲線とブライアスコアの分解の導出）
+- **一通り使える人** → L2（コスト/ロスモデルで「確率予測がどれだけ意思決定の価値を生むか」を評価する）
+- **「完全に理解した」人** → L3以降（数量予測への一般化・逐次決定への接続は到達途上）
+
+前提: [二値分類の評価指標](/topics/binary-classification-metrics)（J-3）の<Term id="confusion-matrix">混同行列</Term>・<Term id="roc-curve">ROC曲線</Term>・<Term id="auc">AUC</Term>（本トピックではROC/AUCの構成法は再説明せず、Level2で要点整理のみ行う）、[決定分析](/topics/decision-analysis)（P-1）の<Term id="expected-value">期待値</Term>による意思決定、[情報の価値](/topics/value-of-information)（P-3）の「完全情報を上限とする」という発想（<Term id="evpi">EVPI</Term>と同じ枠組みを、本トピックのコスト/ロスモデルにも適用する）。
+出典: 『意思決定分析と予測の活用』第5部「確率予測とその活用」第1章、第3部「決定分析の活用」第2章「コスト／ロスモデルと予測の価値」。
+
+</ReaderGuide>
+
+<Level level={0} title="ブラックボックス（ブライアスコアを道具として使う）">
+  <Concept>
+
+「明日は雨」のように1つのカテゴリーを出す**カテゴリー予測**に対して、「明日雨が降る確率は70%」のように発生確率を出す予測を**確率予測**と呼ぶ。確率予測は、不確実性の度合いをそのまま伝えられるだけでなく、[二値分類の評価指標](/topics/binary-classification-metrics)で見た「陽性らしさスコア」をしきい値で区切る一歩手前の、**より情報量の多い出力**でもある。
+
+この確率値そのものの質を測る代表的な指標が<Term id="brier-score">ブライアスコア</Term>。
+
+<Math tex="BS=\frac1n\sum_{i=1}^n(\hat p_i-y_i)^2" />
+
+予測確率 $\hat p_i$ と実際の結果 $y_i\in\{0,1\}$ の差を2乗して平均するだけ——回帰の平均二乗誤差(MSE)を、0/1の分類結果にそのまま当てはめた式。$BS=0$ が完全な予測(常に正しい確信度で的中)、$BS=1$ が最悪(常に自信満々で外す)。
+
+  </Concept>
+  <Derivation title="ブライアスコアが0〜1の範囲に収まることの確認(高校数学レベル)">
+
+$\hat p_i\in[0,1]$、$y_i\in\{0,1\}$ なので、差 $\hat p_i-y_i$ の絶対値は必ず1以下になる（$y_i=0$ なら $\hat p_i-y_i=\hat p_i\le1$、$y_i=1$ なら $\hat p_i-y_i=\hat p_i-1\ge-1$）。よって
+
+$$
+0\le(\hat p_i-y_i)^2\le1
+$$
+
+が全ての $i$ で成り立ち、その平均である $BS$ も $0\le BS\le1$ の範囲に収まる——2乗した数は必ず0以上、かつ元の数の絶対値が1以下なら2乗も1以下という、高校数学の不等式の性質だけで確認できる。
+
+  </Derivation>
+  <Interact>
+
+下のステッパーは、10件の予測を1件ずつ確認しながら二乗誤差 $(\hat p-y)^2$ が積み上がっていく様子を見せる。自信を持って的中させた項はほとんど0のままだが、自信満々で外した項は二乗誤差が大きく跳ね上がることに注目しよう。
+
+<BrierScoreStepper />
+
+  </Interact>
+  <Exercise>
+
+確認: 「予測確率0.5を常に出すモデル」と「予測確率0か1をランダムに半々で出すモデル」で、実際の結果が0/1半々のデータに対してブライアスコアはどちらが小さくなるか。（答: **前者(常に0.5)**。常に0.5なら二乗誤差は毎回 $(0.5-y)^2=0.25$ で $BS=0.25$。後者はランダムに0か1を出すので、外れたときの二乗誤差が1になり平均は0.5に近づく——«自信満々で当てずっぽう»は«控えめで曖昧»より悪いブライアスコアになりうる）
+
+  </Exercise>
+</Level>
+
+<Level level={1} title="古典的理解（信頼度曲線とブライアスコアの分解）">
+  <Concept>
+
+ブライアスコアを下げるには、2つの異なる能力が必要になる。1つは<Term id="calibration">一貫性(Calibration/信頼度)</Term>——「予測確率0.7」と言ったグループで実際に約70%起きているか。もう1つは<Term id="sharpness">Sharpness(鋭さ)</Term>——予測確率がどれだけ0や1に近い「自信のある」値を出せているか(0.5付近の「五分五分」ばかりでは情報量が少ない)。信頼度曲線(Reliability Diagram)は、横軸に予測確率・縦軸に実際の発生率をプロットし、対角線に近いほど較正が取れていることを1枚のグラフで示す。
+
+  </Concept>
+  <Derivation title="ブライアスコアの分解(Murphy分解): BS=信頼度エラー-Refinement+不確実性 を高校数学の展開で導く">
+
+予測確率を $K$ 個のビン(例: 0, 0.1, 0.2, ..., 1 の11段階)に離散化し、ビン $k$ に属するサンプルが $n_k$ 件、そのビンの予測確率が $f_k$、実際の発生率(ビン内での $y$ の平均)が $\bar o_k$、全体の発生率(基準率)が $\bar o$ だとする。$y_i\in\{0,1\}$ なので $y_i^2=y_i$ が成り立つことに注意すると、ビン $k$ 内の二乗誤差の和は
+
+$$
+\begin{aligned}
+\sum_{i\in k}(f_k-y_i)^2&=\sum_{i\in k}\bigl(f_k^2-2f_ky_i+y_i\bigr)\\
+&=n_kf_k^2-2f_k(n_k\bar o_k)+n_k\bar o_k
+\end{aligned}
+$$
+
+$f_k^2-2f_k\bar o_k+\bar o_k$ を「$(f_k-\bar o_k)^2$ の展開」に $+\bar o_k-\bar o_k^2$ を足し引きして整理すると
+
+$$
+n_k\bigl[(f_k-\bar o_k)^2+\bar o_k(1-\bar o_k)\bigr]
+$$
+
+になる(これも高校数学の平方完成と同じ操作)。全ビンで足し合わせると
+
+$$
+\begin{aligned}
+\sum_i(f_i-y_i)^2&=\sum_k n_k(f_k-\bar o_k)^2\\
+&\quad+\sum_k n_k\,\bar o_k(1-\bar o_k)
+\end{aligned}
+$$
+
+さらに $\sum_k n_k\bar o_k(1-\bar o_k)$ を展開して整理すると(こちらも同じ平方完成)、$N\bar o(1-\bar o)-\sum_k n_k(\bar o_k-\bar o)^2$ にちょうど一致する。これを代入し両辺を $N$(全件数)で割ると
+
+$$
+\begin{aligned}
+BS&=\underbrace{\frac1N\sum_k n_k(f_k-\bar o_k)^2}_{\text{信頼度エラー}}\\
+&\quad-\underbrace{\frac1N\sum_k n_k(\bar o_k-\bar o)^2}_{\text{Refinement}}+\underbrace{\bar o(1-\bar o)}_{\text{不確実性}}
+\end{aligned}
+$$
+
+近似ではなく厳密な恒等式(第1章「BS=信頼度エラー-Refinement+不確実性」)。信頼度エラーは予測と実際のズレそのもの(小さいほど良い)、Refinementはビンごとに発生率をどれだけ分けられているか(大きいほど良い=引き算で効くのでBSを下げる)、不確実性はデータ自体が持つ曖昧さ($\bar o=0.5$ で最大の0.25、予測の質と無関係な定数)。
+
+  </Derivation>
+  <Interact>
+
+確信度スケール $k$ を動かして、200件の予測を「過信」や「自信不足」に歪めたときに信頼度曲線・Sharpness・ブライアスコアの3分解がどう連動するかを確かめよう。
+
+<CalibrationLab />
+
+  </Interact>
+  <Exercise>
+
+確認: 常に基準発生率(データ全体の発生率)だけを予測するモデルの信頼度エラーはいくつか。（答: **0**。全サンプルが同じ予測確率のビンに入り、その予測確率はちょうど全体の発生率 $\bar o$ に等しいので $f_k=\bar o_k=\bar o$ となり信頼度エラーはゼロになる。しかしこのモデルはRefinementもゼロ(ビンが1つしかなく発生率を全く分けられない)なので、較正だけが完璧でも良い予測とは言えない——上のCalibrationLabで確信度スケールをごく小さくすると、この「何も語らない」予測に近づくことも確かめられる）
+
+  </Exercise>
+</Level>
+
+<Level level={2} title="仮定体系（コスト/ロスモデルによる予測の価値評価）">
+  <Concept>
+
+確率予測がなぜ意思決定に価値をもたらすのか——その答えを与えるのが<Term id="cost-loss-model">コスト/ロスモデル</Term>。「対策する/しない」の2択に対し、対策コスト $C$(対策すれば状態によらず発生)とロス $L$(対策せず危険な状態になったときだけ発生)の2つの数字で意思決定をモデル化する。
+
+<Math tex="p^*=\frac{C}{L}" />
+
+確率予測 $\hat p\ge p^*$ なら対策する、という決定方式が期待コストを最小にする。[二値分類の評価指標](/topics/binary-classification-metrics)で見たコスト考慮の最適しきい値 $p^*=C_{FP}/(C_{FP}+C_{FN})$ とは、コストが発生する条件が異なる**別の利得構造**であることに注意（コスト/ロスモデルは対策すれば常にCが発生、コスト考慮型学習は誤ったときだけコストが発生する）。
+
+  </Concept>
+  <Derivation title="最適閾値 p*=C/L を期待コストの比較から導く(高校数学の1次不等式)">
+
+「対策あり」の期待コストは状態によらず常に $C$。「対策なし」の期待コストは、危険な状態になる確率を $p$ とすると $p\cdot L+(1-p)\cdot0=p\cdot L$（[期待値](/topics/decision-analysis)の定義そのもの）。対策する方が期待コストが小さくなる(得になる)のは
+
+$$
+C<p\cdot L
+$$
+
+のとき。両辺を $L>0$ で割ると $C/L<p$、つまり $p>C/L$ のとき対策する方が有利になる——高校数学の1次不等式の両辺を正の数で割るだけの操作。この境目 $p^*=C/L$ が最適閾値であり、確率予測 $\hat p$ をこの $p^*$ と比較して意思決定すればよい。
+
+  </Derivation>
+  <Concept>
+
+カテゴリー予測は固定のしきい値(通常0.5)でしか判断できないが、確率予測は**ユーザーごとに異なるコスト比 $r=C/L$ に応じて最適閾値を柔軟に調整できる**——これが確率予測の価値の源泉になる。この価値は、「予測を全く使わない場合の最良の戦略(気候値=climatology、«常に対策»と«一度も対策しない»の安い方)」を下限、「完全な予測(危険な状態を確実に知った上で、その都度コストCとロスLの安い方を選ぶ——通常はコストCの方がロスLより小さいので実際に危険なときだけ対策する)」を上限として、[情報の価値](/topics/value-of-information)の<Term id="evpi">EVPI</Term>と同じ発想で評価できる。
+
+  </Concept>
+  <Interact>
+
+対策コスト $C$・ロス $L$ をスライダーで動かして最適閾値 $p^*$ を変化させ、確率予測を使った期待コストが「気候値の最良」と「完全な予測」の間のどこに位置するかを確かめよう。[上のCalibrationLab](#calibration-lab)で確信度スケール $k$ を1から動かして較正を崩すと、この価値スコアがどう変わるかも合わせて確認できる。
+
+<CostLossLab />
+
+  </Interact>
+  <Exercise>
+
+<ProbabilisticForecastingQuiz />
+
+  </Exercise>
+</Level>
+
+<Level level={3} title="予測最適化（数量予測への一般化）" status="planned">
+
+本トピックは2値の事象(危険/安全、雨/晴れ)を対象にしたが、需要量や気温のような**数量予測**にも確率予測の考え方は拡張できる（第5部第5章）——「需要量が100個以上になる確率は60%」のような確率指定型、「90%信頼区間は[80,120]」のような範囲指定型、需要量全体の分布を予測する分布予測型。ピンボールロス・CRPS(連続ランク確率スコア)といった、ブライアスコアを連続値に一般化した評価指標([時系列予測](/topics/time-series-forecasting)の予測区間とも接続する)は到達途上とする。
+
+</Level>
+
+<Level level={4} title="因果（確率予測の活用: ロジスティック回帰から意思決定まで）" status="planned">
+
+実際に確率予測モデル(ロジスティック回帰など)を学習し、テストデータに対する予測確率からコスト比に応じた最適閾値でカテゴリー予測に変換し、期待金額を評価するという一連のワークフロー(第5部第2章)は、本トピックで扱う道具(<Term id="brier-score">ブライアスコア</Term>・<Term id="calibration">一貫性(Calibration)</Term>・<Term id="cost-loss-model">コスト/ロスモデル</Term>)の応用例として到達途上の領域とする。
+
+</Level>
+
+<Level level={5} title="高次元/最先端（ブライアスキルスコア・確率予測の較正手法）" status="planned">
+
+基準となる予測(climatology)との相対的な改善度を測る**ブライアスキルスコア** $BSS=1-BS/BS_{\mathrm{ref}}$、機械学習モデルの出力確率を事後的に較正し直すPlatt Scaling・Isotonic Regressionのような較正手法は、到達途上の領域とする。
+
+</Level>
+
+<Level level={6} title="フロンティア" status="planned">
+
+深層学習モデルの過信(overconfidence)問題への対処(Temperature Scalingなど)、複数時点にわたって確率予測を更新しながら意思決定する逐次決定(P-6、[決定分析](/topics/decision-analysis)(P-1)の拡張)との統合的な評価枠組みは、研究が続く到達途上の領域として示す。
+
+</Level>
+
+</Topic>

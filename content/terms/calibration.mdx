@@ -1,0 +1,16 @@
+---
+title: 一貫性(Calibration/信頼度)
+definition: 予測確率p̂と、実際にその確率を言ったグループでの発生頻度が一致しているかどうか。信頼度曲線(Reliability Diagram)で対角線に近いほど較正が取れている。
+aliases: [Calibration, キャリブレーション, 信頼度, 一貫性, Reliability Diagram, 信頼度曲線]
+seeAlso: [brier-score, sharpness]
+---
+
+# 一貫性(Calibration/信頼度)
+
+予測確率 $\hat p$ に対して、実際の発生頻度が $\hat p$ に一致しているかどうか。
+
+- 「予測確率0.7」と言ったサンプルのグループで、実際に約70%の割合で事象が起きていれば較正(Calibration)が取れている。
+- **信頼度曲線(Reliability Diagram)**: 横軸に予測確率、縦軸に実際の発生率をプロットしたもの。対角線 $y=x$ に近いほど良い予測。
+- 較正が崩れる代表的な2パターン: **過信(overconfidence)**——0や1に近い極端な確率を言うが、実際の発生率はそこまで極端でない。**自信不足(underconfidence)**——実際は極端な確率で起きる/起きないのに、控えめな数字しか言わない。
+- 較正だけでは予測の価値は測れない——常に基準発生率(climatology)だけを予測しても較正は完璧になるが、[Sharpness](sharpness)がゼロなので情報量がない。良い確率予測は較正と[Sharpness](sharpness)の両方を必要とする。
+- [ブライアスコア](brier-score)の分解式で「信頼度エラー」として定量化される。
