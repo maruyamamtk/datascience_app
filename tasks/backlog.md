@@ -123,7 +123,7 @@
 | 61 | #87 | K-3 | 階層ベイズモデル | hierarchical-bayes | mcmc-methods | ✅ done |
 | 62 | #88 | K-4 | ベイズ応用（A/Bテスト・IRT） | bayesian-applications | bayesian-basics | ✅ done |
 | 63 | #89 | P-1 | 決定分析 | decision-analysis | probability-basics | ✅ done |
-| 64 | #90 | P-2 | 情報理論 | information-theory | probability-basics | pending |
+| 64 | #90 | P-2 | 情報理論 | information-theory | probability-basics | ✅ done |
 | 65 | #91 | P-3 | 情報の価値 | value-of-information | decision-analysis, bayesian-basics | pending |
 | 66 | #92 | P-4 | 効用理論 | utility-theory | decision-analysis | pending |
 | 67 | #93 | P-5 | 確率予測の評価 | probabilistic-forecasting | binary-classification-metrics | pending |
