@@ -2,7 +2,7 @@
 title: 自己相関
 definition: 時系列を k 期ずらした自分自身との相関 ρ(k)=γ(k)/γ(0)。ラグ k ごとの ρ(k) を並べた自己相関関数（ACF）・その図（コレログラム）で周期性や記憶の強さを読む。ρ(0)=1。
 aliases: [autocorrelation, ACF, 自己相関関数, コレログラム, correlogram]
-seeAlso: [time-series, white-noise, stationarity]
+seeAlso: [time-series, white-noise, stationarity, effective-sample-size]
 ---
 
 # 自己相関（ACF）
@@ -18,3 +18,4 @@ $$
 - 季節周期のラグで大きな正のピーク → 周期性。ゆっくり減衰 → 強いトレンド/持続性。
 - 近似95%信頼限界 $\pm 1.96/\sqrt n$ を超えるラグは «有意な自己相関»。全ラグが内側なら[ホワイトノイズ](white-noise)（無相関）に近い。
 - ARモデルの次数の見当付けなど、時系列モデリングの出発点。
+- MCMCのチェーンも時系列の一種とみなせ、自己相関が強いほど[有効サンプルサイズ](effective-sample-size)（実質的に独立な標本数）はサンプル数より小さくなる。

@@ -68,7 +68,8 @@ export function ConvergenceLab() {
     m.setValue("rhat", formatNumber(rHat, 3));
     m.setValue("ess", formatNumber(ess, 0));
     m.setValue("accept", `${formatNumber(acceptanceRate * 100, 0)}\\%`);
-    const rhatGood = rHat < 1.05;
+    // 実務の目安 R-hat<=1.01(本文・クイズと同じ基準)に合わせる。
+    const rhatGood = rHat < 1.01;
     m.setHighlight("rhat", true, rhatGood ? "#16a34a" : "#dc2626");
   }, [rHat, ess, acceptanceRate]);
 

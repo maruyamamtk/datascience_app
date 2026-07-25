@@ -5,6 +5,7 @@ import { MathFormula, type MathFormulaHandle } from "@/components/math/MathFormu
 import { formatNumber, term } from "@/components/math/tex";
 import { Callout, frameAt, StepPlayer, useFramePlayer } from "@/components/viz";
 import { betaPdfCurve } from "@/lib/stats/bayesian-basics";
+import { betaPdf } from "@/lib/stats/continuous";
 import { histogram } from "@/lib/stats/histogram";
 import { useMcmcMethodsStore, useMhStepperStore, TARGET_BETA } from "@/lib/store/mcmc-methods";
 import { buildMhFrames } from "./mh-frames";
@@ -42,9 +43,9 @@ function pathFor(curve: { x: number; y: number }[], maxY: number): string {
     .join(" ");
 }
 
-/** 曲線上でthetaに最も近い点のy値（数式に表示するπ(θ)の近似値）を返す。 */
-function nearestCurveY(curve: readonly { x: number; y: number }[], theta: number): number {
-  return curve.reduce((closest, p) => (Math.abs(p.x - theta) < Math.abs(closest.x - theta) ? p : closest)).y;
+/** 数式に表示するπ(θ)の値。ストアが実際に使うのと同じ正規化済み密度を厳密に計算する。 */
+function targetY(theta: number): number {
+  return betaPdf(theta, TARGET_BETA.alpha, TARGET_BETA.beta);
 }
 
 /**
@@ -114,14 +115,12 @@ export function MHStepper() {
       m.setValue("u", "\\text{—}");
       return;
     }
-    m.setValue("pCur", formatNumber(nearestCurveY(curve, step.current), 3));
-    m.setValue("pProp", formatNumber(nearestCurveY(curve, step.proposed), 3));
+    m.setValue("pCur", formatNumber(targetY(step.current), 3));
+    m.setValue("pProp", formatNumber(targetY(step.proposed), 3));
     m.setValue("ratio", formatNumber(step.acceptRatio, 3));
     m.setValue("u", formatNumber(step.u, 3));
     m.setHighlight("ratio", true, resultColor);
     m.setHighlight("u", true, resultColor);
-    // curve は betaPdfCurve(TARGET_BETA) の useMemo(deps: []) で不変なので依存に含めなくて安全。
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step, resultColor]);
 
   return (

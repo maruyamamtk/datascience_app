@@ -58,6 +58,12 @@ export type BetaParams = { alpha: number; beta: number };
  * Beta(α,β) 事後分布の核（正規化定数 B(α,β) を無視した密度そのもの）。定義域外(0,1)は0。
  * Metropolis-Hastings の受理確率は «比» なので、この正規化されていない核だけで計算できる
  * ——これが MCMC の核心（正規化定数を求めなくてよい）。
+ *
+ * 描画層（lib/store/mcmc-methods.ts）は数値を曲線の高さと一致させるため正規化済みの
+ * betaPdf（continuous.ts）を使うが、受理判定はどちらを使っても数学的に同一になる。
+ * この関数はその主張を直接テストする用（本ファイルの test「正規化定数の有無に関わらず
+ * 受理判定は完全に一致する」参照）に残している——呼び出し側が本体側に見当たらないのは
+ * 意図通りで、デッドコードではない。
  */
 export function betaTargetKernel(theta: number, p: BetaParams): number {
   if (theta <= 0 || theta >= 1) return 0;
