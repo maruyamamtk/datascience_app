@@ -1,0 +1,28 @@
+---
+title: ベイズ線形回帰
+definition: 回帰係数に事前分布(例 β~N(0,τ_β²))を置いた線形回帰。係数の点推定ではなく事後分布そのものを得る。正規事前分布のもとでのMAP推定はリッジ回帰の罰則付き最小二乗と一致する。
+aliases: [bayesian linear regression, ベイズ線形回帰, ベイズ回帰]
+seeAlso: [ridge-regression, regression-coefficient, prior-distribution, posterior-distribution, shrinkage-estimation]
+---
+
+# ベイズ線形回帰
+
+線形回帰 $y=\beta_0+\beta_1x+\varepsilon$ の回帰係数 $\beta_1$ に
+[事前分布](prior-distribution) $\mathcal N(0,\tau_\beta^2)$ を置き、
+点推定ではなく[事後分布](posterior-distribution)そのものを求める回帰。
+
+- 説明変数を中心化すると、切片と傾きの最小二乗推定が直交し、傾きの事後平均は閉形式で求まる。
+
+$$
+\hat\beta_{1,\text{Bayes}}=\frac{S_{xx}/\sigma^2}{S_{xx}/\sigma^2+1/\tau_\beta^2}\,\hat\beta_{1,\text{OLS}}
+$$
+
+  （$S_{xx}$は中心化した説明変数の平方和）——[階層ベイズモデル](hierarchical-bayesian-model)の
+  グループ平均の事後平均と**全く同じ«精度加重平均»の式**に帰着する。
+- $\tau_\beta^2\to\infty$（無情報事前分布）で通常の最小二乗（OLS）に一致し、
+  $\tau_\beta^2\to0$（強い事前分布）で係数は0（無回帰）へ[縮小](shrinkage-estimation)される。
+- 正規事前分布のもとでのMAP推定（事後分布のピーク）は、[リッジ回帰](ridge-regression)の
+  罰則付き最小二乗 $\min\|y-X\beta\|^2+\lambda\sum\beta_j^2$ と数学的に一致する
+  （$\lambda=\sigma^2/\tau_\beta^2$）——正則化は«回帰係数に事前分布を置くこと»のMAP推定と解釈できる。
+- 点推定だけでなく予測の不確実性（事後予測分布）も同時に得られるのがベイズ線形回帰の強み——
+  小標本でもパラメータの不確かさを明示的に扱える。

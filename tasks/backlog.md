@@ -120,7 +120,7 @@
 | 58 | #84 | J-5 | モデル選択基準（AIC・BIC） | model-selection-criteria | estimation-methods, learning-framework | ✅ done |
 | 59 | #85 | K-1 | ベイズ統計の基礎 | bayesian-basics | probability-basics, distribution-characteristics | ✅ done |
 | 60 | #86 | K-2 | ベイズ計算法（MCMC） | mcmc-methods | bayesian-basics, monte-carlo-methods | ✅ done |
-| 61 | #87 | K-3 | 階層ベイズモデル | hierarchical-bayes | mcmc-methods | pending |
+| 61 | #87 | K-3 | 階層ベイズモデル | hierarchical-bayes | mcmc-methods | ✅ done |
 | 62 | #88 | K-4 | ベイズ応用（A/Bテスト・IRT） | bayesian-applications | bayesian-basics | pending |
 | 63 | #89 | P-1 | 決定分析 | decision-analysis | probability-basics | pending |
 | 64 | #90 | P-2 | 情報理論 | information-theory | probability-basics | pending |

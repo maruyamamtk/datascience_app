@@ -1,0 +1,28 @@
+---
+title: 階層ベイズモデル
+definition: 複数グループのパラメータθ_jが、共通のハイパー事前分布(例 N(μ,τ²))から生成されると仮定するベイズモデル。グループ間で情報を共有し、各グループの推定値を「自グループの平均」と「全体平均」の間に縮小(shrinkage)させる。
+aliases: [hierarchical bayesian model, hierarchical model, 階層ベイズモデル, 階層モデル, マルチレベルモデル]
+seeAlso: [partial-pooling, shrinkage-estimation, prior-distribution, posterior-distribution, conjugate-prior]
+---
+
+# 階層ベイズモデル
+
+複数のグループ（クラス・店舗・地域など）から得られたデータをまとめて分析するとき、
+グループごとのパラメータ $\theta_j$（例: グループ $j$ の平均）が、
+**共通のハイパー事前分布**から生成されると仮定するモデル。
+
+$$
+y_{ij}\mid\theta_j\sim\mathcal N(\theta_j,\sigma^2),\qquad \theta_j\mid\mu,\tau^2\sim\mathcal N(\mu,\tau^2)
+$$
+
+- グループごとの観測 $y_{ij}$ を生む $\theta_j$ 自体が、さらに上位の[事前分布](prior-distribution)
+  $\mathcal N(\mu,\tau^2)$ から生成されると考える——«事前分布の階層»になっているのが名前の由来。
+- 3通りの極端な扱い方と対比すると位置づけがわかりやすい。
+  1. **プールなし**: 各グループを完全に独立に推定（$\theta_j=\bar y_j$、グループ間の情報を一切使わない）。
+  2. **完全プール**: 全グループをひとまとめにして単一の共通パラメータで推定（$\theta_j=\mu$、グループ差を無視）。
+  3. **階層ベイズ（[部分プーリング](partial-pooling)）**: 上記2つの中間——グループ間の情報を「どれだけ信じるか」を
+     $\tau^2$（グループ間分散）で調整しながら、両方の情報を統合する。
+- 各グループの事後平均は、自グループのデータ平均と全体平均 $\mu$ の**精度で重みづけた平均**になる
+  （[縮小推定](shrinkage-estimation)）。サンプルサイズが小さいグループほど全体平均へ強く引き寄せられる。
+- 正規-正規のように[共役事前分布](conjugate-prior)を選べば閉形式で解析的に求まるが、
+  一般の階層モデルでは[MCMC](mcmc)による近似が必要になることが多い。
