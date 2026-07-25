@@ -1,0 +1,161 @@
+---
+title: 階層ベイズモデル（正規-正規階層モデル・ベイズ線形回帰・潜在変数モデル）
+summary: 複数グループのデータを「プールなし」「完全プール」「階層ベイズ(部分プーリング)」の3通りで比較し、サンプルサイズが小さいグループほど全体平均へ縮小(shrinkage)される様子をτ²操作で体感する。同じ«精度加重平均»の式がベイズ線形回帰の係数縮小(Ridge回帰との橋渡し)にも現れることを確認し、潜在変数モデル(混合分布のクラス割当)の入門も扱う。
+status: published
+---
+
+import { ShrinkageLab } from "@/components/topics/hierarchical-bayes/ShrinkageLab";
+import { BayesianRegressionLab } from "@/components/topics/hierarchical-bayes/BayesianRegressionLab";
+import { LatentMixtureLab } from "@/components/topics/hierarchical-bayes/LatentMixtureLab";
+import { HierarchicalBayesQuiz } from "@/components/topics/hierarchical-bayes/HierarchicalBayesQuiz";
+
+<Topic title="階層ベイズモデル（正規-正規階層モデル・ベイズ線形回帰・潜在変数モデル）" summary="複数グループのデータを「プールなし」「完全プール」「階層ベイズ(部分プーリング)」の3通りで比較し、サンプルサイズが小さいグループほど全体平均へ縮小(shrinkage)される様子を体感する。">
+
+<ReaderGuide>
+
+- **初学者** → L0（プールなし・完全プール・階層ベイズの3通りをτ²スライダーで触って違いを体感する）
+- **一通り使える人** → L1（精度加重平均の導出、ベイズ線形回帰・Ridge回帰との橋渡し）
+- **「完全に理解した」人** → L2（潜在変数モデルの入門）、L3以降（一般化線形混合モデル・因果への応用・IRTなどは到達途上）
+
+前提: [ベイズ計算法](/topics/mcmc-methods)（K-2, <Term id="mcmc">MCMC</Term>・<Term id="conjugate-prior">共役事前分布</Term>が使えない場合の近似計算——本トピックは逆に、正規-正規の共役性を使って**MCMCなしで解析的に**階層モデルの事後平均を求める）、間接的に[ベイズ統計の基礎](/topics/bayesian-basics)（K-1, <Term id="prior-distribution">事前分布</Term>→<Term id="posterior-distribution">事後分布</Term>の考え方）。出典: 『Pythonでスラスラわかるベイズ推論「超」入門』第5章「ベイズ推論プログラミング」。
+
+</ReaderGuide>
+
+<Level level={0} title="ブラックボックス（プールなし・完全プール・階層ベイズを比較する）">
+  <Concept>
+
+複数グループ（例: 6クラスのテスト平均点、クラスごとに生徒数=サンプルサイズが異なる）のデータをまとめて分析したいとき、素朴には2つの極端な選択肢がある。
+
+- **プールなし**: 各クラスを完全に独立に推定する（自クラスの平均をそのまま使う）。生徒数が少ないクラスは偶然のブレに弱い。
+- **完全プール**: 全クラスをひとまとめにして単一の平均で代表させる。クラスごとの本当の違いを無視してしまう。
+
+<Term id="hierarchical-bayesian-model">階層ベイズモデル</Term>はこの中間を実現する。各クラスの「真の」平均 $\theta_j$ 自体が、共通のハイパー事前分布から生成されると考える。
+
+<Math tex="y_{ij}\mid\theta_j\sim\mathcal N(\theta_j,\sigma^2),\qquad \theta_j\mid\mu,\tau^2\sim\mathcal N(\mu,\tau^2)" />
+
+$\tau^2$（グループ間分散）が、プールなし側に寄せるか完全プール側に寄せるかを調整するツマミになる。この結果得られる推定を<Term id="partial-pooling">部分プーリング</Term>と呼ぶ。
+
+  </Concept>
+  <Interact>
+
+下のラボは6クラス（生徒数はA組が最少、F組が最多）のテスト平均点について、灰(プールなし)・黒破線(完全プール)・青(階層ベイズ)の3つの推定値を1本の数直線上に並べて表示する。τ²スライダーを動かして縮小の強さが変わる様子と、StepPlayerでサンプルサイズが小さい順にクラスを1つずつ確認しよう。
+
+<ShrinkageLab />
+
+  </Interact>
+  <Exercise>
+
+確認: 「τ²(グループ間分散)を非常に大きな値にすると、階層ベイズの推定値はどのクラスも同じ値（全体平均）に収束する」——○か×か。
+（答: ×。逆。τ²が大きいということは「クラス間には強い違いがありうる」という事前の確信を表すため、階層ベイズの推定値はプールなし(各クラスの自クラス平均そのまま)に近づく。全体平均に収束するのはτ²を**小さく**したとき——完全プールの極限）
+
+  </Exercise>
+</Level>
+
+<Level level={1} title="古典的理解（精度加重平均の導出とベイズ線形回帰）">
+  <Concept>
+
+なぜ階層ベイズの事後平均が「自グループの平均」と「全体平均」の中間になり、しかも中間の«位置»がサンプルサイズで変わるのだろうか。鍵は、**確信の強さ（精度=分散の逆数）で重みづけた平均**という考え方——高校数学の「2次関数の最小値（平方完成）」だけで導ける。
+
+  </Concept>
+  <Derivation title="事後平均が«精度加重平均»になることを導く(平方完成だけで示せる)">
+
+正規尤度 $y_{1j},\dots,y_{n_jj}\mid\theta_j\sim\mathcal N(\theta_j,\sigma^2)$ とハイパー事前分布 $\theta_j\sim\mathcal N(\mu,\tau^2)$ から、事後分布は
+
+$$
+\pi(\theta_j\mid y)\ \propto\ \exp\!\left(-\frac{1}{2\sigma^2}\sum_{i=1}^{n_j}(y_{ij}-\theta_j)^2\right)\cdot\exp\!\left(-\frac{1}{2\tau^2}(\theta_j-\mu)^2\right)
+$$
+
+$\sum_i(y_{ij}-\theta_j)^2=n_j(\bar y_j-\theta_j)^2+(\text{$\theta_j$を含まない定数})$（標本平均のまわりでの分解、高校数学の「偏差の性質」の応用）を使うと、指数の肩は $\theta_j$ の**2次関数**になる。
+
+$$
+g(\theta_j)=\underbrace{\frac{n_j}{\sigma^2}}_{w_1}(\theta_j-\bar y_j)^2+\underbrace{\frac{1}{\tau^2}}_{w_2}(\theta_j-\mu)^2
+$$
+
+事後分布が最大（＝事後平均に一致、正規分布は左右対称なので）になるのは $g(\theta_j)$ が**最小**になる点。これは中学・高校でおなじみの**平方完成**で求まる。
+
+$$
+g(\theta_j)=(w_1+w_2)\theta_j^2-2(w_1\bar y_j+w_2\mu)\theta_j+(\text{定数})=(w_1+w_2)\left[\theta_j-\frac{w_1\bar y_j+w_2\mu}{w_1+w_2}\right]^2+(\text{定数})
+$$
+
+2乗の係数 $(w_1+w_2)$ は正なので、$g(\theta_j)$ は $\theta_j=\dfrac{w_1\bar y_j+w_2\mu}{w_1+w_2}$ で最小になる。したがって
+
+$$
+\hat\theta_j=\frac{w_1\bar y_j+w_2\mu}{w_1+w_2}=\frac{(n_j/\sigma^2)\bar y_j+(1/\tau^2)\mu}{n_j/\sigma^2+1/\tau^2}
+$$
+
+——「精度 $w_1=n_j/\sigma^2$ を持つデータ平均 $\bar y_j$」と「精度 $w_2=1/\tau^2$ を持つ事前平均 $\mu$」の**加重平均**（重みが精度そのもの）。$n_j$（サンプルサイズ）が大きいほど $w_1$ が大きくなり $\bar y_j$ 側に、$\tau^2$ が小さいほど $w_2$ が大きくなり $\mu$ 側に、それぞれ推定値が引き寄せられる——ShrinkageLabで確認した挙動の数式的な根拠。
+
+  </Derivation>
+  <Concept>
+
+この**全く同じ«精度加重平均»の式**は、回帰係数に<Term id="prior-distribution">事前分布</Term>を置く<Term id="bayesian-linear-regression">ベイズ線形回帰</Term>にもそのまま現れる。傾き $\beta_1$ に正規事前分布 $\mathcal N(0,\tau_\beta^2)$ を置いた単回帰（説明変数を中心化）では
+
+<Math tex="\hat\beta_{1,\text{Bayes}}=\frac{S_{xx}/\sigma^2}{S_{xx}/\sigma^2+1/\tau_\beta^2}\,\hat\beta_{1,\text{OLS}}" />
+
+（事前平均を0としたので、$\mu=0$ の場合の精度加重平均そのもの）。$\tau_\beta^2\to\infty$（無情報事前分布）で通常の最小二乗（OLS）に一致し、$\tau_\beta^2$ を小さくするほど係数は0（無回帰）へ<Term id="shrinkage-estimation">縮小</Term>される——これは[正則化・スパースモデリング](/topics/regularization-sparse)の<Term id="ridge-regression">リッジ回帰</Term>のMAP推定（$\lambda=\sigma^2/\tau_\beta^2$）と数学的に一致する。「正則化は回帰係数に事前分布を置くことのMAP推定である」という橋渡しがここで完成する。
+
+  </Concept>
+  <Interact>
+
+下のラボは、n=8点・ノイズが大きめの小標本データに、傾きの事前分散 $\tau_\beta^2$（正則化の強さの逆数に相当）を動かしながらベイズ線形回帰を当てはめる。灰の破線がOLS、青の直線が事後平均——$\tau_\beta^2$を小さくすると青い直線がどう水平（傾き0）に近づくか確かめよう。
+
+<BayesianRegressionLab />
+
+  </Interact>
+  <Exercise>
+
+確認: リッジ回帰の正則化の強さ $\lambda$ と、ベイズ線形回帰の傾きの事前分散 $\tau_\beta^2$ の関係は？
+（答: $\lambda=\sigma^2/\tau_\beta^2$。$\tau_\beta^2$を小さくする（傾きの事前分布を0の周りに強く集中させる）ことは、$\lambda$を大きくして正則化を強めることと同じ効果を持つ——事前分布の«強さ»と正則化の«強さ»は表裏一体）
+
+  </Exercise>
+</Level>
+
+<Level level={2} title="仮定体系（潜在変数モデル: 混合分布のクラス割当）">
+  <Concept>
+
+<Term id="latent-variable-model">潜在変数モデル</Term>は、観測データの背後に**直接は観測できない変数**を仮定してデータの生成過程を説明するモデル。最も単純な例が2成分混合正規分布——観測値 $x_i$ が、離散の潜在変数 $z_i\in\{1,2\}$（どちらの成分から生成されたか）に応じて生成されると仮定する。$z_i$自体は見えないが、<Term id="bayes-theorem">ベイズの定理</Term>を使えば観測後の«所属確率»（responsibility）を計算できる。
+
+<Math tex="P(z_i{=}k\mid x_i)=\dfrac{\pi_k\,\mathcal N(x_i;\mu_k,\sigma_k)}{\sum_{k'}\pi_{k'}\,\mathcal N(x_i;\mu_{k'},\sigma_{k'})}" />
+
+分子・分母とも「事前確率 $\pi_k$ × 尤度 $\mathcal N(x_i;\mu_k,\sigma_k)$」の形——K-1（[ベイズ統計の基礎](/topics/bayesian-basics)）の<Term id="bayesian-discriminant">ベイズ判別</Term>と全く同じ骨格が、ここでは「観測できるクラスラベル」ではなく「観測できない潜在的なクラス割当」に対して使われている。
+
+  </Concept>
+  <Interact>
+
+下のラボは2成分混合正規分布から生成したデータについて、観測値xを動かすとxがどちらの成分に「属していそうか」（事後所属確率）がどう変わるかを見せる。下段の点は実際にどちらの成分から生成されたか（学習者向けの答え合わせ表示、実務では見えない）を色分けしている。
+
+<LatentMixtureLab />
+
+  </Interact>
+  <Exercise>
+
+<HierarchicalBayesQuiz />
+
+  </Exercise>
+</Level>
+
+<Level level={3} title="予測最適化（新しいグループへの事後予測分布）" status="planned">
+
+階層ベイズモデルの真価は、**まだデータの無い新しいグループ**（新設のG組など）に対しても、ハイパー事前分布 $\mathcal N(\hat\mu,\hat\tau^2)$ から予測分布を与えられる点にある（$n_j=0$ の極限で $\hat\theta_j=\hat\mu$ に一致する、ShrinkageLabの数式でそのまま確認できる）。事後予測分布の不確実性の定量化・階層モデルの汎化性能の評価は、K-4「ベイズ応用」で扱う到達途上の領域とする。
+
+</Level>
+
+<Level level={4} title="因果（マルチレベルモデルによる処置効果のばらつき推定）" status="planned">
+
+地域・店舗ごとに処置効果が異なりうる場合、階層ベイズモデルの構造をそのまま処置効果 $\tau_j$ の推定に応用できる（「グループごとの効果」を「グループごとの平均」に置き換えるだけ）。[識別戦略](/topics/causal-identification)・[A/Bテスト実務](/topics/ab-testing)と組み合わせたマルチレベルの因果推定は到達途上の領域とする。
+
+</Level>
+
+<Level level={5} title="高次元/最先端（一般化線形混合モデル・非正規階層モデル）" status="planned">
+
+正規-正規以外の階層モデル（二項尤度×ベータ事前分布の階層、ポアソン尤度の階層など）は一般に共役性が崩れ解析的に解けず、[ベイズ計算法](/topics/mcmc-methods)のMCMC（特にハミルトニアンMCMC・NUTS）が必要になる。多数のグループ・多数のハイパーパラメータを持つ一般化線形混合モデル（GLMM）の効率的な推定は研究が続く到達途上の領域とする。
+
+</Level>
+
+<Level level={6} title="フロンティア" status="planned">
+
+項目反応理論(IRT、受験者の潜在能力という潜在変数を階層構造でモデル化する)、状態空間モデル（[時系列モデル](/topics/time-series-models)の潜在状態も潜在変数モデルの一種）、ベイズ深層学習における階層事前分布など、階層ベイズモデル・潜在変数モデルを土台にさらに発展する領域は研究が続く到達途上のまま示す。K-4「ベイズ応用（A/Bテスト・IRT）」で一部を扱う。
+
+</Level>
+
+</Topic>

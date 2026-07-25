@@ -1,0 +1,26 @@
+---
+title: 縮小推定
+definition: 推定値を、データだけから求めた値(標本平均・最小二乗推定など)から、何らかの「中心」(全体平均・0など)の方向へ引き寄せる推定方法。分散を減らす代わりに小さなバイアスを許容し、多くの場面で平均二乗誤差を改善する。
+aliases: [shrinkage estimation, shrinkage, 縮小推定, シュリンケージ]
+seeAlso: [partial-pooling, hierarchical-bayesian-model, ridge-regression, bayesian-linear-regression]
+---
+
+# 縮小推定（shrinkage）
+
+データだけから求めた«素朴な»推定値（標本平均・最小二乗推定など）を、
+何らかの«中心»（全体平均・0など）の方向へ**わずかに引き寄せる**推定方法の総称。
+
+$$
+\hat\theta_{\text{shrink}}=B\cdot(\text{中心})+(1-B)\cdot(\text{素朴な推定値}),\qquad 0\le B\le1
+$$
+
+- 一見「データを無視して歪める」ように見えるが、$B$ を適切に選べば
+  **平均二乗誤差（バイアス²+分散）を素朴な推定値より小さくできる**——
+  小さなバイアスと引き換えに分散を大きく減らせる場合があるため。
+- 具体例:
+  - [階層ベイズモデル](hierarchical-bayesian-model)の[部分プーリング](partial-pooling):
+    各グループの標本平均を全体平均の方向へ縮小する。
+  - [リッジ回帰](ridge-regression)・[ベイズ線形回帰](bayesian-linear-regression):
+    回帰係数を0の方向へ縮小する。
+- サンプルサイズが小さい（＝素朴な推定値の分散が大きい）ほど、縮小の効果（バイアスを払ってでも
+  分散を減らす価値）は大きくなる——階層ベイズモデルで小さいグループほど強く縮小される理由。
