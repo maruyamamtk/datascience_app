@@ -107,6 +107,14 @@ describe("shrinkageWeight", () => {
     expect(large).toBeLessThan(small);
   });
 
+  it("n=0(新しいグループにはまだデータが無い)のとき重みは1になる(完全にμへ一致、新グループへの事後予測の極限)", () => {
+    expect(shrinkageWeight(0, 5, 36)).toBe(1);
+  });
+
+  it("n<0(不正入力)でも重みは1を返す(0除算やNaNにならない)", () => {
+    expect(shrinkageWeight(-3, 5, 36)).toBe(1);
+  });
+
   it("重みは常に[0,1]の範囲に収まる", () => {
     for (const n of [1, 5, 20, 100]) {
       for (const tau2 of [0.01, 1, 36, 100, 10000]) {

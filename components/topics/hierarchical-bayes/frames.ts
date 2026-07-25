@@ -33,8 +33,10 @@ function calloutFor(e: GroupEstimate, isSmallest: boolean, isLargest: boolean): 
 /** ShrinkageStepperのフレーム列(長さ = estimates.length)を構築する。 */
 export function buildShrinkageFrames(estimates: readonly GroupEstimate[]): VizFrame<GroupEstimate>[] {
   return estimates.map((e, i) => ({
-    // ShrinkageLabのMathFormulaが実際に持つ項id(n/sigma2/tau2/ybarj/mu/Bj/oneMinusBj/thetaHat)に合わせる。
-    highlights: ["n", "ybarj", "mu", "Bj", "oneMinusBj", "thetaHat"],
+    // ShrinkageLabのMathFormulaが実際に持つ項id(Bj/mu/oneMinusBj/ybarj/thetaHat)に合わせる
+    // (ShrinkageLab.tsx自体は現状このhighlightsを読まず、frame切替時に個別にsetHighlightしている。
+    // 他トピック(mh-frames.ts等)と同じく、将来Highlight共通部品を使う場合に備えてメタデータとして残す)。
+    highlights: ["mu", "ybarj", "Bj", "oneMinusBj", "thetaHat"],
     callout: calloutFor(e, i === 0, i === estimates.length - 1),
     payload: e,
   }));

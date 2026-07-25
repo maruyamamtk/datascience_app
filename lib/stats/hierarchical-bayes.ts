@@ -144,8 +144,11 @@ export function precisionWeightedMean(
  * - n_j が大きいほど（自グループのデータが豊富なほど）B_j は小さくなる＝縮小されにくい。
  */
 export function shrinkageWeight(n: number, sigma2: number, tau2: number): number {
-  if (!(sigma2 > 0) || !(n > 0)) return 0;
   if (tau2 <= 0) return 1;
+  if (!(sigma2 > 0)) return 0;
+  // n→0（そのグループのデータが無い）はデータ精度 n/σ²→0 なので、重みは1（ハイパー事前平均μに完全に一致）
+  // ——新しいグループへの事後予測分布(Level3, 到達途上)の極限で使う想定のガード。
+  if (!(n > 0)) return 1;
   if (!Number.isFinite(tau2)) return 0;
   const dataPrecision = n / sigma2;
   const priorPrecision = 1 / tau2;
