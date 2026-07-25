@@ -1,0 +1,23 @@
+---
+title: 確実同値額(CE)
+definition: くじ(不確実な結果)と無差別な確実な金額。$E[u(\tilde X)]=u(\mathrm{CE})$ を満たす $\mathrm{CE}=u^{-1}(E[u(\tilde X)])$。
+aliases: [certainty equivalent, CE, 確実性等価, 確実同値額]
+seeAlso: [utility-function, risk-premium, expected-value]
+---
+
+# 確実同値額(CE: Certainty Equivalent)
+
+不確実なくじ $\tilde X$ と、意思決定者にとって「ちょうど同じ好ましさ」になる確実な金額。
+[効用関数](utility-function) $u$ の期待値(期待効用)と、確実な金額の効用が等しくなる点として定義される。
+
+$$
+E[u(\tilde X)]=u(\mathrm{CE})\quad\Longleftrightarrow\quad \mathrm{CE}=u^{-1}\bigl(E[u(\tilde X)]\bigr)
+$$
+
+- $u$ が[凸関数](convex-function)の逆(=凹関数、上に凸)で狭義単調増加なら、$u^{-1}$ が存在し
+  CEが一意に求まる——閉形式で解けない場合は二分探索などの数値探索で求める。
+- リスク回避的(凹)な人ほどCEは[期待値](expected-value) $E[\tilde X]$ を下回る
+  ([リスクプレミアム](risk-premium) $\mathrm{RP}=E[\tilde X]-\mathrm{CE}$ が正になる)。
+- 図で見ると、効用曲線上で2点を結ぶ「弦」の高さが $E[u(\tilde X)]$ に一致し、その高さを
+  曲線自身が達成するx座標がCE——弦(直線補間)と曲線(効用そのもの)のズレが、
+  «くじを持つこと»と«確実な金額を持つこと»の評価の違いを表す。
