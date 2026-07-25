@@ -1,0 +1,23 @@
+---
+title: EVPI（完全情報の期待価値）
+definition: 状態が100%的中する完全な情報を得た場合の期待利得 $\sum_\theta P(\theta)\max_a c(a,\theta)$ と、事前確率のみでの最善の期待利得 $\max_a \mathrm{ESV}(a)$ との差。どんな予測・情報に対しても支払ってよい金額の上限。
+aliases: [Expected Value of Perfect Information, 完全情報の期待価値, 完全情報の価値]
+seeAlso: [expected-value, payoff-matrix, minimax-regret, prior-posterior-analysis]
+---
+
+# EVPI（完全情報の期待価値）
+
+自然の状態 $\theta$ が意思決定の前に100%的中する「完全な情報」を得られたとしたら、期待利得はどれだけ増えるか——その増分。
+
+$$
+\mathrm{EVPI}=\underbrace{\sum_\theta P(\theta)\max_a c(a,\theta)}_{\text{完全情報があった場合の期待利得}}-\underbrace{\max_a \mathrm{ESV}(a)}_{\text{事前情報のみの最善}}
+$$
+
+- 完全情報のもとでは、状態 $\theta$ ごとに「その状態での最善の行動」を選べる（行動を状態ごとに切り替えられる）。
+  現実には状態を選んでから行動を決めるので、この期待利得は情報なしの [期待値](expected-value) 意思決定
+  （[利得行列](payoff-matrix)の $\mathrm{ESV}$ が最大の行動を1つだけ選ぶ）を下回ることはない——EVPIは常に0以上。
+- EVPIは「事前確率のみで最善の行動を選んだときの期待[リグレット](minimax-regret)（後悔）」と一致する
+  （不確実性のせいでどれだけ損をしているかの2つの見方が同じ数値になる）。
+- 不完全な情報（予報・検査結果など）の価値は、必ずEVPI以下になる——EVPIは情報の価値の**上限**を与える
+  ([事前/事後分析](prior-posterior-analysis)を参照)。
+- [決定分析](/topics/decision-analysis)（P-1）の利得行列・期待値による意思決定を土台にした量。

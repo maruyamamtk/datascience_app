@@ -1,0 +1,231 @@
+---
+title: 情報の価値（EVPI・事前/事後分析）
+summary: 決定分析の利得行列と期待値による意思決定を土台に、「完全情報を得たらどれだけ得するか」を測るEVPI（完全情報の期待価値）を導出し、不完全な予報を得た場合のベイズ更新（事前/事後分析）が、的中率を上げるほどEVPIに近づいていく様子を、工場稼働台数×景気の同じ具体例で一気通貫に扱う、決定分析とベイズ統計を橋渡しするトピック。
+status: published
+---
+
+import { EvpiStepper } from "@/components/topics/value-of-information/EvpiStepper";
+import { EvpiLab } from "@/components/topics/value-of-information/EvpiLab";
+import { PriorPosteriorLab } from "@/components/topics/value-of-information/PriorPosteriorLab";
+import { ValueOfInformationQuiz } from "@/components/topics/value-of-information/ValueOfInformationQuiz";
+
+<Topic title="情報の価値（EVPI・事前/事後分析）" summary="完全情報を得たらどれだけ得するかを測るEVPI(完全情報の期待価値)を導出し、不完全な予報のベイズ更新(事前/事後分析)がEVPIに近づいていく様子を工場稼働の例で扱う。">
+
+<ReaderGuide>
+
+- **初学者** → L0〜L1（EVPIを道具として使う → 定義式の導出、期待リグレットとの一致）
+- **一通り使える人** → L2（不完全な情報のベイズ更新=事前/事後分析、EVPIが情報の価値の上限であることの確認）
+- **「完全に理解した」人** → L3以降（確率予測の評価・効用理論・逐次決定への接続は到達途上）
+
+前提: [決定分析](/topics/decision-analysis)（P-1）の<Term id="payoff-matrix">利得行列</Term>・
+<Term id="expected-value">期待値</Term>による意思決定（ESV）、
+[ベイズ統計の基礎](/topics/bayesian-basics)（K-1）の「事前分布→事後分布」というベイズ更新の考え方
+（本トピックはこれを連続パラメータθではなく離散的な自然の状態Θに適用する）。
+出典: 『意思決定分析と予測の活用』第2部「決定分析の基本」第6章「情報の価値」・第3部「決定分析の活用」第4章「標準型分析」。
+
+</ReaderGuide>
+
+<Level level={0} title="ブラックボックス（EVPIを道具として使う）">
+  <Concept>
+
+決定分析(P-1)では、状態(景気)の確率が分かっていれば<Term id="expected-value">期待値</Term>
+(ESV)が最大の行動を1つ選んだ。もし「景気が好況か不況かを、行動を決める前に確実に教えてくれる」
+——そんな**完全情報**が手に入るとしたら、期待利得はどれだけ増えるだろうか。この増分を
+<Term id="evpi">EVPI</Term>(Expected Value of Perfect Information、完全情報の期待価値)と呼ぶ。
+
+<Math tex="\mathrm{EVPI}=\underbrace{\sum_\theta P(\theta)\max_a c(a,\theta)}_{\text{完全情報があった場合の期待利得}}-\underbrace{\max_a \mathrm{ESV}(a)}_{\text{事前情報のみの最善}}" />
+
+完全情報のもとでは、状態ごとに「その状態での最善の行動」を選べる(行動を後から切り替えられる)ため、
+情報なしで1つの行動に決め打ちするより期待利得は下がらない——EVPIは常に0以上になる。
+
+  </Concept>
+  <Interact>
+
+下のステッパーは、工場の稼働台数(行動)×景気(状態)の利得行列(決定分析(P-1)と同じ例)で、
+「①事前情報のみでの意思決定」→「②状態ごとに完全情報ならどう選ぶか」→「③その差=EVPI」を1コマずつ確認できる。
+
+<EvpiStepper />
+
+  </Interact>
+  <Exercise>
+
+確認: ステッパーの②で、「好況」なら「2台稼働」、「不況」なら「1台稼働」が最善行動として★印が付いた。
+①の「事前情報のみでの選択」(1台稼働)と比べて、どちらの状態でこの2つの選択が食い違っているか。
+（答: **好況のとき**。事前情報のみでは(p=0.5なら)常に「1台稼働」を選ぶが、完全情報で「好況」と確実に
+分かっていれば「2台稼働」(利得700)の方が「1台稼働」(利得300)より大きく上回る。この食い違いの分だけ
+「情報を得て行動を切り替えられること」に価値が生まれる——それがEVPIの正体）
+
+  </Exercise>
+</Level>
+
+<Level level={1} title="古典的理解（EVPIの定義式の導出と期待リグレットとの一致）">
+  <Concept>
+
+EVPIの定義式は、[決定分析](/topics/decision-analysis)の期待値の定義をそのまま2回使うだけで導ける。
+さらに、EVPIは「事前情報のみで選んだ行動の**期待リグレット**(後悔)」とちょうど一致するという、
+決定分析と情報の価値をつなぐ重要な性質を持つ。
+
+  </Concept>
+  <Derivation title="EVPIの導出（«行動を後から選べる»ことの価値を期待値の定義から組み立てる）">
+
+情報なしでの期待利得は、行動 $a$ を1つ固定したときの<Term id="expected-value">期待値</Term>の定義そのもの。
+
+$$
+\max_a \mathrm{ESV}(a)=\max_a \sum_\theta P(\theta)\,c(a,\theta)
+$$
+
+一方、完全情報があれば、状態 $\theta$ が分かった"後"に行動を選べる——つまり $\max$ を取る順番が
+$\theta$ ごとに変わる（$\max_a$ が $\sum_\theta$ の**外**から**内**へ移る）。
+
+$$
+\sum_\theta P(\theta)\max_a c(a,\theta)
+$$
+
+「$\max$ を先に取るか後に取るか」の違いだけなので、高校数学の $\max$ の性質
+$\max_a\sum_\theta(\cdots)\le\sum_\theta\max_a(\cdots)$（$\max$ を分配してから足す方が、
+各項で個別に最善を選べる分だけ大きいか等しい）から、常に
+
+$$
+\sum_\theta P(\theta)\max_a c(a,\theta)\ \ge\ \max_a \sum_\theta P(\theta)\,c(a,\theta)
+$$
+
+が成り立つ。この2つの差が $\mathrm{EVPI}$ であり、上の不等式からEVPIが常に0以上であることが
+そのまま導かれる。
+
+  </Derivation>
+  <Derivation title="EVPI=期待リグレット（後悔の言葉で書き直す）">
+
+決定分析(P-1)の<Term id="minimax-regret">リグレット</Term> $\mathrm{regret}(a,\theta)=\max_{a'}c(a',\theta)-c(a,\theta)$
+の定義を、事前情報のみでESVが最大の行動 $a^*=\arg\max_a\mathrm{ESV}(a)$ に当てはめて期待値を取ると、
+
+$$
+\sum_\theta P(\theta)\,\mathrm{regret}(a^*,\theta)=\sum_\theta P(\theta)\Bigl(\max_{a}c(a,\theta)-c(a^*,\theta)\Bigr)=\sum_\theta P(\theta)\max_a c(a,\theta)-\sum_\theta P(\theta)\,c(a^*,\theta)
+$$
+
+右辺の第2項は $a^*$ の定義から $\max_a\mathrm{ESV}(a)$ そのものなので、右辺全体がちょうど
+$\mathrm{EVPI}$ の定義式と一致する。
+
+$$
+\boxed{\ \mathrm{EVPI}=\sum_\theta P(\theta)\,\mathrm{regret}(a^*,\theta)\ }
+$$
+
+「完全情報の価値」と「事前情報のみで選んだ行動の期待後悔」——一見別の概念に見える2つの量が、
+実は同じ数式を2通りに読んだだけだったことになる。
+
+  </Derivation>
+  <Interact>
+
+好況になる確率 p を動かすと、事前情報のみの最善ESV・完全情報の期待利得・EVPIがリアルタイムに
+再計算される様子を確かめよう。EVPI(p)の曲線が p=0 や p=1(状態がほぼ確定)の近くで0に近づき、
+中間で山になることにも注目。
+
+<EvpiLab />
+
+  </Interact>
+  <Exercise>
+
+確認: p=0(好況になる確率が0、つまり不況が確実)のときEVPIはどうなるか。
+（答: **0に近づく**。状態がすでに(ほぼ)確定しているなら、「状態を確実に教えてもらう」情報を
+追加で得ても、選ぶ行動は変わらない——不確実性がなければ情報の価値もない、というEVPIの直感を
+数式でも確認できる。上のラボでスライダーを端まで動かして確かめよう）
+
+  </Exercise>
+</Level>
+
+<Level level={2} title="仮定体系（事前/事後分析：不完全な情報のベイズ更新）">
+  <Concept>
+
+現実の予報・検査は100%的中しない。<Term id="prior-posterior-analysis">事前/事後分析</Term>は、
+「的中率q(1未満)の不完全な情報」を得た場合に、[ベイズ統計の基礎](/topics/bayesian-basics)と同じ
+ベイズの定理で事前確率→事後確率を更新し、意思決定の改善分を測る枠組み。
+
+<Math tex="\mathrm{VOI}_{\mathrm{pre}}=\sum_s P(s)\max_a \mathrm{ESV}(a\mid s)-\max_a \mathrm{ESV}(a)" />
+
+  </Concept>
+  <Derivation title="離散的な状態へのベイズ更新（K-1の連続パラメータθから離散のΘへ）">
+
+[ベイズ統計の基礎](/topics/bayesian-basics)では、コインの表が出る確率 $\theta$(連続値)の
+<Term id="posterior-distribution">事後分布</Term>を「事後 $\propto$ 尤度 $\times$ 事前分布」で求めた。
+ここでは $\theta$ の代わりに、離散的な自然の状態(好況/不況)についてまったく同じ式を使う。
+
+$$
+P(\theta\mid s)=\frac{P(s\mid\theta)\,P(\theta)}{P(s)},\qquad P(s)=\sum_{\theta'} P(s\mid\theta')\,P(\theta')
+$$
+
+- $P(\theta)$: 事前確率(予報を見る前の景気の見込み)。
+- $P(s\mid\theta)$: **尤度**——状態 $\theta$ のときにシグナル $s$(予報)が出る確率。
+  的中率 $q$ の対称な予報なら、当たったとき $q$、外れたとき $1-q$。
+- $P(\theta\mid s)$: シグナル $s$ を観測した後の**事後確率**。
+
+事後確率が求まれば、条件付きESVは事前のESVとまったく同じ式に $P(\theta)$ の代わりに
+$P(\theta\mid s)$ を代入するだけ——$\mathrm{ESV}(a\mid s)=\sum_\theta P(\theta\mid s)\,c(a,\theta)$。
+
+  </Derivation>
+  <Derivation title="なぜVOI_preはEVPIを超えないのか（直感的な理由）">
+
+的中率 $q=1$(完全に的中する予報)なら、事後確率はどちらか一方に完全に偏り
+($P(\theta\mid s)$ が0か1になる)、$\mathrm{ESV}(a\mid s)=\max_a c(a,\theta)$ と一致するため
+$\mathrm{VOI}_{\mathrm{pre}}=\mathrm{EVPI}$ になる(Level0の定義式そのもの)。
+
+$q=0.5$(予報が状態と無関係)なら、事後確率は事前確率のまま変わらず
+($P(\theta\mid s)=P(\theta)$)、条件付きESVは事前のESVと一致するため
+$\mathrm{VOI}_{\mathrm{pre}}=0$ になる。
+
+不完全な予報($0.5<q<1$)は、この2つの極端(無情報〜完全情報)の**中間**の確信度でしか状態を
+教えてくれない。事後確率が事前確率からズレる度合いは $q$ が1に近いほど大きくなるので、
+$\mathrm{VOI}_{\mathrm{pre}}$ は $q$ について単調に増え、$q=1$ で $\mathrm{EVPI}$ に到達する
+——「情報の質が上がるほど価値も上がるが、完全情報の価値(EVPI)を追い越すことはない」という
+直感が、この2つの極限のあいだを滑らかにつなぐ形で成り立つ。
+
+  </Derivation>
+  <Interact>
+
+予報の的中率qを動かして、シグナルごとの事後確率・条件付きESV・事後分析VOI_post(s)、
+そして事前分析VOI_pre(EVSIの考え方)がEVPIにどこまで近づくかを確かめよう。
+
+<PriorPosteriorLab />
+
+  </Interact>
+  <Exercise>
+
+<ValueOfInformationQuiz />
+
+  </Exercise>
+</Level>
+
+<Level level={3} title="予測最適化（確率予測の評価との接続）" status="planned">
+
+天気予報のような確率的な予測の精度をブライアスコア・信頼度・ROC/AUCで評価する確率予測の評価
+（P-5 確率予測の評価）との接続、コスト/ロス比によって同じ予報でもユーザーごとに価値が変わること
+(『意思決定分析と予測の活用』第3部第2章「コスト／ロスモデルと予測の価値」)、
+[情報理論](/topics/information-theory)(P-2)の相互情報量と事前/事後分析の関係
+（「情報を得て不確実性が減る」という共通の直感を数式でどこまで結びつけられるか）は、
+到達途上の領域とする。
+
+</Level>
+
+<Level level={4} title="因果（リスク態度を反映したEVPI）" status="planned">
+
+Level0〜2のEVPIは期待金額(ESV)最大化を前提にしていたが、[決定分析](/topics/decision-analysis)
+Level2で触れた「ESV最大化はリスク態度を反映できない」という限界は情報の価値にも及ぶ——
+期待効用を使った情報の価値の一般化（効用理論、P-4）は到達途上の領域とする。
+
+</Level>
+
+<Level level={5} title="高次元/最先端（多段階の情報取得・逐次決定）" status="planned">
+
+複数時点にわたって情報を取得しながら意思決定する逐次決定（P-6 逐次決定）における情報の価値
+（各時点でどの情報を取得すべきかという情報取得の最適化問題）、多数の状態・行動を持つ大規模な
+意思決定問題でのEVPIの近似計算(モンテカルロ法等)は、到達途上の領域とする。
+
+</Level>
+
+<Level level={6} title="フロンティア" status="planned">
+
+強化学習における探索(exploration)と情報の価値の関係（「試してみることの価値」をEVPI的な
+枠組みで捉える研究）、実験計画法・ベイズ最適化における「次にどのデータ点を観測すべきか」を
+情報の価値で決める枠組みなど、研究が続く到達途上の領域として示す。
+
+</Level>
+
+</Topic>
