@@ -278,6 +278,19 @@ describe("evaluateCostLoss", () => {
     expect(evalResult.forecastCost).toBeLessThanOrEqual(evalResult.climatologyBestCost + 1e-9);
   });
 
+  it("C>LのときもperfectForecastCost<=climatologyBestCostが成り立つ(完全な予測は気候値予測より悪くならない)", () => {
+    // C>Lでは「危険と分かっていても対策せずLを払う方が安い」ため、完全な予測はmin(C,L)=Lを選ぶ。
+    // perfectForecastCost=baseRate*Cとしてしまうと(誤り)、climatologyBestCostを上回り
+    // 「完全な予測は予測なしより悪い」という矛盾が生じる——このテストはその回帰を防ぐ。
+    const predicted = predictedProbabilities(FORECAST_BASE, 1);
+    const outcomes = outcomesOf(FORECAST_BASE);
+    const evalResult = evaluateCostLoss(predicted, outcomes, 15, 4); // C=15 > L=4
+    const baseRate = outcomes.reduce((a, b) => a + b, 0) / outcomes.length;
+    expect(evalResult.perfectForecastCost).toBeCloseTo(baseRate * Math.min(15, 4), 10);
+    expect(evalResult.perfectForecastCost).toBeLessThanOrEqual(evalResult.climatologyBestCost + 1e-9);
+    expect(evalResult.forecastCost).toBeLessThanOrEqual(evalResult.climatologyBestCost + 1e-9);
+  });
+
   it("ratioはcostLossOptimalThresholdと一致する", () => {
     const predicted = predictedProbabilities(FORECAST_BASE, 1);
     const outcomes = outcomesOf(FORECAST_BASE);

@@ -329,8 +329,6 @@ export function costLossOptimalThreshold(cost: number, loss: number): number {
 export type CostLossEvaluation = {
   /** 最適閾値 r=C/L(0〜1の範囲外もありうる: r>=1なら「常に対策しない」が最適)。 */
   ratio: number;
-  /** predictedとの比較に使う閾値(表示・判定用に[0,1]へclamp)。 */
-  thresholdUsed: number;
   baseRate: number;
   /** 常に対策する場合の期待コスト(=C、一定)。 */
   alwaysProtectCost: number;
@@ -340,7 +338,9 @@ export type CostLossEvaluation = {
   climatologyBestCost: number;
   /** 確率予測pに従い、p>=閾値なら対策する場合の期待コスト。 */
   forecastCost: number;
-  /** 完全な予測(実際に危険なときだけ対策する)の期待コスト(=ō・C)。予測の価値の上限。 */
+  /** 完全な予測(危険な状態を確実に知った上でmin(C,L)を選ぶ)の期待コスト(=ō・min(C,L))。
+   *  予測の価値の上限。C<Lなら「危険なときだけ対策」、C>=Lなら「危険と分かっていても
+   *  対策せずLを払う方が安い」ため常にmin(C,L)を選ぶのが最適(完全情報下の意思決定)。 */
   perfectForecastCost: number;
   /** 予測の価値スコア V=(climatologyBest-forecast)/(climatologyBest-perfect)。
    *  0=気候値予測と同程度、1=完全な予測と同程度、負=気候値より予測を使う方が悪い。 */
@@ -365,12 +365,11 @@ export function evaluateCostLoss(
   const n = predicted.length;
   const baseRate = n > 0 ? outcomes.reduce((a, b) => a + b, 0) / n : 0;
   const ratio = costLossOptimalThreshold(cost, loss);
-  const thresholdUsed = Math.min(1, Math.max(0, ratio));
 
   const alwaysProtectCost = cost;
   const neverProtectCost = baseRate * loss;
   const climatologyBestCost = Math.min(alwaysProtectCost, neverProtectCost);
-  const perfectForecastCost = baseRate * cost;
+  const perfectForecastCost = baseRate * Math.min(cost, loss);
 
   let forecastTotal = 0;
   for (let i = 0; i < n; i++) {
@@ -384,7 +383,6 @@ export function evaluateCostLoss(
 
   return {
     ratio,
-    thresholdUsed,
     baseRate,
     alwaysProtectCost,
     neverProtectCost,

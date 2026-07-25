@@ -6,10 +6,10 @@ import { formatNumber, term } from "@/components/math/tex";
 import { useProbabilisticForecastingStore } from "@/lib/store/probabilistic-forecasting";
 import { num, pct, round2 } from "./format";
 
-const FORMULA = `BS=\\underbrace{${term("rel", "?")}}_{\\text{信頼度エラー}}-\\underbrace{${term(
-  "res",
+const FORMULA = `BS=\\underbrace{${term("cal_rel", "?")}}_{\\text{信頼度エラー}}-\\underbrace{${term(
+  "cal_res",
   "?",
-)}}_{\\text{Refinement}}+\\underbrace{${term("unc", "?")}}_{\\text{不確実性}}=${term("bs", "?")}`;
+)}}_{\\text{Refinement}}+\\underbrace{${term("cal_unc", "?")}}_{\\text{不確実性}}=${term("cal_bs", "?")}`;
 
 const W = 300;
 const H = 300;
@@ -39,14 +39,14 @@ export function CalibrationLab() {
   useEffect(() => {
     const m = mathRef.current;
     if (!m) return;
-    m.setValue("rel", formatNumber(decomposition.reliability, 4));
-    m.setValue("res", formatNumber(decomposition.resolution, 4));
-    m.setValue("unc", formatNumber(decomposition.uncertainty, 4));
-    m.setValue("bs", formatNumber(decomposition.brierScore, 4));
-    m.setHighlight("rel", true, "#dc2626");
-    m.setHighlight("res", true, "#16a34a");
-    m.setHighlight("unc", true, "#64748b");
-    m.setHighlight("bs", true, "#7c3aed");
+    m.setValue("cal_rel", formatNumber(decomposition.reliability, 4));
+    m.setValue("cal_res", formatNumber(decomposition.resolution, 4));
+    m.setValue("cal_unc", formatNumber(decomposition.uncertainty, 4));
+    m.setValue("cal_bs", formatNumber(decomposition.brierScore, 4));
+    m.setHighlight("cal_rel", true, "#dc2626");
+    m.setHighlight("cal_res", true, "#16a34a");
+    m.setHighlight("cal_unc", true, "#64748b");
+    m.setHighlight("cal_bs", true, "#7c3aed");
   }, [decomposition]);
 
   const activeBins = bins.filter((b) => b.count > 0);

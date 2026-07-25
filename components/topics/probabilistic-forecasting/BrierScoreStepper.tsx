@@ -10,9 +10,9 @@ import { buildBrierScoreFrames } from "./frames";
 import { num } from "./format";
 
 const FORMULA = `BS=\\frac{1}{n}\\sum_{i=1}^{n}(\\hat p_i-y_i)^2,\\qquad \\underbrace{(${term(
-  "p",
+  "brs_p",
   "?",
-)}-${term("y", "?")})^2}_{\\text{今回の項}}=${term("se", "?")},\\qquad \\overline{BS}=${term("bs", "?")}`;
+)}-${term("brs_y", "?")})^2}_{\\text{今回の項}}=${term("brs_se", "?")},\\qquad \\overline{BS}=${term("brs_bs", "?")}`;
 
 const COLOR_GOOD = "#16a34a";
 const COLOR_BAD = "#dc2626";
@@ -54,16 +54,16 @@ export function BrierScoreStepper() {
   useEffect(() => {
     const m = mathRef.current;
     if (!m) return;
-    m.setValue("p", formatNumber(payload?.predicted ?? 0, 2));
-    m.setValue("y", String(payload?.outcome ?? 0));
-    m.setValue("se", formatNumber(payload?.squaredError ?? 0, 3));
-    m.setValue("bs", formatNumber(payload?.runningScore ?? 0, 3));
+    m.setValue("brs_p", formatNumber(payload?.predicted ?? 0, 2));
+    m.setValue("brs_y", String(payload?.outcome ?? 0));
+    m.setValue("brs_se", formatNumber(payload?.squaredError ?? 0, 3));
+    m.setValue("brs_bs", formatNumber(payload?.runningScore ?? 0, 3));
     const good = (payload?.squaredError ?? 1) < 0.15;
     const color = good ? COLOR_GOOD : COLOR_BAD;
-    m.setHighlight("p", true, "#2563eb");
-    m.setHighlight("y", true, "#2563eb");
-    m.setHighlight("se", true, color);
-    m.setHighlight("bs", true, "#7c3aed");
+    m.setHighlight("brs_p", true, "#2563eb");
+    m.setHighlight("brs_y", true, "#2563eb");
+    m.setHighlight("brs_se", true, color);
+    m.setHighlight("brs_bs", true, "#7c3aed");
   }, [payload]);
 
   return (

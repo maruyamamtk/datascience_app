@@ -7,10 +7,10 @@ import { Callout } from "@/components/viz";
 import { useProbabilisticForecastingStore } from "@/lib/store/probabilistic-forecasting";
 import { num, round2 } from "./format";
 
-const FORMULA = `p^*=\\frac{${term("c", "?")}}{${term("l", "?")}}=${term(
-  "r",
+const FORMULA = `p^*=\\frac{${term("cl_c", "?")}}{${term("cl_l", "?")}}=${term(
+  "cl_r",
   "?",
-)},\\qquad V=\\frac{\\text{気候値}-\\text{予測}}{\\text{気候値}-\\text{完全}}=${term("v", "?")}`;
+)},\\qquad V=\\frac{\\text{気候値}-\\text{予測}}{\\text{気候値}-\\text{完全}}=${term("cl_v", "?")}`;
 
 /**
  * コスト/ロスモデルのラボ(L2)。対策コストC・ロスLをスライダーで動かすと、最適閾値
@@ -29,16 +29,16 @@ export function CostLossLab() {
   useEffect(() => {
     const m = mathRef.current;
     if (!m) return;
-    m.setValue("c", formatNumber(costC, 1));
-    m.setValue("l", formatNumber(lossL, 1));
-    m.setValue("r", formatNumber(costLoss.ratio, 3));
-    m.setValue("v", formatNumber(costLoss.valueScore, 3));
-    m.setHighlight("c", true, "#f59e0b");
-    m.setHighlight("l", true, "#dc2626");
-    m.setHighlight("r", true, "#2563eb");
+    m.setValue("cl_c", formatNumber(costC, 1));
+    m.setValue("cl_l", formatNumber(lossL, 1));
+    m.setValue("cl_r", formatNumber(costLoss.ratio, 3));
+    m.setValue("cl_v", formatNumber(costLoss.valueScore, 3));
+    m.setHighlight("cl_c", true, "#f59e0b");
+    m.setHighlight("cl_l", true, "#dc2626");
+    m.setHighlight("cl_r", true, "#2563eb");
     const vColor =
       costLoss.valueScore >= 0.5 ? "#16a34a" : costLoss.valueScore >= 0 ? "#f59e0b" : "#dc2626";
-    m.setHighlight("v", true, vColor);
+    m.setHighlight("cl_v", true, vColor);
   }, [costC, lossL, costLoss]);
 
   const bars = [
