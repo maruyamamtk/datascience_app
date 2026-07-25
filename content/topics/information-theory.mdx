@@ -1,0 +1,250 @@
+---
+title: 情報理論（シャノン情報量・エントロピー・相互情報量・KLダイバージェンス）
+summary: 「珍しい事象ほど情報量が大きい」という直感を-log2 pという数式に落とし込むところから出発し、確率変数の不確実性の平均を測るエントロピー、2変数の関連を測る相互情報量、2つの分布のズレを測るKLダイバージェンスまでを、コインの確率p・天気×傘の同時分布・2つの予報分布を実際に動かしながら一気通貫に扱う、情報理論の入り口となるトピック。
+status: published
+---
+
+import { BinaryEntropyLab } from "@/components/topics/information-theory/BinaryEntropyLab";
+import { SelfInformationStepper } from "@/components/topics/information-theory/SelfInformationStepper";
+import { MutualInformationLab } from "@/components/topics/information-theory/MutualInformationLab";
+import { KlDivergenceLab } from "@/components/topics/information-theory/KlDivergenceLab";
+import { InformationTheoryQuiz } from "@/components/topics/information-theory/InformationTheoryQuiz";
+
+<Topic title="情報理論（シャノン情報量・エントロピー・相互情報量・KLダイバージェンス）" summary="-log2 pという自己情報量の直感的な導出から出発し、エントロピー・相互情報量・KLダイバージェンスまでを、確率p・同時分布・2つの分布を実際に動かしながら扱う。">
+
+<ReaderGuide>
+
+- **初学者** → L0〜L1（自己情報量・エントロピーを道具として使う → なぜ-log2 pなのかの導出、エントロピーがp=0.5で最大になることの導出）
+- **一通り使える人** → L2（相互情報量とKLダイバージェンスの定義・性質、両者の関係 $I(X;Y)=D_{KL}(P(X,Y)\Vert P(X)P(Y))$）
+- **「完全に理解した」人** → L3以降（情報の価値・特徴選択への応用、情報理論的因果尺度、微分エントロピー・情報幾何、機械学習との接続は到達途上）
+
+前提: [事象と確率](/topics/probability-basics)の確率の基本規則(確率は0以上1以下、全事象の和は1)。ここで作る«確率が小さいほど情報量が大きい»という直感、<Term id="entropy">エントロピー</Term>・<Term id="mutual-information">相互情報量</Term>・<Term id="kullback-leibler-divergence">KLダイバージェンス</Term>の3つの量は、[決定木](/topics/decision-trees-ensembles)の分岐基準（<Term id="entropy-impurity">エントロピー（不純度）</Term>・<Term id="information-gain">情報利得</Term>）としてすでに応用例を見ており、[決定分析](/topics/decision-analysis)の「情報の価値」（P-3）の直接の土台になる。
+
+</ReaderGuide>
+
+<Level level={0} title="ブラックボックス（自己情報量とエントロピーを道具として使う）">
+  <Concept>
+
+「珍しい出来事が起きた」と知ったときほど、私たちは«驚く»——「明日、太陽が昇った」と言われても驚かないが、
+「明日、隕石が降ってきた」と言われたら大いに驚く。この«驚きの量»を数値化したものが
+**<Term id="shannon-information">シャノン情報量（自己情報量）</Term>**。
+
+<Math tex="I(x)=-\log_2 p(x)" />
+
+確率 $p(x)$ が小さい（珍しい）事象ほど $I(x)$ は大きい。確率変数 $X$ が取りうる値すべてについて、
+この自己情報量を確率で重み付けた平均（期待値）が **<Term id="entropy">エントロピー</Term>** $H(X)$——「その確率変数を
+観測するたびに、平均してどれだけの情報を得るか」を表す。
+
+  </Concept>
+  <Interact>
+
+下のラボは、表が出る確率 $p$ のコインを考える。$p$ を動かすと、エントロピー $H(p)$ の値と、
+$H(p)$ vs $p$ の曲線（$p=0.5$ で最大の1 bit）が数式と実時間で連動する。
+
+<BinaryEntropyLab />
+
+  </Interact>
+  <Exercise>
+
+確認: 「歪んだコイン（p=0.9で表が出る）」と「公正なコイン（p=0.5）」では、どちらのエントロピー $H(p)$ が大きいか。
+（答: **公正なコイン**の方が大きい。歪んだコインは«ほぼ表が出る»とあらかじめ予想できる（不確実性が小さい）のに対し、
+公正なコインはどちらが出るか全く読めない（不確実性が最大）。上のラボでpを0.9まで動かすとH(p)が1 bitより
+小さくなることを確認しよう）
+
+  </Exercise>
+</Level>
+
+<Level level={1} title="古典的理解（-log2 pの導出とエントロピーの最大値の導出）">
+  <Concept>
+
+「なぜ情報量は $-\log_2 p$ という形をしているのか」「なぜエントロピーは $p=0.5$ で最大になるのか」——
+どちらも高校数学の対数の性質と微分だけで導ける。
+
+  </Concept>
+  <Derivation title="自己情報量がなぜ -log2 p になるのか（«独立なら足し算»という要請からの導出）">
+
+情報量を測る関数 $I(p)$ に、次の2つの«自然な要請»を置く。
+
+1. **確率が小さいほど大きい**（珍しいほど驚く）：$I(p)$ は $p$ の**単調減少関数**。
+2. **独立な事象が同時に起きたときの情報量は、それぞれの情報量の和になる**：
+   事象A(確率 $p_1$)と事象B(確率 $p_2$)が独立なら、両方が起きる確率は $p_1p_2$（確率の掛け算）。
+   この«両方起きた»という情報量は、Aの情報量とBの情報量を**足したもの**であってほしい。
+
+$$
+I(p_1p_2)=I(p_1)+I(p_2)
+$$
+
+«掛け算を入れると足し算が返ってくる»関数——これは高校数学で習う**対数の性質**
+$\log_b(xy)=\log_b x+\log_b y$ そのもの。実際、$f(p)=-\log_b p$（マイナスを付けるのは要請1の
+«単調減少»を満たすため、$\log$ 自体は単調増加なので）と置くと
+
+$$
+f(p_1p_2)=-\log_b(p_1p_2)=-(\log_b p_1+\log_b p_2)=f(p_1)+f(p_2)
+$$
+
+が成り立ち、要請2をちょうど満たす。底 $b$ をどう選んでも要請1・2は満たされるが、$b=2$ を選ぶと
+公正なコイン（$p=0.5$）の情報量がちょうど $-\log_2 0.5=1$ になり、これを情報量の単位«1 bit»と定める
+（<Term id="bit">ビット</Term>の定義そのもの）。こうして
+
+$$
+\boxed{\ I(x)=-\log_2 p(x)\ }
+$$
+
+が「珍しいほど大きく、独立なら足し算になる」という自然な要請から導かれる。
+
+  </Derivation>
+  <Derivation title="エントロピーH(p)がp=0.5で最大になることの導出（微分）">
+
+2値（表/裏）のエントロピーは
+
+$$
+H(p)=-p\log_2 p-(1-p)\log_2(1-p)
+$$
+
+これを $p$ で微分する。積の微分と、底の変換公式 $\log_2 x=\dfrac{\ln x}{\ln 2}$（したがって
+$\dfrac{d}{dp}\log_2 p=\dfrac{1}{p\ln2}$）を使うと、
+
+$$
+\frac{d}{dp}\bigl[-p\log_2 p\bigr]=-\log_2 p-\frac{1}{\ln2},\qquad
+\frac{d}{dp}\bigl[-(1-p)\log_2(1-p)\bigr]=\log_2(1-p)+\frac{1}{\ln2}
+$$
+
+（後者は $u=1-p$ と置換し合成関数の微分を使う）。2つを足すと $\dfrac{1}{\ln2}$ の項が打ち消し合い、
+
+$$
+\frac{dH}{dp}=\log_2(1-p)-\log_2 p=\log_2\frac{1-p}{p}
+$$
+
+これが $0$ になるのは $\dfrac{1-p}{p}=1$、つまり $p=1-p\iff p=\dfrac12$ のとき。$p<0.5$ では
+$\frac{1-p}{p}>1$ で $\frac{dH}{dp}>0$（増加中）、$p>0.5$ では逆に減少中なので、$p=0.5$ で**極大**
+（このグラフの唯一の山なので最大値）——上のラボの曲線が $p=0.5$ で山になっているのはこの微分計算の帰結。
+$p\to0$ または $p\to1$ で $H\to0$ になることも確認できる（結果がほぼ確定していれば不確実性はゼロに近づく）。
+
+  </Derivation>
+  <Interact>
+
+自己情報量 $I(x)=-\log_2 p$ を、確実な事象($p=1$)から珍しい事象($p=0.01$)まで5つの具体例で1コマずつ確かめよう。
+
+<SelfInformationStepper />
+
+  </Interact>
+  <Exercise>
+
+確認: 「4択クイズに正解した」ときの自己情報量は2 bitだった。これは「公正なコインで2回連続«表»が出た」ときの
+情報量と比べてどうか。
+（答: **同じ**。4択(等確率)は「2択×2択」とみなせるので、独立なコイン2回分の情報量 $I(p=0.5)+I(p=0.5)=1+1=2$ bit
+と一致する。実際 $-\log_2(1/4)=-\log_2(1/2\times1/2)=-\log_2(1/2)-\log_2(1/2)=2$——«独立なら足し算»の要請が
+そのまま数値で確認できる）
+
+  </Exercise>
+</Level>
+
+<Level level={2} title="仮定体系（相互情報量とKLダイバージェンス）">
+  <Concept>
+
+エントロピーは1つの確率変数の«不確実性»を測った。ここでは2つの確率変数の関係、2つの分布のズレを測る
+2つの量を導入する。
+
+**<Term id="mutual-information">相互情報量</Term>** $I(X;Y)$ は「Yを知ることで、Xの不確実性がどれだけ減るか」を測る——
+XとYが独立なら $0$、関連が強いほど大きい（対称: $I(X;Y)=I(Y;X)$）。
+
+<Math tex="I(X;Y)=\sum_{x,y}p(x,y)\log_2\frac{p(x,y)}{p(x)p(y)}" />
+
+**<Term id="kullback-leibler-divergence">KLダイバージェンス</Term>** $D_{KL}(P\Vert Q)$ は「分布 $P$ を分布 $Q$ で近似したときの
+情報の損失」を測る——常に0以上、$P=Q$ のときのみ $0$、ただし**非対称**（$D_{KL}(P\Vert Q)\ne D_{KL}(Q\Vert P)$）。
+
+<Math tex="D_{KL}(P\Vert Q)=\sum_x p(x)\log_2\frac{p(x)}{q(x)}" />
+
+  </Concept>
+  <Derivation title="KLダイバージェンスが常に0以上になることの導出（Gibbsの不等式）">
+
+自然対数には $\ln x\le x-1$（すべての $x>0$ で成り立ち、等号は $x=1$ のときのみ）という不等式がある——
+$y=\ln x$ は上に凸（$\frac{d^2}{dx^2}\ln x=-\frac{1}{x^2}<0$）なグラフなので、$x=1$ での接線
+$y=x-1$（$\ln 1=0$、接線の傾きは $\frac{d}{dx}\ln x|_{x=1}=1$）より**常に下**にある——高校数学の
+«接線は曲線より上か下か»（上に凸なら曲線は接線の下）と同じ考え方。
+
+これを $x=\dfrac{q(x)}{p(x)}$（$p(x)>0$ の項について）に適用すると $\ln\dfrac{q(x)}{p(x)}\le\dfrac{q(x)}{p(x)}-1$。
+両辺に $p(x)$（$\ge0$）を掛けて $x$ について和を取ると、
+
+$$
+\sum_x p(x)\ln\frac{q(x)}{p(x)}\ \le\ \sum_x p(x)\left(\frac{q(x)}{p(x)}-1\right)=\sum_x q(x)-\sum_x p(x)=1-1=0
+$$
+
+（最後は $P,Q$ ともに確率分布なので合計1であることを使った）。左辺にマイナスを付けて向きを反転すると
+
+$$
+-\sum_x p(x)\ln\frac{q(x)}{p(x)}=\sum_x p(x)\ln\frac{p(x)}{q(x)}\ \ge\ 0
+$$
+
+底を2に変換（$\log_2 x=\ln x/\ln2$、$\ln2>0$ なので不等号の向きは変わらない）すれば
+$D_{KL}(P\Vert Q)=\sum_x p(x)\log_2\frac{p(x)}{q(x)}\ge0$ が示される。等号は $\ln x=x-1$ の等号条件
+$x=1$、つまりすべての $x$ で $q(x)=p(x)$（$P=Q$）のときのみ。
+
+  </Derivation>
+  <Derivation title="相互情報量とKLダイバージェンスの関係">
+
+相互情報量の定義式をよく見ると、$p(x,y)$ を「真の分布」、$p(x)p(y)$（もし $X,Y$ が独立だったら
+得られたはずの分布）を「近似分布」とみなしたKLダイバージェンスの形そのものになっている。
+
+$$
+I(X;Y)=\sum_{x,y}p(x,y)\log_2\frac{p(x,y)}{p(x)p(y)}=D_{KL}\bigl(P(X,Y)\,\Vert\,P(X)P(Y)\bigr)
+$$
+
+つまり相互情報量は「実際の同時分布が、独立だった場合からどれだけズレているか」をKLダイバージェンスで
+測ったもの——KLの非負性から $I(X;Y)\ge0$ も自動的に従う（等号は独立のとき）。下のラボでは、この関係を
+「直接の定義式」と「KL経由の計算」の2通りで同時に表示し、数値が一致することを確認できる。
+
+  </Derivation>
+  <Interact>
+
+天気(晴れ/雨)と傘(持つ/持たない)の同時分布を4セルのスライダーで編集し、相互情報量 $I(X;Y)$ が
+«直接の定義式»と«KLダイバージェンス経由»で同じ値になることを確かめよう。
+
+<MutualInformationLab />
+
+天気予報を例に、«実際の分布P»と«予測分布Q»を編集し、$D_{KL}(P\Vert Q)$ と $D_{KL}(Q\Vert P)$ が
+一般に異なる値になる（非対称）ことを確かめよう。
+
+<KlDivergenceLab />
+
+  </Interact>
+  <Exercise>
+
+<InformationTheoryQuiz />
+
+  </Exercise>
+</Level>
+
+<Level level={3} title="予測最適化（情報の価値・特徴選択への応用）" status="planned">
+
+追加の情報（予測・調査）を得ることで意思決定がどれだけ改善するかを、相互情報量の考え方を使って測る
+事前分析・事後分析・EVPI（完全情報の価値、[決定分析](/topics/decision-analysis)の続き・P-3 情報の価値）、
+決定木の<Term id="information-gain">情報利得</Term>が「分割変数と目的変数の相互情報量」とみなせること、特徴選択における
+相互情報量の利用は、到達途上の領域とする。
+
+</Level>
+
+<Level level={4} title="因果（情報理論的因果尺度）" status="planned">
+
+時系列データにおいて「XがYの予測にどれだけ役立つか」を条件付き相互情報量で測るトランスファーエントロピー、
+情報理論と[因果推論](/topics/causal-identification)の関係（相互情報量は相関と同じく因果の向きを直接は
+教えてくれないという限界）は、到達途上の領域とする。
+
+</Level>
+
+<Level level={5} title="高次元/最先端（微分エントロピー・情報幾何）" status="planned">
+
+連続確率変数のエントロピー（微分エントロピー、離散版とは符号や解釈が異なる点に注意が要る）、
+連続分布間のKLダイバージェンス（正規分布どうしのKLの閉形式など）、分布の空間に幾何構造を入れる
+情報幾何（フィッシャー情報量計量）との接続は、到達途上の領域とする。
+
+</Level>
+
+<Level level={6} title="フロンティア（情報理論と機械学習の接続）" status="planned">
+
+深層学習における相互情報量最大化による表現学習（InfoMax系の手法）、変分推論の下界（ELBO）に現れる
+KLダイバージェンス項、情報のボトルネック理論など、研究が続く到達途上の領域として示す。
+
+</Level>
+
+</Topic>
