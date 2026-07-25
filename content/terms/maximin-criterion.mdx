@@ -1,0 +1,18 @@
+---
+title: Maximin基準
+definition: 各行動の最小利得(最悪の場合)のうち、最大のものを選ぶ最も悲観的(リスク回避的)な決定基準。$\max_a \min_\theta c(a,\theta)$。
+aliases: [maximin criterion, マキシミン基準, 悲観主義基準, ワルドの基準]
+seeAlso: [payoff-matrix, maximax-criterion, hurwicz-criterion, minimax-regret]
+---
+
+# Maximin基準
+
+[利得行列](payoff-matrix)から行動を選ぶ5つの決定基準のうち、最も**悲観的**(リスク回避的)な基準。
+
+$$
+\mathrm{Maximin}(a)=\min_{\theta} c(a,\theta),\qquad \text{選ぶ行動}=\arg\max_a \mathrm{Maximin}(a)
+$$
+
+各行動の「最悪の場合にどれだけマシか」だけを比較する。「最悪の中でも最も良いものを選ぶ」という考え方——不確実性を嫌う保守的な意思決定者に向く基準。
+
+対極にあるのが最も楽観的な[Maximax基準](maximax-criterion)。2つの基準を楽観係数 $\alpha$ で連続的につなぐのが[Hurwicz基準](hurwicz-criterion)($\alpha=0$ のときMaximinと一致)。

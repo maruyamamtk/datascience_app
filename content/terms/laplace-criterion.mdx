@@ -1,0 +1,18 @@
+---
+title: Laplace基準
+definition: 自然の状態がすべて等確率で起きると仮定し(理由不十分の原則)、各行動の平均利得が最大のものを選ぶ決定基準。$\frac{1}{|\Theta|}\sum_\theta c(a,\theta)$。
+aliases: [Laplace criterion, ラプラス基準, 理由不十分の原則, 等確率原理]
+seeAlso: [payoff-matrix, maximax-criterion, maximin-criterion, expected-value]
+---
+
+# Laplace基準
+
+「どの状態が起きやすいか分からないなら、すべて等確率とみなすのが妥当だろう」という**理由不十分の原則**(Principle of Insufficient Reason)に基づく決定基準。
+
+$$
+\mathrm{Laplace}(a)=\frac{1}{|\Theta|}\sum_{\theta} c(a,\theta),\qquad \text{選ぶ行動}=\arg\max_a \mathrm{Laplace}(a)
+$$
+
+状態の数が $|\Theta|$ 個のとき、各状態の確率を $1/|\Theta|$ と仮定した[期待値](expected-value)を計算しているのと同じ——確率が本当に分かっているときの[期待値による意思決定(ESV)](expected-value)の特別な場合(等確率のケース)とみなせる。
+
+Maximax・Maximin・Hurwiczが「最良/最悪の場合」だけに注目するのに対し、Laplace基準はすべての状態を平等に(平均的に)評価する点が特徴。

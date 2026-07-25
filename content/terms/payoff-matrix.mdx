@@ -1,0 +1,24 @@
+---
+title: 利得行列
+definition: 意思決定問題 $D=\{A,\Theta,c\}$(行動空間 $A$・自然の状態の集合 $\Theta$・利得関数 $c(a,\theta)$)を表にまとめたもの。行が行動、列が自然の状態、各セルが利得 $c(a,\theta)$。
+aliases: [payoff matrix, 利得表, ペイオフ行列]
+seeAlso: [maximax-criterion, maximin-criterion, hurwicz-criterion, minimax-regret, laplace-criterion, expected-value]
+---
+
+# 利得行列
+
+意思決定分析の出発点。意思決定問題を次の3要素に分解する。
+
+$$
+D=\{A,\ \Theta,\ c\}
+$$
+
+- $A$: **行動空間**——意思決定者が選べる選択肢の集合。
+- $\Theta$: **状態空間**——意思決定者にはコントロールできない「自然の状態」の集合(天候・景気など)。
+- $c(a,\theta)$: 行動 $a$ を選び、状態 $\theta$ が起きたときの**利得**。
+
+利得行列を得る統一的な方法論はない。利得を定義したうえで、利得を左右する要因を列挙し、それを組み込んだ計算式(モデル)を作ることが本質——**感度分析**(前提となった数値をわずかに変えたとき意思決定の結果がどれほど変わるか調べる作業)とセットで検討する。
+
+行動を1つ選ぶには、[Maximax基準](maximax-criterion)・[Maximin基準](maximin-criterion)・[Hurwicz基準](hurwicz-criterion)・[Minimax regret基準](minimax-regret)・[Laplace基準](laplace-criterion)のいずれか(状態の確率が分かっていれば[期待値](expected-value)による意思決定)を適用する。
+
+**優越する決定**: どの状態でもある行動が別の行動より常に良い(少なくとも1つの状態では厳密に良い)とき、劣る側の行動は「優越される」といい、最初に候補から排除できる。

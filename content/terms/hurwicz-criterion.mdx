@@ -1,0 +1,20 @@
+---
+title: Hurwicz基準
+definition: 楽観係数 $\alpha\in[0,1]$ で各行動の最大利得と最小利得を加重平均し、最大のものを選ぶ決定基準。$\alpha\cdot\max_\theta c(a,\theta)+(1-\alpha)\cdot\min_\theta c(a,\theta)$。
+aliases: [Hurwicz criterion, ハーヴィッツ基準, 楽観係数基準]
+seeAlso: [payoff-matrix, maximax-criterion, maximin-criterion, laplace-criterion]
+---
+
+# Hurwicz基準
+
+[Maximax基準](maximax-criterion)(最も楽観的)と[Maximin基準](maximin-criterion)(最も悲観的)という2つの極端な基準を、**楽観係数** $\alpha\in[0,1]$ で連続的につなぐ決定基準。
+
+$$
+\mathrm{Hurwicz}(a)=\alpha\cdot\max_{\theta} c(a,\theta)+(1-\alpha)\cdot\min_{\theta} c(a,\theta),\qquad \text{選ぶ行動}=\arg\max_a \mathrm{Hurwicz}(a)
+$$
+
+- $\alpha=1$: 最大利得だけが残り、Maximaxと完全に一致(最も楽観的)。
+- $\alpha=0$: 最小利得だけが残り、Maximinと完全に一致(最も悲観的)。
+- $0<\alpha<1$: 意思決定者の主観的な楽観度合いを反映した中間の基準。
+
+$\alpha$ の「正しい」値は存在せず、意思決定者自身の感覚(どれだけ楽観的か)で選ぶ——この主観性がHurwicz基準の特徴であり限界でもある。
