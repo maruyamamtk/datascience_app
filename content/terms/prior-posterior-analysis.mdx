@@ -1,0 +1,38 @@
+---
+title: 事前/事後分析
+definition: 予測・調査などの不完全な情報（シグナル）を得たときの意思決定の改善分を測る2つの分析。事後分析は特定のシグナルを観測した後の期待利得の増分、事前分析はシグナルが従う周辺確率で事後分析を平均した期待値。
+aliases: [事前分析, 事後分析, VOI, Value of Information, Pre-decision analysis, Post-decision analysis]
+seeAlso: [evpi, posterior-distribution, expected-value, payoff-matrix]
+---
+
+# 事前/事後分析
+
+[EVPI](evpi)は「完全な情報」の価値だったが、現実の予測・検査は完全には的中しない。
+不完全な情報（シグナル $s$）を得たとき、意思決定がどれだけ改善するかを測るのが事前/事後分析。
+
+## 事後分析（Post-decision analysis）
+
+シグナル $s$ を実際に観測した"後"の期待利得の増分。
+
+$$
+\mathrm{VOI}_{\mathrm{post}}(s)=\max_a \mathrm{ESV}(a\mid s)-\max_a \mathrm{ESV}(a)
+$$
+
+$\mathrm{ESV}(a\mid s)$ は、[ベイズの定理](bayes-theorem)でシグナル $s$ から求めた
+[事後確率](posterior-distribution) $P(\theta\mid s)$ を使った条件付き期待利得。
+
+## 事前分析（Pre-decision analysis）
+
+シグナルを"まだ得ていない"時点で、シグナルが従う周辺確率 $P(s)$ で事後分析の値を平均した期待値
+（EVSI: Expected Value of Sample/Imperfect Informationの考え方）。
+
+$$
+\mathrm{VOI}_{\mathrm{pre}}=\sum_s P(s)\max_a \mathrm{ESV}(a\mid s)-\max_a \mathrm{ESV}(a)
+$$
+
+- シグナルが完全情報（状態を確実に言い当てる）に近づくほど $\mathrm{VOI}_{\mathrm{pre}}\to\mathrm{EVPI}$
+  に近づく——[EVPI](evpi)はあらゆる情報の価値の上限であることがこの関係から分かる。
+- シグナルが状態と無関係（無情報）なら $\mathrm{VOI}_{\mathrm{pre}}=0$。
+- [決定分析](/topics/decision-analysis)（P-1）の期待値による意思決定、
+  [ベイズ統計の基礎](/topics/bayesian-basics)（K-1）の事前分布→事後分布の更新を、
+  離散的な自然の状態 $\Theta$ に適用したもの。
