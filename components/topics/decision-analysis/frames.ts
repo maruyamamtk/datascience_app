@@ -52,7 +52,6 @@ export function buildRegretFrames(matrix: PayoffMatrix): VizFrame<RegretFramePay
     );
 
     frames.push({
-      highlights: [`col-max-${s}`],
       payload: { phase: "highlight-max", stateIndex: s, revealedStates: revealedBefore },
       callout: {
         title: `状態「${stateLabel}」列の最大利得を探す`,
@@ -65,7 +64,6 @@ export function buildRegretFrames(matrix: PayoffMatrix): VizFrame<RegretFramePay
     });
 
     frames.push({
-      highlights: [`col-max-${s}`, `regret-col-${s}`],
       payload: {
         phase: "reveal-regret",
         stateIndex: s,
@@ -85,7 +83,6 @@ export function buildRegretFrames(matrix: PayoffMatrix): VizFrame<RegretFramePay
   const maxRegrets = regret.map((row) => Math.max(...row));
   const bestIndex = argminOf(maxRegrets);
   frames.push({
-    highlights: [`regret-row-${bestIndex}`],
     payload: {
       phase: "final",
       stateIndex: null,
@@ -133,7 +130,6 @@ export function buildTreeFrames(root: TreeNode): VizFrame<TreeFramePayload>[] {
   const steps = backwardInductionSteps(root);
   const frames: VizFrame<TreeFramePayload>[] = [
     {
-      highlights: [],
       payload: { computedIds: [], currentId: null },
       callout: {
         title: "末端の利得だけが分かっている状態",
@@ -155,7 +151,6 @@ export function buildTreeFrames(root: TreeNode): VizFrame<TreeFramePayload>[] {
           step.value,
         )}。`;
     frames.push({
-      highlights: [step.node.id],
       payload: {
         computedIds: [...computedIds],
         currentId: step.node.id,

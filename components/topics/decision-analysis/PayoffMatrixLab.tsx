@@ -67,6 +67,8 @@ export function PayoffMatrixLab() {
   const mathRef = useRef<MathFormulaHandle>(null);
 
   const handleCellChange = (i: number, j: number, value: string) => {
+    // 空文字は Number("")===0 になってしまうため、入力中の一時的な空欄を誤って0確定しないよう弾く。
+    if (value.trim() === "") return;
     const v = Number(value);
     if (!Number.isFinite(v)) return;
     const next = payoffs.map((row) => [...row]);
