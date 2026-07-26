@@ -46,7 +46,7 @@ export function DropoutBatchNormLab() {
           />
         </div>
         <div className="flex flex-wrap gap-2">
-          {DROPOUT_ACTIVATIONS.map((base, i) => {
+          {dropoutMaskArr.map((_, i) => {
             const kept = dropoutMaskArr[i] === 1;
             return (
               <div
