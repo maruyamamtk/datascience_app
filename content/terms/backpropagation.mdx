@@ -1,0 +1,32 @@
+---
+title: 誤差逆伝播法
+definition: 損失関数の各パラメータに対する勾配を、連鎖律を使って出力側から入力側へ効率よく計算するアルゴリズム。ニューラルネットワークの学習（確率的勾配降下法によるパラメータ更新）を実用的な速さで可能にした中心的な手法。
+aliases: [誤差逆伝播法, バックプロパゲーション, backpropagation, backprop, 誤差逆伝播]
+seeAlso: [computational-graph, gradient-descent, vanishing-gradient, activation-function, synaptic-connection]
+---
+
+# 誤差逆伝播法
+
+ニューラルネットワークの[計算グラフ](computational-graph)は、入力から損失までを合成関数として表す。誤差逆伝播法は、この合成関数を微分するのに **連鎖律** を繰り返し使う。
+
+出力層の直前の重み $W_2$ については、損失 $L$ から見て
+
+$$
+\frac{\partial L}{\partial W_2}=\frac{\partial L}{\partial \hat y}\cdot\frac{\partial \hat y}{\partial W_2}
+$$
+
+のように、すぐ隣のノードの微分をかけるだけで求まる。隠れ層の重み $W_1$ は、間に活性化関数 $a=\phi(z)$ を挟むぶん、もう1段連鎖律を重ねる:
+
+$$
+\frac{\partial L}{\partial W_1}=\underbrace{\frac{\partial L}{\partial \hat y}\cdot\frac{\partial \hat y}{\partial a}}_{\text{出力層から伝わってきた勾配}}\cdot\underbrace{\phi'(z)}_{\text{活性化関数の微分}}\cdot\underbrace{\frac{\partial z}{\partial W_1}}_{=x}
+$$
+
+**このアルゴリズムの要点**:
+
+1. まず**順伝播**で入力から出力・損失までの全ノードの値を計算し、保存しておく。
+2. 次に**逆伝播**で損失側から連鎖律を1段ずつ適用し、各ノードの「上流から伝わってきた勾配」を求める。
+3. 各重みの勾配は「その重みへ入ってきた値 × そこから上流へ伝わった勾配」という共通の形になる。
+
+こうして得た全パラメータの勾配を使い、[確率的勾配降下法](gradient-descent)で $w\leftarrow w-\eta\,\partial L/\partial w$ と更新する——これを訓練データを何度も見せながら繰り返すのがニューラルネットワークの学習。
+
+**注意点**: 連鎖律で[活性化関数](activation-function)の微分 $\phi'(z)$ を層の数だけ掛け合わせるため、$\phi'$ が小さい活性化関数（例: シグモイド）を深く重ねると勾配が急速に縮む——[勾配消失](vanishing-gradient)が起きる。誤差逆伝播法そのものは正しく勾配を計算しているが、「その勾配の大きさ」が学習の効率を左右する。
