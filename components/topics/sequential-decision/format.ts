@@ -17,7 +17,3 @@ export function pct(v: number, digits = 0): string {
 
 /** 行動ごとの色(格子・棒グラフのハイライトで使い回す)。decision-analysisの配色と揃える。 */
 export const ACTION_COLORS = ["#94a3b8", "#f59e0b", "#2563eb"];
-
-export const COLOR_DONE = "#2563eb";
-export const COLOR_CURRENT = "#f59e0b";
-export const COLOR_CHOSEN = "#16a34a";

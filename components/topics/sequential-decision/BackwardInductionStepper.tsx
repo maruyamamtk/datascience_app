@@ -6,7 +6,6 @@ import {
   useBackwardInductionStepperStore,
   useSequentialDecisionStore,
 } from "@/lib/store/sequential-decision";
-import { backwardInductionCells } from "@/lib/stats/sequential-decision";
 import { buildBackwardInductionFrames } from "./frames";
 import { ACTION_COLORS, num } from "./format";
 
@@ -32,13 +31,16 @@ export function BackwardInductionStepper() {
   const setFrameCount = useBackwardInductionStepperStore((s) => s.setFrameCount);
 
   const frames = useMemo(() => buildBackwardInductionFrames(problem), [problem]);
+  // frames自体がbackwardInductionCellsから作られているので、そこから直接セル値マップを作る
+  // (同じ計算を別々に呼び直さない、single source of truth)。
   const cellMap = useMemo(() => {
     const m = new Map<string, { value: number; actionIndex: number }>();
-    for (const c of backwardInductionCells(problem)) {
-      m.set(`${c.period}-${c.stateIndex}`, { value: c.value, actionIndex: c.actionIndex });
+    for (const f of frames) {
+      const c = f.payload?.current;
+      if (c) m.set(`${c.period}-${c.stateIndex}`, { value: c.value, actionIndex: c.actionIndex });
     }
     return m;
-  }, [problem]);
+  }, [frames]);
 
   useEffect(() => setFrameCount(frames.length), [frames.length, setFrameCount]);
   useFramePlayer({
