@@ -1,0 +1,26 @@
+---
+title: ReLU（正規化線形関数）
+definition: 活性化関数の1つ。$\mathrm{ReLU}(z)=\max(0,z)$。負の入力は0に、正の入力はそのまま通す。計算が軽く、正の領域で微分が1のため勾配消失を起こしにくい。
+aliases: [ReLU, ランプ関数, rectified linear unit, 正規化線形関数, レルー]
+seeAlso: [activation-function, vanishing-gradient, sigmoid-function]
+---
+
+# ReLU（正規化線形関数）
+
+$$
+\mathrm{ReLU}(z)=\max(0,z)=\begin{cases}z & z>0\\ 0 & z\le 0\end{cases}
+$$
+
+微分は
+
+$$
+\mathrm{ReLU}'(z)=\begin{cases}1 & z>0\\ 0 & z\le 0\end{cases}
+$$
+
+（$z=0$ では数学的には微分不可能だが、実装上は慣例的に $0$ または $1$ を採用する。）
+
+- **勾配消失に強い**: 正の領域で微分が常に $1$ なので、[誤差逆伝播法](backpropagation)でこの項を何層も掛け合わせても値が縮まない。[シグモイド関数](sigmoid-function)（微分の最大値 $0.25$）に比べて深いネットワークで学習が進みやすい。
+- **計算が軽い**: 最大値を取るだけなので指数関数を含む[シグモイド関数](sigmoid-function)より計算コストが小さい。
+- **弱点（dying ReLU）**: $z\le 0$ の領域では微分が $0$ になるため、そのユニットへの勾配が常に0になり「死んだユニット」として学習が止まってしまうことがある。改良版として Leaky ReLU（負の領域にわずかな傾きを残す）などが提案されている。
+
+現在の深層学習では、隠れ層の活性化関数として最も標準的に使われる。

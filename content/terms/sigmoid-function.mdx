@@ -1,0 +1,18 @@
+---
+title: シグモイド関数
+definition: $\sigma(z)=1/(1+e^{-z})$。実数全体を $(0,1)$ に滑らかに写す S字型の関数。2値分類の出力層や、[ロジスティック回帰](logistic-regression)の確率モデル化に使われる。
+aliases: [シグモイド関数, sigmoid function, σ関数, シグモイド, logistic function]
+seeAlso: [activation-function, logistic-regression, vanishing-gradient, relu]
+---
+
+# シグモイド関数
+
+$$
+\sigma(z)=\frac{1}{1+e^{-z}}
+$$
+
+$z\to\infty$ で $\sigma(z)\to1$、$z\to-\infty$ で $\sigma(z)\to0$、$\sigma(0)=0.5$ となる滑らかな S字カーブ。出力が必ず $(0,1)$ に収まるため、「確率」として解釈できるのが最大の特徴——[ロジスティック回帰](logistic-regression)で線形予測子を確率に変換するのに使われる。
+
+**微分**: $\sigma'(z)=\sigma(z)\bigl(1-\sigma(z)\bigr)$。$\sigma(z)\in(0,1)$ の積なので、微分の最大値は $z=0$ のとき $\sigma'(0)=0.5\times0.5=0.25$。$z$ が $0$ から離れるほど $\sigma(z)$ は $0$ か $1$ に張り付き（飽和し）、微分は急速に $0$ へ近づく。
+
+ニューラルネットワークの隠れ層の[活性化関数](activation-function)として使うと、[誤差逆伝播法](backpropagation)でこの微分（最大でも $0.25$）を層の数だけ掛け合わせることになり、深いネットワークほど勾配が指数的に縮む——[勾配消失](vanishing-gradient)の代表的な原因の1つ。このため現在の隠れ層では[ReLU](relu)が主流だが、出力層の確率表現や[ロジスティック回帰](logistic-regression)そのものでは今なお中心的な役割を持つ。

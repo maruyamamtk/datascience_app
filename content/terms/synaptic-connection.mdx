@@ -1,0 +1,24 @@
+---
+title: シナプス結合（重み）
+definition: ある層のユニットから次の層のユニットへの結合の強さを表すパラメータ $w$。生物の神経細胞間のシナプスに見立てた呼び名で、学習ではこの値を調整してネットワークにパターンを学ばせる。
+aliases: [シナプス結合, 重み, weight, synaptic connection, connection weight, 結合荷重]
+seeAlso: [neural-network-layer, backpropagation, gradient-descent]
+---
+
+# シナプス結合（重み）
+
+ニューラルネットワークの各ユニットは、前の層の出力 $x_1,\dots,x_n$ を **重み** $w_1,\dots,w_n$ で重み付けした和にバイアス $b$ を足し合わせる。
+
+$$
+z=\sum_i w_i x_i + b
+$$
+
+生物の神経細胞が[シナプス](https://ja.wikipedia.org/wiki/シナプス)を通して信号を伝え、その伝わりやすさが可塑的に変わることになぞらえて、この重み $w_i$ を **シナプス結合** と呼ぶ。重みが大きいほど、その入力が $z$（延いてはユニットの出力）に与える影響が大きい。
+
+学習とは、この重みとバイアスを訓練データに合わせて調整していく過程そのもの。[誤差逆伝播法](backpropagation)で各重みに対する損失の勾配 $\partial L/\partial w_i$ を求め、[勾配降下法](gradient-descent)の要領で
+
+$$
+w_i \leftarrow w_i - \eta\,\frac{\partial L}{\partial w_i}
+$$
+
+と少しずつ更新する。1つのネットワークが持つ重みの総数（パラメータ数）が、そのモデルの表現力の目安になる。

@@ -1,0 +1,191 @@
+---
+title: ニューラルネットワークの仕組み
+summary: 入力2・隠れ2・出力1の小さなネットワークで「順伝播（入力→隠れ層→出力）」と「誤差逆伝播（連鎖律で勾配を後ろ向きに伝える）」を数値で体感するトピック。活性化関数（ReLU・シグモイド・動径基底）の形と微分を比べ、深い層でシグモイドがなぜ勾配消失を起こすかを見る。誤差逆伝播ステッパーで計算グラフを前向き→後ろ向きに1ノードずつたどり、ドロップアウト・バッチ正規化という学習を安定させる工夫までを押さえる。
+status: published
+---
+
+import { ForwardLab } from "@/components/topics/neural-network-basics/ForwardLab";
+import { ActivationLab } from "@/components/topics/neural-network-basics/ActivationLab";
+import { BackpropStepper } from "@/components/topics/neural-network-basics/BackpropStepper";
+import { DropoutBatchNormLab } from "@/components/topics/neural-network-basics/DropoutBatchNormLab";
+import { NeuralNetworkBasicsQuiz } from "@/components/topics/neural-network-basics/NeuralNetworkBasicsQuiz";
+
+<Topic title="ニューラルネットワークの仕組み" summary="入力2・隠れ2・出力1の小さなネットワークで順伝播と誤差逆伝播を数値で体感する。活性化関数（ReLU・シグモイド・動径基底）の形と微分を比べ、深い層でシグモイドがなぜ勾配消失を起こすかを見る。誤差逆伝播ステッパーで計算グラフを前向き→後ろ向きに1ノードずつたどり、ドロップアウト・バッチ正規化までを押さえる。">
+
+<ReaderGuide>
+
+- **初学者** → L0（ニューラルネットは «入力を隠れ層で変換して出力する関数»、<Term id="neural-network-layer">入力層・隠れ層・出力層</Term>と<Term id="synaptic-connection">シナプス結合</Term>（重み）をラボで動かして見る）
+- **一通り使える人** → L1〜L2（<Term id="activation-function">活性化関数</Term>（<Term id="relu">ReLU</Term>・<Term id="sigmoid-function">シグモイド</Term>・<Term id="radial-basis-function">動径基底関数</Term>）の形と微分の比較、<Term id="backpropagation">誤差逆伝播法</Term>の連鎖律による導出、<Term id="vanishing-gradient">勾配消失</Term>の数式的な理由、<Term id="dropout">ドロップアウト</Term>・<Term id="batch-normalization">バッチ正規化</Term>）
+- **「完全に理解した」人** → L3 以降（CNN・RNN 等のアーキテクチャ、Adam などの最適化アルゴリズム、二重降下や表現学習の理論は到達途上）
+
+前提: [最適化](/topics/optimization)（<Term id="gradient-descent">勾配降下法</Term>・学習率・停留点）と[機械学習の枠組み](/topics/learning-framework)（経験誤差・汎化誤差・過学習・損失関数）。ニューラルネットワークは «損失を最小化するパラメータを勾配降下法で探す» という最適化の枠組みそのものに、«入力から出力までを段階的に変換する層構造» と «その勾配を効率よく計算する誤差逆伝播法» を載せたものと理解できる。
+
+</ReaderGuide>
+
+<Level level={0} title="ブラックボックス（入力→隠れ層→出力）">
+  <Concept>
+
+ニューラルネットワークは、<Term id="neural-network-layer">入力層・隠れ層・出力層</Term>を順に通しながら、入力 $x$ から出力 $\hat y$ を計算する関数。各層の間は<Term id="synaptic-connection">シナプス結合</Term>（重み $w$）で結ばれ、隠れ層のユニットは «重み付き和を取ってから<Term id="activation-function">活性化関数</Term> $\phi$ を通す» という2段構えの処理をする。
+
+$$
+z=\sum_i w_i x_i + b,\qquad a=\phi(z)
+$$
+
+この「重み付き和 → 活性化関数」を隠れ層のユニットごとに繰り返し、最後に出力層でもう一度重み付き和を取ったものが予測値 $\hat y$。下のラボは入力2個・隠れユニット2個・出力1個という最小構成のネットワークで、この一連の計算（**順伝播**）を1つずつ数値で追える。
+
+  </Concept>
+  <Interact>
+
+$x_0,x_1$ を動かすと、各隠れユニットの重み付き和・活性化後の値、そして出力 $\hat y$ が実時間で再計算され、下の数式のハイライトされた項に反映される。活性化関数を切り替えると、同じ入力・同じ重みでも隠れ層の値が変わることも確認できる。
+
+<ForwardLab />
+
+  </Interact>
+  <Exercise>
+
+確認: 「活性化関数 $\phi$ を使わず、重み付き和だけを何層も重ねた場合」と「毎回 $\phi$ を通した場合」の違いは？
+（答: $\phi$ を使わないと、何層重ねても全体は結局1つの線形変換（$y=Ax+b$ の形）にしかならず、層を増やす意味がなくなる。$\phi$ に非線形関数を選んで初めて、層を重ねるほど表現できる関数のクラスが本当に広がる。）
+
+  </Exercise>
+</Level>
+
+<Level level={1} title="古典的理解（活性化関数の比較と微分）">
+  <Concept>
+
+<Term id="activation-function">活性化関数</Term> $\phi$ の選び方は、ネットワークの表現力だけでなく «学習のしやすさ» も左右する。代表的な3つ:
+
+- **<Term id="relu">ReLU</Term>**: $\phi(z)=\max(0,z)$。正の領域で微分が常に $1$。
+- **<Term id="sigmoid-function">シグモイド関数</Term>**: $\phi(z)=1/(1+e^{-z})$。出力は $(0,1)$、微分の最大値は $0.25$。
+- **<Term id="radial-basis-function">動径基底関数</Term>**（RBF）: $\phi(z)=e^{-\gamma z^2}$。中心 $z=0$ 付近だけで大きな値を持つ局所的な関数。
+
+活性化関数の «微分の大きさ» が、<Term id="backpropagation">誤差逆伝播法</Term>で下流（入力側）まで届く勾配の大きさを決める。下のラボの下段は、その微分を層の数だけ掛け合わせた «累積勾配» を棒グラフで見せる——シグモイドは層を重ねるほど棒が急速に短くなる（<Term id="vanishing-gradient">勾配消失</Term>）。
+
+  </Concept>
+  <Derivation title="なぜシグモイドの微分は最大でも0.25なのか">
+
+シグモイド $\sigma(z)=\dfrac{1}{1+e^{-z}}$ を $z$ で微分する。商の微分公式 $\left(\dfrac{f}{g}\right)'=\dfrac{f'g-fg'}{g^2}$ を、$f=1,\ g=1+e^{-z}$（$g'=-e^{-z}$）に当てはめる。
+
+$$
+\begin{aligned}
+\sigma'(z)&=\frac{0\cdot(1+e^{-z})-1\cdot(-e^{-z})}{(1+e^{-z})^2}\\
+&=\frac{e^{-z}}{(1+e^{-z})^2}
+\end{aligned}
+$$
+
+ここで分子 $e^{-z}$ を $e^{-z}=(1+e^{-z})-1$ と書き換えて分母とそろえる。
+
+$$
+\begin{aligned}
+\sigma'(z)&=\frac{(1+e^{-z})-1}{(1+e^{-z})^2}\\
+&=\frac{1}{1+e^{-z}}-\frac{1}{(1+e^{-z})^2}\\
+&=\sigma(z)-\sigma(z)^2\\
+&=\sigma(z)\bigl(1-\sigma(z)\bigr)
+\end{aligned}
+$$
+
+$$
+\boxed{\ \sigma'(z)=\sigma(z)\bigl(1-\sigma(z)\bigr)\ }
+$$
+
+$t=\sigma(z)\in(0,1)$ とおくと、$\sigma'(z)=t(1-t)$ は $t=0.5$（つまり $z=0$）で最大値 $0.5\times0.5=0.25$ を取る2次関数（上に凸な放物線、頂点が $t=0.5$）。$z$ が $0$ から離れて $\sigma(z)$ が $0$ か $1$ に近づく（飽和する）ほど、$t(1-t)$ は $0$ に近づく。**「微分が最大でも $0.25$」で頭打ちになる** ことが、<Term id="backpropagation">誤差逆伝播法</Term>でこれを層の数だけ掛け合わせたときに急速に $0$ へ縮む原因になる。
+
+  </Derivation>
+  <Interact>
+
+活性化関数を切り替えながら $x$（横軸の位置）と層数を動かし、シグモイドの微分が $0.25$ を超えないこと、ReLU は活性域で微分が $1$ のまま変わらないことを確かめよう。
+
+<ActivationLab />
+
+  </Interact>
+  <Exercise>
+
+確認: 深いネットワークの隠れ層をすべてシグモイドにすると何が起きやすい？
+（答: 誤差逆伝播で伝わる勾配が、各層で最大 $0.25$ 倍される掛け算を繰り返すため、層が深いほど入力側に届く勾配が指数的に小さくなり、その層の重みがほとんど更新されなくなる（勾配消失）。ReLU を使うと活性域の微分が $1$ なので緩和されやすい。）
+
+  </Exercise>
+</Level>
+
+<Level level={2} title="仮定体系（誤差逆伝播の導出と学習を安定させる工夫）">
+  <Concept>
+
+<Term id="backpropagation">誤差逆伝播法</Term>は、損失 $L$ をネットワークの<Term id="computational-graph">計算グラフ</Term>上の合成関数とみなし、連鎖律を出力側から入力側へ繰り返し適用して全パラメータの勾配を求めるアルゴリズム。下のステッパーは、入力2・隠れ2・出力1のネットワークで **順伝播5コマ→逆伝播4コマ** を1ノードずつ追う。
+
+学習そのものは、こうして求めた勾配を使い<Term id="gradient-descent">確率的勾配降下法</Term>（SGD）でパラメータを更新する反復。「確率的」なのは、訓練データ全件ではなく **ランダムに選んだ一部（ミニバッチ）** だけで勾配を近似計算するから——1回の更新は速くなるが、勾配にノイズが乗る。このノイズはむしろ浅い局所解を抜け出す助けになることもあり、大規模データでの学習を現実的な計算量に収める鍵になっている。
+
+ネットワークを深く・大きくすると学習が不安定になったり<Term id="overfitting">過学習</Term>しやすくなったりする。それを抑える2つの代表的な工夫が<Term id="dropout">ドロップアウト</Term>と<Term id="batch-normalization">バッチ正規化</Term>——どちらも「学習時と推論時で挙動が変わる」という共通の性質を持つ。
+
+  </Concept>
+  <Derivation title="連鎖律による誤差逆伝播の導出（入力2・隠れ2・出力1のネットワーク）">
+
+ネットワークは $z_1^{(j)}=\sum_i w^{(j)}_{1,i}x_i+b^{(j)}_1$、$a_1^{(j)}=\phi(z_1^{(j)})$（$j=0,1$）、出力 $\hat y=\sum_j w_{2,j}a_1^{(j)}+b_2$（線形）、損失 $L=\tfrac12(y-\hat y)^2$ で定まる。**出力側から** 順に微分する。
+
+**第1段（損失→出力）**: $L$ を $\hat y$ で微分すると
+
+$$
+\frac{\partial L}{\partial \hat y}=-(y-\hat y)
+$$
+
+出力層は線形（$\hat y=z_2$）なので $\partial \hat y/\partial z_2=1$、よって $\partial L/\partial z_2=\partial L/\partial \hat y$。
+
+**第2段（出力層の重み）**: $z_2=\sum_j w_{2,j}a_1^{(j)}+b_2$ を $w_{2,j}$ で微分すると $\partial z_2/\partial w_{2,j}=a_1^{(j)}$。連鎖律で
+
+$$
+\frac{\partial L}{\partial w_{2,j}}=\frac{\partial L}{\partial z_2}\cdot\frac{\partial z_2}{\partial w_{2,j}}=\frac{\partial L}{\partial z_2}\,a_1^{(j)}
+$$
+
+**第3段（隠れ層への逆伝播）**: $z_2$ は $a_1^{(j)}$ を通じてのみ $w_{1,\cdot}$ に依存する。$\partial z_2/\partial a_1^{(j)}=w_{2,j}$ なので
+
+$$
+\frac{\partial L}{\partial a_1^{(j)}}=\frac{\partial L}{\partial z_2}\cdot w_{2,j}
+$$
+
+ここへ活性化関数の微分を1段掛ける（$a_1^{(j)}=\phi(z_1^{(j)})$ より $\partial a_1^{(j)}/\partial z_1^{(j)}=\phi'(z_1^{(j)})$）。
+
+$$
+\frac{\partial L}{\partial z_1^{(j)}}=\frac{\partial L}{\partial a_1^{(j)}}\cdot\phi'\bigl(z_1^{(j)}\bigr)
+$$
+
+**第4段（入力層の重み）**: $z_1^{(j)}=\sum_i w^{(j)}_{1,i}x_i+b^{(j)}_1$ を $w^{(j)}_{1,i}$ で微分すると $\partial z_1^{(j)}/\partial w^{(j)}_{1,i}=x_i$、よって
+
+$$
+\frac{\partial L}{\partial w^{(j)}_{1,i}}=\frac{\partial L}{\partial z_1^{(j)}}\,x_i
+$$
+
+4段すべてで **「上流から伝わった勾配 × その場の局所的な微分」** という同じ形の掛け算が繰り返されているのが分かる。これが誤差逆伝播法の本質——複雑に見える式も、単純な連鎖律の適用をグラフに沿って機械的に繰り返しているだけ。第3段の $\phi'(z_1^{(j)})$ が<Term id="vanishing-gradient">勾配消失</Term>の入口（L1 の導出参照）。
+
+  </Derivation>
+  <Interact>
+
+▶ 再生でコマ送りすると、計算グラフの各ノードが順伝播（青）→逆伝播（橙）の順に光り、上の4段の式それぞれに対応する実際の数値が近傍のコールアウトに表示される。
+
+<BackpropStepper />
+
+ネットワークを深く安定して学習させるための2つの工夫も、同じ入力例で数値を動かして確かめよう。
+
+<DropoutBatchNormLab />
+
+  </Interact>
+  <Exercise>
+
+<NeuralNetworkBasicsQuiz />
+
+  </Exercise>
+</Level>
+
+<Level level={3} title="ネットワーク設計とアーキテクチャ" status="planned">
+  全結合層だけでなく、画像向けの畳み込み層（フィルタ・プーリング）を持つ CNN、時系列向けの RNN・LSTM など、データの構造に応じたアーキテクチャの設計。転移学習・画像解析・音声認識への応用（SPEC Q-2）は別トピックで扱う。
+</Level>
+
+<Level level={4} title="学習を支える最適化・初期化の工夫" status="planned">
+  重みの初期値の選び方（層を経ても分散が保たれるような初期化）、学習率スケジューリング、Momentum・RMSProp・Adam など<Term id="gradient-descent">勾配降下法</Term>の適応的な改良版。[最適化](/topics/optimization)トピックの確率的・大規模最適化（到達途上）と合流する領域。
+</Level>
+
+<Level level={5} title="表現学習と汎化理論" status="planned">
+  パラメータ数が訓練データ数を大きく上回ってもなぜ汎化するのか（二重降下、[機械学習の枠組み](/topics/learning-framework)の古典的な U 字を超える現象）、事前学習による表現学習、自己教師あり学習。
+</Level>
+
+<Level level={6} title="フロンティア" status="planned">
+  Transformer・注意機構、大規模言語モデル・拡散モデルなどの基盤モデル（SPEC Q-5）、深層学習の解釈可能性——研究が活発でここは到達途上。
+</Level>
+
+</Topic>
