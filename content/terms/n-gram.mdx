@@ -1,0 +1,46 @@
+---
+title: n-gram
+definition: テキスト中の連続するn個の単語（または文字）のまとまり。n=1をユニグラム、n=2をバイグラム、n=3をトライグラムと呼ぶ。連続する語の出現回数を数えることで、[言語モデル](language-model)の条件付き確率を推定する基礎になる。
+aliases: [n-gram, Nグラム, ngram, バイグラム, トライグラム, unigram, bigram, trigram]
+seeAlso: [language-model, co-occurrence-network]
+---
+
+# n-gram
+
+「data science combines statistics」という文からバイグラム（n=2）を作ると、隣り合う2語のペアが連続して切り出される。
+
+$$
+(\text{data},\text{science})
+$$
+
+$$
+(\text{science},\text{combines})
+$$
+
+$$
+(\text{combines},\text{statistics})
+$$
+
+一般に、長さ $L$ のトークン列から n-gram を作ると、切り出せるのは $L-n+1$ 個。$n=1$（ユニグラム）は単語単体の頻度、$n=2$（バイグラム）は隣接ペアの頻度、$n=3$（トライグラム）は3語の並びの頻度を数える——n が大きいほど «より長い文脈» を捉えられるが、その組み合わせの種類も指数的に増え、1つ1つの n-gram がコーパス中に出現する回数は少なくなる（データスパース性）。
+
+## 文の境界を扱う
+
+文の最初の語には「その前に何があったか」という文脈が無い。これを扱うため、文の前後に特別な記号を付けて n-gram を作ることが多い。
+
+$$
+\langle s\rangle\ \langle s\rangle\ \text{data}\ \text{science}\ \cdots\ \langle/s\rangle
+$$
+
+（$n$-gramなら文頭に $n-1$ 個の $\langle s\rangle$、文末に1個の $\langle /s\rangle$）。こうすることで「文頭に来やすい語」「文末に来やすい語」も同じ枠組みで扱える。
+
+## 言語モデルとの関係
+
+n-gram の出現回数を数えると、「直前の $n-1$ 語（文脈）が与えられたとき、次にどの語が来やすいか」という条件付き確率を推定できる。
+
+$$
+P(w\mid c)\approx\frac{\text{count}(c,w)}{\text{count}(c)}
+$$
+
+これが[言語モデル](language-model)の最も古典的な作り方——n-gram の出現回数を数えるだけで、次の語の確率分布が作れる。文字単位の n-gram（キャラクタn-gram）は、スペルミス検出や言語判定などにも使われる。
+
+n-gram は語順（どちらが先に来るか）を区別する点で、順序を無視する[共起ネットワーク](co-occurrence-network)（前後 windowSize 語«以内»にあれば方向を問わず共起とみなす）とは異なる情報を捉えている。

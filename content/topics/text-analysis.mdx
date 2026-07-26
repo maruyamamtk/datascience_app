@@ -1,0 +1,195 @@
+---
+title: テキスト解析
+summary: 短い英語コーパス（5文）と日本語の例文で、分かち書き（形態素解析）→ストップワード除去→ステミングという前処理から、tf-idf・n-gram言語モデルという頻度ベースの古典的表現、そして共起ネットワーク・単語埋め込み・ベクトル空間モデル・トピックモデルという「意味をベクトル空間で捉える」考え方までを、操作→数式→グラフの実時間連動で辿るトピック。
+status: published
+---
+
+import { MorphSegmentStepper } from "@/components/topics/text-analysis/MorphSegmentStepper";
+import { PreprocessStepper } from "@/components/topics/text-analysis/PreprocessStepper";
+import { TfidfLab } from "@/components/topics/text-analysis/TfidfLab";
+import { NgramLab } from "@/components/topics/text-analysis/NgramLab";
+import { CooccurrenceNetworkLab } from "@/components/topics/text-analysis/CooccurrenceNetworkLab";
+import { VectorSpaceLab } from "@/components/topics/text-analysis/VectorSpaceLab";
+import { TopicModelStepper } from "@/components/topics/text-analysis/TopicModelStepper";
+import { TextAnalysisQuiz } from "@/components/topics/text-analysis/TextAnalysisQuiz";
+
+<Topic title="テキスト解析" summary="短いコーパスで、前処理（分かち書き・ストップワード除去・ステミング）→頻度ベースの表現（tf-idf・n-gram言語モデル）→ベクトル空間の表現（共起ネットワーク・単語埋め込み・ベクトル空間モデル・トピックモデル）という、テキストを数値化していく一連のパイプラインを操作→数式→グラフの連動で辿る。">
+
+<ReaderGuide>
+
+- **初学者** → L0（文がどう<Term id="morphological-analysis">形態素解析</Term>（分かち書き）され、<Term id="stop-words">ストップワード</Term>除去・<Term id="stemming">ステミング</Term>を経て «語のリスト» になるかをコマ送りで見る）
+- **一通り使える人** → L1〜L2（<Term id="tf-idf">tf-idf</Term>の導出、<Term id="n-gram">n-gram</Term>と<Term id="language-model">言語モデル</Term>の条件付き確率、<Term id="co-occurrence-network">共起ネットワーク</Term>・<Term id="word-embedding">単語埋め込み</Term>・<Term id="vector-space-model">ベクトル空間モデル</Term>・<Term id="topic-model">トピックモデル</Term>という「テキストをベクトルとして扱う」一連の考え方）
+- **「完全に理解した」人** → L3 以降（ニューラルな分散表現・大規模言語モデルへの接続は到達途上）
+
+前提: [ニューラルネットワークの仕組み](/topics/neural-network-basics)（<Term id="activation-function">活性化関数</Term>・<Term id="synaptic-connection">シナプス結合</Term>（重み）・<Term id="gradient-descent">勾配降下法</Term>の概念）。単語埋め込みをニューラルネットの«埋め込み層»として学習する話（L2）で、重みの更新という共通の枠組みを参照する。
+
+</ReaderGuide>
+
+<Level level={0} title="ブラックボックス（文 → 語のリストへの前処理）">
+  <Concept>
+
+コンピュータは文字列のままでは «意味» を扱えない。テキスト解析の第一歩は、文を扱いやすい «語のリスト» に変換する前処理である。
+
+<Term id="morphological-analysis">形態素解析</Term>（分かち書き）で単語の切れ目を決め、<Term id="stop-words">ストップワード</Term>という頻度が高すぎる機能語を取り除き、<Term id="stemming">ステミング</Term>で語尾の違い（learning/learned/learns）を1つの語幹にまとめる。
+
+日本語は英語と違って単語間にスペースが無いため、まず «どこが単語の区切りか» を決める分かち書きが必要になる。下のラボでは、辞書に登録された語のうち **その位置から始まる最も長いもの** を貪欲に選ぶ、前方最長一致法という単純なルールで原理を確かめる。
+
+  </Concept>
+  <Interact>
+
+例文を選ぶと、位置ごとに辞書と照合しながら1トークンずつ確定していく様子がコマ送りで見える。
+
+<MorphSegmentStepper />
+
+英語は単語間にスペースがあるため分割自体は簡単だが、その後の「どの語を残すか（ストップワード除去）」「語尾をどう揃えるか（ステミング）」という前処理は共通して必要になる。
+
+<PreprocessStepper />
+
+  </Interact>
+  <Exercise>
+
+確認: 「data」と「programming」という2つの語を辞書登録し、文「data science」を分かち書きすると、なぜ「dat」+「a science」のような変な区切り方にはならない？
+（答: 前方最長一致法は辞書に **無い** 部分文字列を選ばない。各位置で辞書に前方一致する候補だけを探し、その中の最長を選ぶので、辞書に無い「dat」のような区切りは最初から候補に上がらない。ただし辞書に無い語（未知語）は1文字ずつ切り出される——辞書の網羅性がそのまま分かち書きの精度を左右する。）
+
+  </Exercise>
+</Level>
+
+<Level level={1} title="古典的理解（tf-idf・n-gram言語モデルの導出）">
+  <Concept>
+
+前処理を終えた語のリストから、まず「頻度」を手がかりに文書や文脈を数値化する2つの古典的な方法を見る。
+
+**<Term id="tf-idf">tf-idf</Term>**: 文書内での出現割合（tf）と、他の文書には出にくいほど大きくなる«珍しさ»（idf）の積。単純な頻度だけでは埋もれてしまう «その文書らしい語» を浮かび上がらせる。
+
+**<Term id="n-gram">n-gram</Term>と<Term id="language-model">言語モデル</Term>**: 直前の $n-1$ 語（文脈）が与えられたとき、次にどの語が来やすいかを条件付き確率としてコーパスの出現回数から見積もる。
+
+  </Concept>
+  <Derivation title="tf-idfのidfに、なぜ対数を使うのか">
+
+文書総数を $N$、語 $t$ を含む文書数を $\text{df}(t)$ とする。単純に比 $N/\text{df}(t)$ をそのまま «珍しさ» の指標にすると、$N$ が大きいコーパスでは値が発散しやすく、珍しい語の影響が強くなりすぎる。そこで対数を取る。
+
+$$
+\text{idf}(t)=\ln\!\left(\frac{N}{\text{df}(t)}\right)
+$$
+
+この形には2つの望ましい性質がある。
+
+1. **全文書に出る語は寄与が消える**: $\text{df}(t)=N$ のとき $\ln(N/N)=\ln 1=0$。tf がどれだけ大きくても $\text{tf-idf}=\text{tf}\times 0=0$ になり、«ありふれた語» の影響を自動的に消してくれる。
+2. **穏やかな増加**: $\text{df}(t)$ が小さくなる（珍しくなる）ほど idf は増えるが、対数を通すことで増え方が比例より緩やかになり、極端に珍しい語だけが tf-idf を支配してしまう事態を防ぐ。
+
+具体例: 5文書中4文書に出る語の idf は $\ln(5/4)\approx0.223$、1文書にしか出ない語の idf は $\ln(5/1)\approx1.609$——tf が同じでも後者は約7倍 tf-idf が大きくなる。
+
+  </Derivation>
+  <Derivation title="連鎖律からn-gram近似へ">
+
+確率の連鎖律により、文全体の同時確率は厳密に次の積へ分解できる。
+
+$$
+P(w_1,\dots,w_n)=\prod_{i=1}^{n}P(w_i\mid w_1,\dots,w_{i-1})
+$$
+
+この式自体はいつでも成り立つが、右辺の $P(w_i\mid w_1,\dots,w_{i-1})$ は «これまでの全単語列» を条件とするため、同じ長い文脈がコーパスに2度と現れず、出現回数から推定するのが事実上不可能になる（データスパース性）。そこで「直前 $n-1$ 語だけで十分」という近似を置く。
+
+$$
+P(w_i\mid w_1,\dots,w_{i-1})\ \approx\ P(w_i\mid w_{i-n+1},\dots,w_{i-1})
+$$
+
+右辺は $n$-gram の出現回数だけから計算できる。
+
+$$
+P(w\mid c)=\frac{\text{count}(c,w)+\alpha}{\text{count}(c)+\alpha V}
+$$
+
+（$c$=文脈、$V$=語彙数、$\alpha$=ラプラススムージングの強さ。分子分母に $+\alpha$・$+\alpha V$ を足すことで、コーパスに一度も出ない組み合わせでも確率が0にならないようにしている。）
+
+  </Derivation>
+  <Interact>
+
+文書を選ぶと、その文書内の各語の tf・idf・tf-idf が数式と連動して切り替わる。
+
+<TfidfLab />
+
+n（バイグラム/トライグラム）と文脈をコーパスに実在する組み合わせから選ぶと、次に来やすい語の確率分布が変わる。
+
+<NgramLab />
+
+  </Interact>
+  <Exercise>
+
+確認: tf-idfが0になるのはどんなときで、なぜそれは «望ましい» 挙動と言える？
+（答: $\text{df}(t)=N$（その語が全文書に出現する）のとき idf$=\ln(N/N)=0$ となり、tf-idfも0になる。全文書に等しく出る語は、どんなに頻度が高くても «特定の文書らしさ» を示す情報にはならないので、重み0にして良い——これがtf-idfが単純な出現頻度より優れている理由。）
+
+  </Exercise>
+</Level>
+
+<Level level={2} title="仮定体系（分布仮説とベクトル空間での意味の表現）">
+  <Concept>
+
+L1までは「頻度」を直接扱っていたが、L2では一歩進んで «語や文書を空間上の点（ベクトル）とみなし、近さで意味の近さを測る» という仮定を置く。この仮定を **分布仮説**（意味の近い語は似た文脈に現れる）と呼び、次の4つの考え方はすべてこの仮定の応用になっている。
+
+- **<Term id="co-occurrence-network">共起ネットワーク</Term>**: 窓幅以内に一緒に現れた語どうしを辺で結ぶグラフ。ある語の «近傍»（直接共起する語）を見れば、その語の使われ方が分かる。
+- **<Term id="word-embedding">単語埋め込み</Term>**: 各語の共起カウントをそのままベクトルとして使う（カウントベースの埋め込み）。文脈が似た語ほどベクトルが近くなる。
+- **<Term id="vector-space-model">ベクトル空間モデル</Term>**: 文書を tf-idf ベクトルとして表現し、クエリとのコサイン類似度で文書を検索・順位付けする。
+- **<Term id="topic-model">トピックモデル</Term>**: 文書ベクトルが近いもの同士をグループ化し、«話題» を自動的に見つける。
+
+4つとも「対象をベクトルにし、近さ（コサイン類似度）で意味の近さを測る」という同じ道具立ての応用であることを、以下のラボで確かめる。
+
+  </Concept>
+  <Derivation title="コサイン類似度の導出（内積と余弦定理）">
+
+2つのベクトル $\vec a,\vec b$ のなす角を $\theta$ とすると、余弦定理（三角形の一辺の長さを他の2辺と間の角で表す公式）から、内積は次のように書ける。
+
+$$
+\vec a\cdot\vec b=\lVert\vec a\rVert\,\lVert\vec b\rVert\cos\theta
+$$
+
+これを $\cos\theta$ について解くと、コサイン類似度の定義式が得られる。
+
+$$
+\cos\theta=\frac{\vec a\cdot\vec b}{\lVert\vec a\rVert\,\lVert\vec b\rVert}
+$$
+
+$\theta=0$（同じ向き）のとき $\cos\theta=1$、$\theta=90°$（直交、共通成分が無い）のとき $\cos\theta=0$。ベクトルの **向き** だけを見て **大きさ（長さ）** を無視するのが特徴——長い文書ほど各語の出現回数が単純に増えて tf-idf ベクトルが長くなりやすいが、コサイン類似度はその影響を受けにくい。
+
+k=2の簡易トピックモデルでは、この類似度を使って各文書を «最もコサイン類似度が高い中心» のクラスタへ割り当て、その後クラスタの平均ベクトルへ中心を更新する、という2ステップを収束するまで繰り返す。
+
+  </Derivation>
+  <Interact>
+
+窓幅を変えると共起ネットワークのエッジが増減する。語をクリックすると近傍だけが浮かび上がる。
+
+<CooccurrenceNetworkLab />
+
+単語埋め込み同士のコサイン類似度と、ベクトル空間モデルによる文書検索を同じ道具（コサイン類似度）で比べる。
+
+<VectorSpaceLab />
+
+5つの文書の tf-idf ベクトルを、コサイン類似度に基づく反復クラスタリングで2つの «トピック» に振り分ける。
+
+<TopicModelStepper />
+
+  </Interact>
+  <Exercise>
+
+<TextAnalysisQuiz />
+
+  </Exercise>
+</Level>
+
+<Level level={3} title="分散表現とニューラル言語モデル" status="planned">
+  カウントベースの単語埋め込みではなく、word2vec・GloVeのように「周辺の語を予測する」タスクを解きながら埋め込みベクトルを勾配降下法で学習する方法。RNN・Transformerを使ったニューラル言語モデルは、n-gramの«直前n-1語»という制約を超え、より長い文脈を扱えるようになる（[ニューラルネットワークの仕組み](/topics/neural-network-basics)・[NNモデル（CNN・RNN）](/topics/neural-network-models)の続き）。
+</Level>
+
+<Level level={4} title="意味の構造と応用タスク" status="planned">
+  固有表現認識・感情分析・系列ラベリングなど、語や文の意味構造を利用する応用タスク。機械翻訳（SPEC Q-3の発展項目）は系列変換モデルの理論を要するため、本トピックでは扱わず今後の到達目標とする。
+</Level>
+
+<Level level={5} title="事前学習と大規模言語モデルの理論的基盤" status="planned">
+  BERT・GPT系モデルの自己教師あり事前学習、スケーリング則、転移学習としてのファインチューニング——ここまで来ると本トピックのn-gram的な«数え上げ»の発想から大きく離れ、深層学習の理論（[NNモデル（CNN・RNN）](/topics/neural-network-models)のL5以降）と合流する。
+</Level>
+
+<Level level={6} title="フロンティア" status="planned">
+  マルチモーダル言語モデル、in-context learning、大規模言語モデルの理論的理解——研究が活発でここは到達途上。
+</Level>
+
+</Topic>
