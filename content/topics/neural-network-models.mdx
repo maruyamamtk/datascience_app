@@ -1,0 +1,208 @@
+---
+title: CNN・RNN（畳み込み・再帰ニューラルネットワーク）
+summary: 全結合層を「データの構造」に合わせて特殊化した2つのアーキテクチャを扱う。CNNは画像の近傍だけを見るフィルタ（畳み込み）とプーリングで空間方向にパラメータを共有し、RNN/LSTMは時系列を1ステップずつ処理しながら隠れ状態を持ち越す。LSTMのゲート機構が時間方向の勾配消失をなぜ緩和するかを数式で追い、転移学習の考え方にも触れる。
+status: published
+---
+
+import { ConvLab } from "@/components/topics/neural-network-models/ConvLab";
+import { ConvPoolStepper } from "@/components/topics/neural-network-models/ConvPoolStepper";
+import { RnnLstmLab } from "@/components/topics/neural-network-models/RnnLstmLab";
+import { SequenceStepper } from "@/components/topics/neural-network-models/SequenceStepper";
+import { TransferLearningDiagram } from "@/components/topics/neural-network-models/TransferLearningDiagram";
+import { NeuralNetworkModelsQuiz } from "@/components/topics/neural-network-models/NeuralNetworkModelsQuiz";
+
+<Topic title="CNN・RNN（畳み込み・再帰ニューラルネットワーク）" summary="全結合層をデータの構造に合わせて特殊化した2つのアーキテクチャ。CNNは画像の近傍だけを見るフィルタ（畳み込み）とプーリングで空間方向にパラメータを共有し、RNN/LSTMは時系列を1ステップずつ処理しながら隠れ状態を持ち越す。LSTMのゲート機構が時間方向の勾配消失をなぜ緩和するかを数式で追い、転移学習にも触れる。">
+
+<ReaderGuide>
+
+- **初学者** → L0（CNNは画像を«なぞる»関数、RNNは«記憶»を持つ関数、というブラックボックスの直感をラボで動かして掴む）
+- **一通り使える人** → L1〜L2（<Term id="convolutional-layer">畳み込み層</Term>・<Term id="pooling-layer">プーリング層</Term>の計算と出力サイズ公式の導出、<Term id="recurrent-neural-network">RNN</Term>の再帰式と時間方向のBPTT、<Term id="lstm">LSTM</Term>の<Term id="gate-mechanism">ゲート機構</Term>がなぜ勾配消失に強いかの導出、<Term id="transfer-learning">転移学習</Term>の考え方）
+- **「完全に理解した」人** → L3以降（Transformer・注意機構、画像認識/音声認識/テキスト解析の詳細な応用は別トピックで深掘り予定——ここは到達途上）
+
+前提: [ニューラルネットワークの仕組み](/topics/neural-network-basics)（<Term id="activation-function">活性化関数</Term>・<Term id="backpropagation">誤差逆伝播法</Term>・<Term id="computational-graph">計算グラフ</Term>・<Term id="vanishing-gradient">勾配消失</Term>などの基礎概念）。CNN・RNNはいずれも「重み付き和を取ってから活性化関数を通す」という全結合層と同じ計算の枠組みを土台に、**どのユニット同士を結ぶか** （結合の形）をデータの構造に合わせて制限したものと理解できる。
+
+</ReaderGuide>
+
+<Level level={0} title="ブラックボックス（画像を«なぞる»CNN、記憶を持つRNN）">
+  <Concept>
+
+<Term id="neural-network-layer">全結合層</Term>は入力の全ユニットと出力の全ユニットを別々の重みで結ぶ。これは画像のような «近くのピクセル同士は関係が深い» という構造や、文章のような «順序に意味がある» 構造を積極的には使わない、いわば汎用の結合方法。CNN・RNNは同じ「重み付き和 → 活性化関数」という計算部品を使いながら、結合の形をデータの構造に合わせて特殊化する。
+
+CNNの畳み込み層は
+
+$$
+z_{i,j}=\sum_{a,b} K_{a,b}\,X_{i+a,j+b}+b
+$$
+
+RNNの再帰計算は
+
+$$
+h_t=\phi(w_{xh}x_t+w_{hh}h_{t-1}+b_h)
+$$
+
+<Term id="convolutional-layer">畳み込み層</Term>は、入力画像の «近い場所» だけを見る小さなフィルタ $K$ を、位置をずらしながら同じ重みで使い回す。<Term id="recurrent-neural-network">RNN</Term>は、時刻 $t$ の入力 $x_t$ と «それまでの記憶» である隠れ状態 $h_{t-1}$ を混ぜ合わせ、次の隠れ状態 $h_t$ を作る計算を時間方向に繰り返す。
+
+CNNは画像認識（写っている物体の分類など）、RNN・LSTMは音声認識や自然言語処理・時系列予測など、順序や近傍関係に意味があるデータに広く使われる——それぞれの応用の詳細（物体検出やテキスト解析の具体的な手法）は専用のトピックで扱う予定で、ここではCNN・RNN自体の計算の仕組みに集中する。
+
+  </Concept>
+  <Interact>
+
+まずはCNNのフィルタを動かして特徴マップを覗いてみよう。フィルタ・ストライド・パディングを切り替えると出力が実時間で再計算される。
+
+<ConvLab />
+
+続けてRNN/LSTMのセルも動かしてみよう。時刻 t のつまみを動かすと、その時点の隠れ状態（LSTMならゲートも）が実時間で更新される。
+
+<RnnLstmLab />
+
+  </Interact>
+  <Exercise>
+
+確認: CNNの畳み込み層が「全結合層の特殊な場合」だと言えるのはなぜ？
+（答: 畳み込み層の各出力ユニットも、結局は入力の一部との重み付き和を取っているだけなので全結合層の計算の一種と見なせる。ただし «同じ重みを全位置で使い回す»（パラメータ共有）ことと «近い入力としか結合しない»（局所受容野）という2つの制約を追加した特殊な全結合層、と理解できる。）
+
+  </Exercise>
+</Level>
+
+<Level level={1} title="古典的理解（畳み込み・プーリングの計算とRNNの再帰式）">
+  <Concept>
+
+<Term id="convolutional-layer">畳み込み層</Term>のパラメータは3つ: フィルタサイズ $f$（見る範囲の広さ）、ストライド $s$（フィルタを何マスずつスライドさせるか）、パディング $p$（入力の周囲を何マスゼロで囲むか）。出力サイズはこれらから決まる。
+
+$$
+n_{\text{out}}=\left\lfloor\frac{n+2p-f}{s}\right\rfloor+1
+$$
+
+<Term id="pooling-layer">プーリング層</Term>は畳み込み層の出力（特徴マップ）を窓ごとに1つの値へ要約する。Maxプーリングは窓内の最大値、Averageプーリングは窓内の平均値を採用し、学習パラメータは持たない。
+
+<Term id="recurrent-neural-network">RNN</Term>は時刻ごとに同じ重み $(w_{xh},w_{hh},b_h)$ を使い回しながら、隠れ状態を更新する再帰計算を系列の先頭から末尾まで繰り返す（**時間展開**）。学習は<Term id="backpropagation">誤差逆伝播法</Term>を時間方向に展開して適用する（Backpropagation Through Time, BPTT）。
+
+  </Concept>
+  <Derivation title="出力サイズ公式の導出（高校数学の橋渡し: 窓を置ける位置を数える）">
+
+パディング込みの入力の長さは $n+2p$。幅 $f$ の窓の左端を置ける最も右の位置は、窓が入力からはみ出さない範囲、つまり左端の座標を $0$ から数えて $n+2p-f$ 以下でなければならない。
+
+ストライド $s$ で動かすとき、窓の左端が取りうる座標は $0, s, 2s, \dots$ という等差数列。この数列のうち $n+2p-f$ 以下のものの個数を数えればよい。
+
+$$
+0,\ s,\ 2s,\ \dots,\ ks \ \le\ n+2p-f
+$$
+
+を満たす最大の整数 $k$ は $k=\left\lfloor\dfrac{n+2p-f}{s}\right\rfloor$（等差数列の項数を求める、高校数学と同じ考え方）。座標 $0$ の位置も1つに数えるので、位置の総数（＝出力サイズ）は $k+1$ 個。
+
+$$
+n_{\text{out}}=\left\lfloor\frac{n+2p-f}{s}\right\rfloor+1
+$$
+
+**具体例**: $n=5,\ f=3,\ s=1,\ p=0$ のとき、窓の左端が置けるのは座標 $0,1,2$ の3か所だけ（座標3だと窓が入力の右端 $[3,4,5]$ の5番目=範囲外にはみ出す）。公式でも $\lfloor(5-3)/1\rfloor+1=3$ と一致する。
+
+  </Derivation>
+  <Derivation title="RNNの時間方向BPTT: なぜ層方向の勾配消失と同じ式になるのか">
+
+<Term id="vanishing-gradient">勾配消失</Term>は「層を重ねるほど活性化関数の微分の積が縮む」現象として[ニューラルネットワークの仕組み](/topics/neural-network-basics)で見た。RNNでは «層» の代わりに «時間ステップ» が同じ役割を果たす。
+
+$h_1=\phi(w_{xh}x_1+w_{hh}h_0+b_h)$ を $h_0$ で微分すると、連鎖律より
+
+$$
+\frac{\partial h_1}{\partial h_0}=w_{hh}\cdot\phi'(z_1)
+$$
+
+$h_2=\phi(w_{xh}x_2+w_{hh}h_1+b_h)$ も同様に $h_1$ を経由して $h_0$ に依存するので、もう一段連鎖律を重ねる。
+
+$$
+\frac{\partial h_2}{\partial h_0}=\frac{\partial h_2}{\partial h_1}\cdot\frac{\partial h_1}{\partial h_0}=w_{hh}\cdot\phi'(z_2)\cdot w_{hh}\cdot\phi'(z_1)
+$$
+
+これを $t$ ステップまで繰り返すと
+
+$$
+\frac{\partial h_t}{\partial h_0}=\prod_{k=1}^{t} w_{hh}\cdot\phi'(z_k)
+$$
+
+という «同じ形の項の掛け算» になる。$\phi=\tanh$ の微分は最大でも $1$（$z=0$ のとき）で、$|w_{hh}|$ が $1$ 未満なら各項は $1$ 未満——これが $t$ 回掛け合わさるほど急速に $0$ に近づく。層方向の勾配消失（活性化関数の微分を層の数だけ掛け合わせる）と全く同じ数学的構造が、時間方向にも現れることが分かる。
+
+  </Derivation>
+  <Interact>
+
+畳み込み（① 青、9コマ）とプーリング（② 緑、4コマ）を1マスずつ走査する様子を見てみよう。フィルタが動くたびに、対応する入力の窓と出力マスが連動してハイライトされる。
+
+<ConvPoolStepper />
+
+  </Interact>
+  <Exercise>
+
+確認: ストライド $s=2$ にすると出力サイズはどう変わる？ $s=1$ のときと比べて何が得か・失うものは何か？
+（答: 出力サイズ公式の分母が大きくなるぶん出力は小さく（粗く）なる。得: 出力のマス数が減るので後段の計算量・パラメータ数を抑えられる。失うもの: 窓の間隔が空くぶん、見落とす位置（どの窓にも中心付近として含まれない位置）が増え、細かい位置情報の解像度が落ちる。）
+
+  </Exercise>
+</Level>
+
+<Level level={2} title="仮定体系（パラメータ共有という仮定、LSTMゲートによる勾配消失対策、転移学習）">
+  <Concept>
+
+<Term id="convolutional-layer">畳み込み層</Term>が置いている暗黙の仮定は **並進不変性**: 「同じ形の特徴（エッジなど）は、画像のどこに現れても同じフィルタで検出してよい」という仮定。この仮定が成り立つ限り、少ないパラメータで広い範囲をカバーできる強力な帰納バイアスになる。**仮定が崩れる例**: 画像が大きく回転・拡大縮小されると同じフィルタでは検出しにくくなる（回転や拡大縮小に対しては並進ほど頑健ではない）。位置そのものに意味がある問題（画像の中心か端かでラベルが変わるようなタスク）でも、位置情報を捨てすぎるパラメータ共有は不利に働くことがある。
+
+<Term id="recurrent-neural-network">RNN</Term>は系列が長くなるほど<Term id="vanishing-gradient">勾配消失</Term>（L1で見た時間方向のBPTT）が深刻になり、遠い過去の情報を学習に活かしにくい。<Term id="lstm">LSTM</Term>は<Term id="gate-mechanism">ゲート機構</Term>と加法的なセル状態でこれを緩和する。
+
+学習ずみのネットワークをそのまま使い回す<Term id="transfer-learning">転移学習</Term>も、CNNの «浅い層は汎用的な特徴を学ぶ» という経験則（これも一種の仮定）に支えられている——事前学習のタスクと新タスクが離れすぎていると、この仮定が崩れて転移がうまくいかないこともある。
+
+  </Concept>
+  <Derivation title="LSTMのセル状態は«足し算»の経路を持つ（勾配消失を緩和する数学的な理由）">
+
+LSTMは隠れ状態 $h_t$ に加え、セル状態 $c_t$ と3つのゲートを持つ。
+
+$$
+\begin{aligned}
+f_t&=\sigma(w_f x_t+u_f h_{t-1}+b_f)\\
+i_t&=\sigma(w_i x_t+u_i h_{t-1}+b_i)\\
+g_t&=\tanh(w_g x_t+u_g h_{t-1}+b_g)\\
+c_t&=f_t\,c_{t-1}+i_t\,g_t
+\end{aligned}
+$$
+
+$c_t$ を $c_{t-1}$ で偏微分する。積の微分と、$i_t g_t$ の項が $c_{t-1}$ を含まないことに注意すると
+
+$$
+\frac{\partial c_t}{\partial c_{t-1}}=f_t
+$$
+
+だけが残る（$f_t,i_t,g_t$ 自身も $h_{t-1}$ を経由して $c_{t-1}$ に依存するが、その経路は $f_t$ を通る経路に比べて影響が小さく、ここでは主要な項だけを見る簡略化を行う——これは提案論文で **定数エラーカルーセル** と呼ばれる近似）。RNNの $\partial h_t/\partial h_{t-1}=w_{hh}\cdot\phi'(z_t)$ が «重み × 活性化関数の微分» という2つの要因の掛け算だったのに対し、LSTMのセル状態を通る経路は忘却ゲート $f_t$ **1つだけ** の掛け算になる。しかも $f_t$ はシグモイドの出力なので $0$ から $1$ の範囲に収まり、学習によって $1$ に近い値を取れる——$f_t\approx 1$ を保てれば、この経路の勾配は時間ステップを経てもほとんど縮まない。
+
+出力ゲート $o_t=\sigma(w_o x_t+u_o h_{t-1}+b_o)$ と隠れ状態 $h_t=o_t\tanh(c_t)$ は、このセル状態のうちどれだけを «外部に見せるか» を調整する役割。
+
+  </Derivation>
+  <Interact>
+
+RNN/LSTMを切り替えながら、系列を1ステップずつ処理する様子を見てみよう。LSTMモードでは3つのゲートの色（赤=閉じている、緑=開いている）が時刻ごとに変わる——入力 $x_t$ の符号に応じて忘却ゲートが実際に開閉している。
+
+<SequenceStepper />
+
+事前学習ずみネットワークの層をクリックして、凍結（青）と再学習（橙）を切り替えてみよう。
+
+<TransferLearningDiagram />
+
+  </Interact>
+  <Exercise>
+
+<NeuralNetworkModelsQuiz />
+
+  </Exercise>
+</Level>
+
+<Level level={3} title="画像・系列の応用と発展的なアーキテクチャ" status="planned">
+  画像認識（物体検出・セグメンテーション）はQ-4「画像解析」、テキスト解析（単語埋め込み・トークナイズ等）はQ-3「テキスト解析」で別トピックとして深掘りする。CNN側ではResNet（残差接続）・Batch正規化との組み合わせ、RNN側ではGRU（LSTMの簡略版）など、アーキテクチャそのものの発展形も到達途上。
+</Level>
+
+<Level level={4} title="学習を支える最適化・正則化の応用" status="planned">
+  [ニューラルネットワークの仕組み]のドロップアウト・バッチ正規化をCNN・RNNの文脈でどう使うか（畳み込み層向けのドロップアウトの変種、RNNでの適用の難しさ）、データ拡張（回転・反転などで並進不変性の仮定を補強する）。[最適化](/topics/optimization)の適応的な学習率アルゴリズムとも合流する領域。
+</Level>
+
+<Level level={5} title="表現学習としてのCNN・RNN" status="planned">
+  CNNの中間層が学習する特徴（エッジ→模様→部品→物体、という階層的な表現）の可視化・解釈、RNN/LSTMの隠れ状態が何を符号化しているかの分析。事前学習・自己教師あり学習との接続——研究が活発でここは到達途上。
+</Level>
+
+<Level level={6} title="フロンティア" status="planned">
+  Transformer・注意機構（RNNの逐次処理を並列化しつつ長距離依存を直接モデル化する、Q-5で扱う予定）、拡散モデル・大規模基盤モデルにおけるCNN/RNNの位置づけ——研究が活発でここは到達途上。
+</Level>
+
+</Topic>
