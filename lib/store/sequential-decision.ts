@@ -4,10 +4,8 @@ import {
   DEFAULT_PERIODS,
   DEFAULT_PERSISTENCE,
   backwardInduction,
-  backwardInductionCells,
   chronological,
   economyTransition,
-  type BackwardInductionCell,
   type PeriodResult,
   type SequentialDecisionProblem,
   type TransitionMatrix,
@@ -99,7 +97,3 @@ export const useBackwardInductionStepperStore = createTopicStore<EmptyControls, 
   initialControls: {},
   derive: () => ({}),
 });
-
-// frames.ts で使う純関数の再export(ストア外でも使えるように)。
-export type { BackwardInductionCell };
-export { backwardInductionCells };
