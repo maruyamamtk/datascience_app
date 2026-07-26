@@ -41,8 +41,12 @@ export function MdpLab() {
   const resultsChronological = useSequentialDecisionStore((s) => s.derived.resultsChronological);
   const resultsByPeriod = useSequentialDecisionStore((s) => s.derived.resultsBackward);
 
+  // selectedCellは期間数Tを変えた後も残る(controlsは個別キー更新のため)。選択中の期がもう
+  // 存在しない場合はフォールバックへ——古い選択のまま存在しない列をハイライトしようとしない。
+  const selectedCellValid =
+    selectedCell && resultsChronological.some((r) => r.period === selectedCell.period);
   const cell =
-    selectedCell ??
+    (selectedCellValid ? selectedCell : null) ??
     (resultsChronological.length > 0 ? { period: resultsChronological[0].period, stateIndex: 0 } : null);
   const cellPeriod = cell?.period;
   const cellStateIndex = cell?.stateIndex;

@@ -2,7 +2,7 @@
 
 import { useSequentialDecisionStore } from "@/lib/store/sequential-decision";
 import { MAX_PERIODS, MIN_PERIODS } from "@/lib/stats/sequential-decision";
-import { ACTION_COLORS, num } from "./format";
+import { ACTION_COLORS, num, pct } from "./format";
 
 /**
  * 逐次決定問題の「政策表」Lab(L0、ブラックボックス)。
@@ -31,7 +31,7 @@ export function PolicyLab() {
 
       <div className="grid gap-4 sm:grid-cols-3">
         <label className="flex flex-col gap-1 text-sm text-slate-700">
-          景気の続きやすさ = {pctLabel(persistence)}
+          景気の続きやすさ = {pct(persistence)}
           <input
             type="range"
             min={0.5}
@@ -127,8 +127,4 @@ export function PolicyLab() {
       </p>
     </div>
   );
-}
-
-function pctLabel(v: number): string {
-  return `${Math.round(v * 100)}%`;
 }
