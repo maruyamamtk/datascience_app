@@ -4,7 +4,6 @@ import {
   JA_DICTIONARY,
   JA_SENTENCES,
   buildVocabulary,
-  candidatesAt,
   coOccurrenceMatrix,
   contextOptions,
   cosineSimilarity,
@@ -12,7 +11,6 @@ import {
   inverseDocumentFrequency,
   preprocessCorpus,
   preprocessSentence,
-  queryVector,
   rankDocumentsByQuery,
   runSimpleTopicModel,
   sentenceProbability,
@@ -195,14 +193,6 @@ export const useTextAnalysisStore = createTopicStore<TaControls, TaDerived>({
     };
   },
 });
-
-// query 用のヘルパ（コンポーネント側で使う純粋な補助。副作用なし）
-export function buildQueryVector(queryTokens: string[]): number[] {
-  return queryVector(queryTokens, DOCS, TFIDF_VOCAB);
-}
-
-/** 分かち書きステッパーが位置ごとの候補集合を出すためのヘルパ（再エクスポート）。 */
-export { candidatesAt };
 
 /** MorphSegmentStepper（分かち書きのコマ送り）専用の空フレームストア。 */
 export const useMorphFrameStore = createTopicStore<Record<string, never>, Record<string, never>>({
