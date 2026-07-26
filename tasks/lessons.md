@@ -297,6 +297,7 @@
 - **原因の切り分け方**: `el.closest('.katex-mathml')`で隠しmathml要素を除外したうえで`getBoundingClientRect().right > viewport幅`を満たす**可視要素**（`.katex-html`配下の`span`等）が見つかれば、それは#84のような無害な既知問題ではなく実際の見た目の崩れ。KaTeXの display モード数式は**折り返されない**（1つの長い`.katex-html`ブロックとして描画される）ため、モバイル幅に収まらない長さの数式は必ずこの問題を起こす。underbrace（`\underbrace{}_{}`）は文字列自体は短くても descriptive なラベルの分だけ視覚的な横幅を大きく消費するため、特に注意が必要。
 - **対策**: (1) 装飾的な`\underbrace`のラベルなど、地の文で既に説明している情報を数式側でも重複して持たせている場合は削る。(2) それでも長い場合は`\begin{aligned} ... &= ... \\ &= ... \end{aligned}`で複数行に分割する（`<Math>`は`display`引数を変えずにこの構文をそのまま受け付ける）。inline（`display={false}`）の数式は複数の`span`が自然に折り返せるため通常問題にならないが、`<Math>`のデフォルトや`$$...$$`のdisplayモードだけがこの問題を起こす。
 - **判断の目安**: 新規トピックのモバイル確認では、`document.documentElement.scrollWidth`と`clientWidth`の差を見るだけでなく、**全ての`<details>`（折りたたみDerivation）を`d.open=true`で開いた状態**で再測定する（閉じたままだと導出内の長い数式が未検証のまま見逃される）。差が0でなければ、`el.closest('.katex-mathml')`を除外した可視要素の中に犯人がいないか`getBoundingClientRect()`でスキャンし、0pxになるまで数式を分割・簡略化する。#84のように「視覚的に崩れていないなら許容」で済ませてよいのは、可視要素を除外してもなお残る差（`.katex-mathml`起因のみ）の場合に限る。
+- **続報（#94逐次決定）**: この問題は#92以降も新規Derivation追加のたびに再発する（今回はBellman方程式の`\underbrace{}_{}`3連発と`\max_a[\cdots]=\max_a[\cdots]`の2段等式で、`document.documentElement.scrollWidth`が444px→434px→390pxと2回の修正でようやく0pxになった）——**1箇所直して終わりにせず、同じLevel内の残り全ての`$$...$$`を再スキャンする**（`el.closest('.overflow-x-auto')`も除外条件に加えると、意図的にスクロール可能な独自Lab内のKaTeX式(`display={false}`でも`\underbrace`を使うと横幅を食う)を誤検知せずに済む）。また、Lab内の動的`<MathFormula>`（`display={false}`）はページ全体には影響しないが、**`overflow-x-auto`で囲うdivで包んでおくと`\underbrace`等で幅を食っても自身の箱内でスクロールに閉じ込められ、他のトピック(`ExpectedValueLab`等)がテーブルに使っている「幅の出る要素はoverflow-x-autoで包む」という既存の防御パターンと一貫する（#94のMdpLabで採用）。
 
 ## SSR/CSRのtranscendental 1ULP差は、SVG座標だけでなくCSSスタイル値（`style={{width: ...}}`）にも波及する（出典 #92、既存教訓#67/71/74の一般化）
 
@@ -304,3 +305,10 @@
 - **原因**: 既存教訓#67/71/74は「SVG座標は丸める」という書き方だったため、SVG以外（CSS style の数値、テキストとして直接埋め込む数値等）は見落としやすい。実際には、**`Math.exp`・`Math.log`等のtranscendental関数を経由した浮動小数点数を、丸めずに文字列化してDOM属性・スタイルに埋め込む箇所すべて**が同じリスクを持つ。SVG座標に限定されない一般的な問題。
 - **対策**: `round2()`（`Math.round(v*100)/100`）のような丸め処理は、SVGの`cx`/`cy`/`points`だけでなく、`style={{width: ...}}`のようなCSS数値、`aria-valuenow`等の数値属性など、**transcendental関数を経由した値をDOMに書き込むすべての箇所**に適用する。書く前に「この値の計算過程に`Math.exp`/`Math.log`/`Math.sin`等が含まれているか」を自問し、含まれていれば丸めを入れる。
 - **判断の目安**: 新規トピックの実機確認では、Playwrightで`browser_console_messages({level: "error"})`を必ず確認し、"hydration mismatch"を含むエラーが無いことを検証する。エラーが出たら、そのDOM要素の値の計算に`Math.exp`/`Math.log`等が使われていないか確認し、使われていれば表示直前に`round2`等で丸める。SVG座標に限定した確認では見逃すため、本教訓は#67/71/74の適用範囲をCSS/属性全般に広げるものとして記録する。
+
+## `pnpm build`後の実機確認で、古い`next start`プロセスが同じポートを掴んだまま残っていて修正が反映されない（出典 #94）
+
+- **症状**: モバイル横スクロールのバグを`$$...$$`の修正で直したはずなのに、`pnpm build`→サーバ再起動→Playwrightで再確認しても`document.documentElement.scrollWidth`の差が全く変わらなかった。`curl`でHTMLを直接取得して修正前の文字列（削除したはずの`\underbrace`のラベル文言）を`grep`したところヒットしてしまい、ビルド後のHTMLファイル自体（`.next/server/app/.../*.html`）には既に文言が無いことも確認できたため、「ビルドは正しいのに、動いているサーバだけが古い」という状態だと判明した。
+- **原因**: サーバ停止に使った`pkill -f "next-server\|next start"`のパターンが実際のプロセスのコマンドラインと一致せず、古い`next start`プロセスを殺せていなかった。その状態で新しい`pnpm exec next start -p <port>`を`&`で起動すると`EADDRINUSE`で起動に失敗するが、`run_in_background`のジョブ自体は（起動スクリプトの`sleep && echo`部分が）正常終了として報告されるため、"起動成功"のログだけを見て古いプロセスへのリクエストを新しいビルドの結果だと誤認してしまう。
+- **対策**: サーバを再起動するときは`pkill -f`のパターンマッチに頼らず、`lsof -i :<port>`で実際にそのポートを掴んでいるPIDを直接特定し、`kill -9 <PID>`で確実に落としてから起動する。起動後は`lsof -i :<port>`で新PIDに切り替わったことを確認し、さらに`curl`で該当ページを取得して「直したはずの旧テキストが本当に消えているか」を`grep`で機械的に確認してから、Playwrightでの検証に進む——ブラウザ側のキャッシュ（Service Worker等）を疑う前に、まずサーバ側が新しいビルドを本当に返しているかを`curl`で切り分けるのが早い。
+- **判断の目安**: `pnpm build`後に「直したはずなのに直っていない」という結果が出たら、(1) `.next/server/app/`配下の該当HTMLファイルを`grep`してビルド成果物自体は正しいか、(2) `curl`で実際に稼働中のサーバのレスポンスは正しいか、の2段階で切り分ける。(1)は正しいのに(2)が古いままなら、ほぼ確実に古いプロセスが残っている——`lsof -i :<port>`を疑う。
