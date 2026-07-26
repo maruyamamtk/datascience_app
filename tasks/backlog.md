@@ -129,7 +129,7 @@
 | 67 | #93 | P-5 | 確率予測の評価 | probabilistic-forecasting | binary-classification-metrics | ✅ done |
 | 68 | #94 | P-6 | 逐次決定 | sequential-decision | markov-chains, decision-analysis | ✅ done |
 | 69 | #95 | Q-1 | ニューラルネットワークの仕組み | neural-network-basics | optimization, learning-framework | ✅ done |
-| 70 | #96 | Q-2 | NNモデル（CNN・RNN） | neural-network-models | neural-network-basics | pending |
+| 70 | #96 | Q-2 | NNモデル（CNN・RNN） | neural-network-models | neural-network-basics | ✅ done |
 | 71 | #97 | Q-3 | テキスト解析 | text-analysis | neural-network-basics | pending |
 | 72 | #98 | Q-4 | 画像解析 | image-analysis | neural-network-models | pending |
 | 73 | #99 | Q-5 | 生成AI | generative-ai | neural-network-models | pending |
