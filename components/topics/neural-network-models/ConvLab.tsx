@@ -55,8 +55,15 @@ export function ConvLab() {
     m.setHighlight("nnmc_nout", true, "#16a34a");
   }, [convOut.length]);
 
+  // activeWindow の座標はパディング後の入力上のもの。表示している inputGrid はパディング前
+  // （生の5×5）なので、ハイライト座標は convPadding 分だけ引き戻す。窓がパディング領域（ゼロ埋め）に
+  // かかる場合はその部分だけグリッド範囲外になり、Grid側は範囲外座標を無視するので実害はない
+  // （＝実際にオーバーラップしている本物のセルだけが正しくハイライトされる）。
   const inputHighlights = Array.from({ length: 3 }, (_, a) =>
-    Array.from({ length: 3 }, (_, b) => ({ row: activeWindow.row * convStride + a, col: activeWindow.col * convStride + b })),
+    Array.from({ length: 3 }, (_, b) => ({
+      row: activeWindow.row * convStride + a - convPadding,
+      col: activeWindow.col * convStride + b - convPadding,
+    })),
   ).flat();
 
   return (
