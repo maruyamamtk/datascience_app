@@ -1,0 +1,236 @@
+---
+title: 画像解析
+summary: 画像を「ピクセルの行列」として扱い、①画像処理（エッジ検出・ぼかし・二値化）②画像認識・分類（ソフトマックスによる確率化）③物体検出（IoU・NMS・アンカーボックス）という3つの応用を、操作→数式→グラフの実時間連動で辿るトピック。CNNの計算メカニズム自体は前提トピックに譲り、応用面に焦点を当てる。
+status: published
+---
+
+import { FilterLab } from "@/components/topics/image-analysis/FilterLab";
+import { EdgeDetectionStepper } from "@/components/topics/image-analysis/EdgeDetectionStepper";
+import { ClassificationLab } from "@/components/topics/image-analysis/ClassificationLab";
+import { IoULab } from "@/components/topics/image-analysis/IoULab";
+import { NmsStepper } from "@/components/topics/image-analysis/NmsStepper";
+import { AnchorBoxDiagram } from "@/components/topics/image-analysis/AnchorBoxDiagram";
+import { ImageAnalysisQuiz } from "@/components/topics/image-analysis/ImageAnalysisQuiz";
+
+<Topic title="画像解析" summary="画像をピクセルの行列として扱い、画像処理（エッジ検出・ぼかし・二値化）・画像認識/分類（ソフトマックス）・物体検出（IoU・NMS・アンカーボックス）という3つの応用を操作→数式→グラフの連動で辿る。CNNの計算メカニズム自体は前提トピックに譲り、応用面に焦点を当てる。">
+
+<ReaderGuide>
+
+- **初学者** → L0（画像処理・画像認識・物体検出という3つのタスクが、それぞれ«何を入力に何を出力するか»をブラックボックスとしてラボで動かして掴む）
+- **一通り使える人** → L1（<Term id="edge-detection">エッジ検出</Term>の勾配強度の導出、<Term id="softmax-function">ソフトマックス関数</Term>がなぜ指数関数を使うかの導出、<Term id="intersection-over-union">IoU</Term>の和集合公式の導出）
+- **「完全に理解した」人** → L2以降（<Term id="non-maximum-suppression">NMS</Term>の重複除去の設計、<Term id="anchor-box">アンカーボックス</Term>の連立方程式による生成、発展的なアーキテクチャは到達途上）
+
+前提: [NNモデル（CNN・RNN）](/topics/neural-network-models)（<Term id="convolutional-layer">畳み込み層</Term>・<Term id="pooling-layer">プーリング層</Term>の計算そのものは既習という前提で、本トピックでは «畳み込みを画像処理・画像認識・物体検出にどう応用するか» に焦点を当てる）。
+
+</ReaderGuide>
+
+<Level level={0} title="ブラックボックス（3つのタスクを«入力→出力»として掴む）">
+  <Concept>
+
+「画像解析」と一口に言っても、扱うタスクによって入力と出力の形が大きく異なる。まず3つのタスクを«ブラックボックス»として整理する。
+
+- **<Term id="image-processing">画像処理</Term>**: 画像 → 別の画像。エッジ検出・ぼかし・二値化のように、画像を«別の画像»へ変換する。
+- **<Term id="image-classification">画像認識・分類</Term>**: 画像 → クラスラベル。「何が写っているか」を1つのカテゴリとして出力する。
+- **<Term id="object-detection">物体検出</Term>**: 画像 → 複数の（位置, ラベル）の組。「どこに何があるか」を、物体ごとの<Term id="bounding-box">バウンディングボックス</Term>とラベルの一覧として出力する。
+
+3つとも入口ではCNNの<Term id="convolutional-layer">畳み込み層</Term>を土台にする点は共通だが、最終的に«何を出力するか»がタスクごとに全く違う——この違いが、それぞれのタスク固有の道具（エッジ検出フィルタ、ソフトマックス、IoU・NMS）を生む。
+
+  </Concept>
+  <Interact>
+
+まずは画像処理から。フィルタを切り替えると、元画像がどう変換されるかを見てみよう。
+
+<FilterLab />
+
+続けて画像認識・分類。3クラスのスコア（ロジット）を動かすと、予測確率がどう変わるか見てみよう。
+
+<ClassificationLab />
+
+最後に物体検出の基礎、IoU。2つのボックスをドラッグして重なり具合を確かめよう。
+
+<IoULab />
+
+  </Interact>
+  <Exercise>
+
+確認: 「画像認識・分類」と「物体検出」の出力の違いは何？
+（答: 画像認識・分類は画像1枚につき«1つ»のクラスラベルを出力するのに対し、物体検出は画像の中の«複数»の物体それぞれについて位置（バウンディングボックス）とラベルの組を出力する——«何が»だけでなく«どこに»も答える必要がある分、物体検出の方が難しい問題になる。）
+
+  </Exercise>
+</Level>
+
+<Level level={1} title="古典的理解（エッジ検出・ソフトマックス・IoUの導出）">
+  <Concept>
+
+3つのタスクそれぞれの中核となる計算を、導出込みで見ていく。
+
+**<Term id="edge-detection">エッジ検出</Term>**: Sobelフィルタで縦・横それぞれの輝度変化（勾配）を求め、三平方の定理と同じ形で合成する。
+
+**<Term id="image-classification">画像認識・分類</Term>**: CNNが出す生スコア（ロジット）を、<Term id="softmax-function">ソフトマックス関数</Term>で確率分布に変換する。
+
+**<Term id="intersection-over-union">IoU</Term>**: 2つの<Term id="bounding-box">バウンディングボックス</Term>の重なり具合を、集合の包除原理と同じ考え方で比率にする。
+
+  </Concept>
+  <Derivation title="勾配強度 G=√(Gx²+Gy²) はなぜ«三平方の定理»と同じ形なのか">
+
+Sobelフィルタは縦方向の変化 $G_x$（<Term id="edge-detection">エッジ検出</Term>フィルタを横方向に走らせて求める量）と、横方向の変化 $G_y$ を別々に計算する。この2つは「縦の変化」「横の変化」という**互いに独立な2方向**の量——ちょうど直角三角形の2辺のような関係にある。
+
+直角三角形で2辺の長さが $a,b$ のとき、斜辺の長さは三平方の定理 $c=\sqrt{a^2+b^2}$ で求まる。$G_x,G_y$ を直交する2方向の«辺»とみなせば、それを合成した«全体の変化の大きさ»も同じ形で求められる。
+
+$$
+G=\sqrt{G_x^2+G_y^2}
+$$
+
+**具体例**（三平方の定理でおなじみの3-4-5の比）: ある画素で $G_x=3,\ G_y=4$ だったとすると
+
+$$
+G=\sqrt{3^2+4^2}=\sqrt{9+16}=\sqrt{25}=5
+$$
+
+$G_x$ だけを見ていたら「3」、$G_y$ だけを見ていたら「4」としか分からないが、実際にその画素で起きている輝度変化の大きさは「5」——縦・横どちらか一方だけを見ると、斜め方向のエッジの強さを過小評価してしまう。
+
+  </Derivation>
+  <Derivation title="ソフトマックスはなぜ指数関数を使うのか（2クラスではロジスティック回帰と一致する）">
+
+確率が満たすべき条件は2つ: **非負**（マイナスの確率は無い）と**総和1**。ロジット $z_1,\dots,z_K$ はニューラルネットの内部計算の結果なので、負の値も取りうる——そのままでは確率として使えない。
+
+指数関数 $e^z$ は常に正で、かつ単調増加（$z$ が大きいほど $e^z$ も大きい）という2つの性質を持つ。この性質のおかげで、$z$ の大小関係（どのクラスが有力か）を保ったまま、全ての値を正に変換できる。
+
+$$
+e^{z_1},\ e^{z_2},\ \dots,\ e^{z_K}
+$$
+
+あとは総和で割れば「総和1」の条件も満たせる。
+
+$$
+\text{softmax}(z)_k=\frac{e^{z_k}}{\sum_{j=1}^{K} e^{z_j}}
+$$
+
+**2クラスの特別な場合**: $K=2$ のとき、クラス1の確率を分子・分母を $e^{z_1}$ で割って整理すると
+
+$$
+\text{softmax}(z)_1=\frac{e^{z_1}}{e^{z_1}+e^{z_2}}=\frac{1}{1+e^{z_2-z_1}}
+$$
+
+これは差 $z_2-z_1$ を変数とみなせば <Term id="logistic-regression">ロジスティック回帰</Term> のシグモイド関数 $\sigma(x)=\dfrac{1}{1+e^{-x}}$（$x=z_1-z_2$）と全く同じ形——ソフトマックスは2クラスのロジスティック回帰を $K$ クラスへ一般化したものだと分かる。
+
+  </Derivation>
+  <Derivation title="IoUの分母（和集合の面積）はなぜ«各面積の和 − 共通部分»になるのか">
+
+2つのボックス $A,B$ の面積を単純に足すと、重なっている共通部分 $A\cap B$ を**2回**数えてしまう。正しい和集合の面積にするには、その重複ぶんを1回分だけ引けばよい——高校数学の集合の要素数の公式（包除原理）と全く同じ考え方。
+
+$$
+\begin{aligned}
+\text{Area}(A\cup B)&=\text{Area}(A)+\text{Area}(B)\\
+&\quad-\text{Area}(A\cap B)
+\end{aligned}
+$$
+
+**具体例**: $A$（面積16）と $B$（面積16）が、面積4の領域で重なっているとする。単純に足すと $16+16=32$ だが、これは共通部分4を2回数えている（$A$ に含まれる4と、$B$ に含まれる4）。正しい和集合の面積は
+
+$$
+\text{Area}(A\cup B)=16+16-4=28
+$$
+
+このとき $\text{IoU}=4/28\approx0.14$——面積の大きい2つのボックスでも、重なりがわずかならIoUは小さい値になる。
+
+  </Derivation>
+  <Interact>
+
+Sobelフィルタ（縦エッジ検出）を1マスずつスライドさせる様子をコマ送りで見てみよう。
+
+<EdgeDetectionStepper />
+
+フィルタの種類を切り替えたり、着目するマスを移動したりして、エッジ検出・ぼかし・二値化・勾配強度の違いを確かめよう（L0で見たFilterLabの続き、フィルタに«勾配強度»も追加した）。
+
+<FilterLab />
+
+  </Interact>
+  <Exercise>
+
+確認: ソフトマックスである1つのクラスのロジットだけを大きくすると、他のクラスの確率はどうなる？
+（答: ソフトマックスは常に全クラスの確率の総和が1になるよう正規化するため、1つのクラスの確率が上がると、他のクラスの確率は総和1を保つために相対的に下がる——確率は互いに競合する関係にある。）
+
+  </Exercise>
+</Level>
+
+<Level level={2} title="仮定体系（NMSの重複除去、アンカーボックスという設計）">
+  <Concept>
+
+L1では「1つの候補・1つの窓」に対する計算を見た。L2では、<Term id="object-detection">物体検出</Term>が«複数»の候補をどう扱うかという、一段抽象度の高い設計を見る。
+
+**<Term id="non-maximum-suppression">NMS（非最大値抑制）</Term>**: モデルは同じ物体に対して複数の重複したボックス候補を出しがちだという前提に立ち、「スコアが最も高い候補から確定させ、大きく重なる候補を間引く」という貪欲な手順で重複を整理する。この手順が最適な結果を保証するわけではない——«最もスコアが高い候補は正しい»という仮定のもとで動く近似的なアルゴリズムであり、スコアの精度が低いと誤って正しい候補を消してしまうこともある。
+
+**<Term id="anchor-box">アンカーボックス</Term>**: 「典型的な物体の大きさ・縦横比はあらかじめ数パターンに絞り込める」という仮定を置き、位置をゼロから探索する代わりに、あらかじめ用意したアンカーの微調整という問題に置き換える。この仮定が崩れる例: 想定したどのスケール・縦横比にも当てはまらない極端に細長い物体（電柱など）は、どのアンカーとも十分重ならず検出しにくい。
+
+  </Concept>
+  <Derivation title="アンカーボックスの幅・高さを«連立方程式»として解く">
+
+アンカーは「面積の目安（スケール $\text{scale}$）」と「縦横比（$\text{ratio}=w/h$）」という2つの手がかりだけから、幅 $w$・高さ $h$ を決める。これは2つの式からなる連立方程式を解く問題になる——1つ目が面積の目安、2つ目が縦横比の条件。
+
+$$
+w\cdot h=\text{scale}^2
+$$
+
+$$
+\frac{w}{h}=\text{ratio}
+$$
+
+2番目の式を $w=\text{ratio}\cdot h$ と変形し、1番目の式に代入すると $h$ だけの方程式になる。
+
+$$
+(\text{ratio}\cdot h)\cdot h=\text{scale}^2
+$$
+
+$$
+h^2=\frac{\text{scale}^2}{\text{ratio}}
+$$
+
+両辺の平方根を取れば $h$ が求まり、$w=\text{ratio}\cdot h$ に代入すれば $w$ も求まる。
+
+$$
+h=\frac{\text{scale}}{\sqrt{\text{ratio}}}
+$$
+
+$$
+w=\text{scale}\sqrt{\text{ratio}}
+$$
+
+**具体例**: $\text{scale}=8,\ \text{ratio}=2$（横長）のとき $w=8\sqrt2\approx11.3,\ h=8/\sqrt2\approx5.7$。確かに $w\cdot h\approx64=8^2$、$w/h\approx2$ となり、両方の条件を満たしている。
+
+  </Derivation>
+  <Interact>
+
+5つの候補ボックス（2つの物体それぞれに重複検出がある想定）から、NMSが1つずつ確定させていく様子をコマ送りで見てみよう。
+
+<NmsStepper />
+
+1点から複数のスケール・縦横比のアンカーがどう生成されるかを見てみよう。「次へ」で着目するアンカーを切り替えると、幅・高さの計算過程が数式と連動する。
+
+<AnchorBoxDiagram />
+
+  </Interact>
+  <Exercise>
+
+<ImageAnalysisQuiz />
+
+  </Exercise>
+</Level>
+
+<Level level={3} title="発展的なアーキテクチャ（領域提案・単一段階検出・セグメンテーション）" status="planned">
+  R-CNN系列（領域提案 → CNNで分類、という2段階方式）とYOLO/SSD系列（アンカーの微調整を1回のCNN推論で済ませる単一段階方式）の設計思想の違い、画素単位でクラスを塗り分けるセマンティックセグメンテーション・物体ごとに塗り分けるインスタンスセグメンテーションは到達途上。
+</Level>
+
+<Level level={4} title="学習を支える損失関数・データ拡張の応用" status="planned">
+  IoUそのものを最大化するように設計されたIoU損失・GIoU損失（[NNモデル（CNN・RNN）](/topics/neural-network-models)の損失関数の考え方をバウンディングボックス回帰に応用したもの）、回転・切り出し・色調変化などの画像特有のデータ拡張は到達途上。
+</Level>
+
+<Level level={5} title="表現学習としての画像認識（特徴の可視化・解釈可能性）" status="planned">
+  CNNの中間層が学習する特徴（エッジ→模様→部品→物体という階層）をどのクラスの判定に使っているかを可視化するGrad-CAM等の解釈可能性の手法は到達途上。
+</Level>
+
+<Level level={6} title="フロンティア" status="planned">
+  Vision Transformer（画像をパッチに分割し注意機構で処理する、CNNに代わるアーキテクチャ）、拡散モデルによる画像生成、マルチモーダル（画像+テキスト）モデルは研究が活発でここは到達途上。
+</Level>
+
+</Topic>

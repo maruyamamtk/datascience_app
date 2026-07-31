@@ -1,0 +1,27 @@
+---
+title: IoU（Intersection over Union）
+definition: 2つのバウンディングボックスの重なり具合を表す指標。共通部分（積集合）の面積を和集合の面積で割った比率で、0（重なりなし）から1（完全一致）の値を取る。
+aliases: [IoU, Intersection over Union, 交差率, Jaccard係数, Jaccard index, 重なり率]
+seeAlso: [bounding-box, non-maximum-suppression, object-detection]
+---
+
+# IoU（Intersection over Union）
+
+2つの[バウンディングボックス](bounding-box) $A,B$ の«重なり具合»を、ボックスの大きさに依存しない0〜1の比率として表す指標。
+
+$$
+\text{IoU}(A,B)=\frac{\text{Area}(A\cap B)}{\text{Area}(A\cup B)}
+$$
+
+分母の和集合の面積は「$A$ と $B$ の面積の和から、重複して数えている共通部分を1回分だけ引く」ことで求める（高校数学の集合の公式 $|A\cup B|=|A|+|B|-|A\cap B|$ と同じ考え方）。
+
+$$
+\begin{aligned}
+\text{Area}(A\cup B)&=\text{Area}(A)+\text{Area}(B)\\
+&\quad-\text{Area}(A\cap B)
+\end{aligned}
+$$
+
+**極端な場合**: $A,B$ が全く重ならなければ共通部分は0なので $\text{IoU}=0$。$A=B$（完全一致）なら共通部分＝和集合なので $\text{IoU}=1$。
+
+**用途**: [物体検出](object-detection)では、予測したボックスと正解ボックスのIoUがしきい値（よく使われる目安は0.5）以上なら「正しく検出できた」とみなす。また[NMS（非最大値抑制）](non-maximum-suppression)は、IoUがしきい値以上の候補どうしを「同じ物体を指す重複」とみなして間引く判定基準としてIoUを使う。
