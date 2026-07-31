@@ -131,7 +131,7 @@
 | 69 | #95 | Q-1 | ニューラルネットワークの仕組み | neural-network-basics | optimization, learning-framework | ✅ done |
 | 70 | #96 | Q-2 | NNモデル（CNN・RNN） | neural-network-models | neural-network-basics | ✅ done |
 | 71 | #97 | Q-3 | テキスト解析 | text-analysis | neural-network-basics | ✅ done |
-| 72 | #98 | Q-4 | 画像解析 | image-analysis | neural-network-models | pending |
+| 72 | #98 | Q-4 | 画像解析 | image-analysis | neural-network-models | ✅ done |
 | 73 | #99 | Q-5 | 生成AI | generative-ai | neural-network-models | pending |
 | 74 | #100 | R-1 | アルゴリズム | algorithms | （なし） | pending |
 | 75 | #101 | R-2 | データ構造 | data-structures | algorithms | pending |
